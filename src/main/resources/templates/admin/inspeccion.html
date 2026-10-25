@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('UTP +Lab - Inspección')}"></head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-admin :: sidebar('inspeccion')}"></aside>
+
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
+
+      <section class="seccion-checkout">
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h1 class="titulo-seccion-catalogo">Inspección de Materiales</h1>
+          <p class="subtitulo-seccion-catalogo">Revisión de materiales retornables y EPPs prestados al concluir la sesión</p>
+        </div>
+
+        <!-- LISTA DE RESERVAS DEVUELTAS -->
+        <div id="contenedorInspeccion" 
+             class="lista-tarjetas-checkin" 
+             th:style="${#lists.isEmpty(inspecciones)} ? 'display:none;' : 'display:flex;'">
+          
+          <div th:each="ins : ${inspecciones}" 
+               class="tarjeta-reserva-checkin-fila" 
+               th:id="'tarjeta-inspeccion-' + ${ins.idReserva}">
+            
+            <div class="icono-cuadro-checkin" 
+                 th:classappend="${ins.estado == 'NO_INSPECCIONADO' ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:text="${ins.estado == 'NO_INSPECCIONADO' ? '⛔' : '🔬'}">🔬</span>
+            </div>
+
+            <div class="info-central-checkin">
+              <div class="fila-nombre-estado">
+                <strong class="nombre-lab-checkin" th:text="${ins.laboratorio}">Lab. Química</strong>
+                
+                <span class="badge-estado-pill" 
+                      th:style="${ins.estado == 'NO_INSPECCIONADO' ? 'background:#fee2e2; color:#dc2626;' : 'background:#f3e8ff; color:#7e22ce;'}"
+                      th:text="${ins.estado == 'NO_INSPECCIONADO' ? 'No Inspeccionado' : 'Devuelta'}">
+                  Devuelta
+                </span>
+              </div>
+              
+              <div class="metadatos-horario-checkin">
+                <span th:text="${ins.cubiculo + ' · ' + ins.fecha + ' · ' + ins.horario}">A-101 · 2026-08-21 · 09:00–11:00</span>
+              </div>
+              
+              <div class="pills-integrantes-flex">
+                <span th:each="integ : ${ins.integrantes}" class="pill-integrante-nombre" th:text="${integ}">
+                  Estudiante
+                </span>
+              </div>
+            </div>
+
+            <div class="accion-derecha-checkin">
+              <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
+              
+              <button th:if="${ins.estado == 'DEVUELTA'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background:#2563eb;"
+                      th:data-id="${ins.idReserva}"
+                      onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
+                <i data-lucide="clipboard-check"></i> Inspeccionar
+              </button>
+
+              <button th:if="${ins.estado == 'NO_INSPECCIONADO'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background:#e2e8f0; color:#94a3b8; cursor:not-allowed;"
+                      disabled>
+                <i data-lucide="x-circle"></i> Tiempo Expirado
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ESTADO VACÍO -->
+        <div id="sinInspeccionesVacio" 
+             class="tarjeta-sin-checkins-vacia" 
+             th:style="${#lists.isEmpty(inspecciones)} ? 'display:flex;' : 'display:none;'">
+          <span class="icono-fiesta-confeti">✅</span>
+          <strong>No hay laboratorios pendientes de inspección</strong>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- 1. MODAL DE INSPECCIÓN INTERACTIVO -->
+    <div id="modalInspeccion" class="fondo-modal-oscuro" style="display: none;">
+      <div class="tarjeta-modal modal-checkin-ancho">
+        
+        <div class="cabecera-modal-figma">
+          <div>
+            <h3 class="titulo-modal-txt" id="modalInspLabTitulo">Inspección de Devolución</h3>
+            <p class="subtitulo-modal-txt" id="modalInspSubtitulo">R-001 · 09:00–11:00</p>
+          </div>
+          <button type="button" class="btn-cerrar-modal-x" onclick="cerrarModalInspeccion()">✕</button>
+        </div>
+
+        <div class="cuerpo-modal-formulario" style="max-height: 65vh; overflow-y: auto;">
+          
+          <div class="grupo-campo-inv">
+            <label class="label-campo-inv">1. MATERIALES Y CRISTALERÍA PRESTADA</label>
+            <div id="listaInspInsumos" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+          </div>
+
+          <div class="grupo-campo-inv">
+            <label class="label-campo-inv">2. EPPS PRESTADOS (SIN COSTO / OBLIGATORIOS)</label>
+            <div id="listaInspEpps" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+          </div>
+
+        </div>
+
+        <div class="pie-modal-formulario">
+          <span class="contador-verificados-txt" id="txtAlertaDanio" style="color: #64748b; font-weight: 700; margin-right: auto;">
+            ✓ Todo conforme
+          </span>
+          <button type="button" 
+                  class="btn-cancelar-enlace" 
+                  onclick="cerrarModalInspeccion()">Cancelar</button>
+          <button type="button" 
+                  class="btn-guardar-verde-teal" 
+                  id="btnFinalizarInsp" 
+                  onclick="enviarFinalizarInspeccion()">
+            Finalizar Inspección →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. MODAL DE CONFIRMACIÓN / RESULTADO -->
+    <div id="modalResultado" class="fondo-modal-oscuro" style="display: none;">
+      <div class="modal-resultado-card">
+        <div id="iconoResultado" class="icono-resultado-circulo res-exito">
+          ✓
+        </div>
+        <h3 id="tituloResultado" style="margin: 0; color: #0f172a; font-size: 1.2rem; font-weight: 800;">
+          Inspección Completada
+        </h3>
+        <p id="mensajeResultado" style="margin: 0; color: #64748b; font-size: 0.88rem; line-height: 1.4;">
+          El material ha sido devuelto conforme y el laboratorio quedó liberado.
+        </p>
+        <button type="button" class="btn-entendido-modal" onclick="cerrarModalResultado()">
+          Entendido
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico de Inspección -->
+  <script th:src="@{/js/admin-inspeccion.js}"></script>
+</body>
+</html>

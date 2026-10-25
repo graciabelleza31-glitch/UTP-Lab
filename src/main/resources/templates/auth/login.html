@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UTP +Lab - Iniciar Sesión</title>
+    <link
+      rel="stylesheet"
+      th:href="@{/css/estilos.css}"
+      href="/css/estilos.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div class="contenedor-principal">
+      <section class="panel-izquierdo">
+        <div class="envoltura-ilustracion">
+          <div class="icono-microscopio">
+            <span>🔬</span>
+          </div>
+
+          <div class="elementos-laboratorio">
+            <span class="item matraz">🧪</span>
+            <span class="item tubo">🧪</span>
+          </div>
+
+          <div class="etiqueta-logo">
+            <span class="etiqueta-utp">UTP</span>
+            <span class="texto-lab">+Lab</span>
+          </div>
+
+          <p class="lema-titulo">
+            La nueva experiencia digital de aprendizaje.
+          </p>
+          <p class="lema-subtitulo">Cercana, dinámica y flexible.</p>
+        </div>
+      </section>
+
+      <section class="panel-derecho">
+        <div class="envoltura-formulario">
+          <div class="etiqueta-logo compacto">
+            <span class="etiqueta-utp">UTP</span>
+            <span class="texto-lab">+Lab</span>
+          </div>
+
+          <h1 class="titulo-principal">
+            La nueva experiencia digital de aprendizaje
+          </h1>
+          <p class="subtitulo-principal">Cercana, dinámica y flexible</p>
+
+          <p class="mensaje-indicacion">
+            Ingresa tus datos para <strong>iniciar sesión.</strong>
+          </p>
+
+          <div
+            th:if="${error != null}"
+            class="cuadro-alerta"
+            th:text="${error}"
+          >
+            Código UTP o contraseña incorrectos
+          </div>
+
+          <div
+            th:if="${param.reset}"
+            style="
+              background: #dcfce7;
+              color: #166534;
+              padding: 0.85rem 1rem;
+              border-radius: 8px;
+              margin-bottom: 1.25rem;
+              font-size: 0.88rem;
+              text-align: center;
+            "
+          >
+            ✅ ¡Contraseña actualizada! Ya puedes iniciar sesión.
+          </div>
+
+          <form th:action="@{/login}" method="post">
+            <!-- Grupo: Código UTP -->
+            <div class="grupo-campo">
+              <label for="codigoUtp">Código UTP</label>
+              <div class="caja-entrada">
+                <input
+                  type="text"
+                  id="codigoUtp"
+                  name="codigoUtp"
+                  th:value="${codigoIngresado}"
+                  placeholder="Ingresa tu usuario"
+                  required
+                  autocomplete="username"
+                />
+                <i data-lucide="user" class="icono-entrada"></i>
+              </div>
+              <div class="nota-ayuda">
+                <i data-lucide="info" class="icono-info"></i>
+                <span
+                  >Ejemplo de usuario: U1533149 (no digitar el
+                  @utp.edu.pe)</span
+                >
+              </div>
+            </div>
+
+            <!-- Grupo: Contraseña -->
+            <div class="grupo-campo">
+              <label for="password">Contraseña</label>
+              <div class="caja-entrada">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Ingresa tu contraseña"
+                  required
+                  autocomplete="current-password"
+                />
+                <button
+                  type="button"
+                  class="boton-ojo"
+                  onclick="alternarVisibilidadClave()"
+                >
+                  <i data-lucide="eye" id="iconoOjo" class="icono-entrada"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Enlace restablecer clave -->
+            <div class="olvido-clave">
+              <a th:href="@{/recuperar/restablecer}" class="enlace-olvido"
+                >Restablecer contraseña</a
+              >
+            </div>
+
+            <!-- Botón de Envío -->
+            <button type="submit" class="boton-iniciar">Iniciar sesión</button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      function alternarVisibilidadClave() {
+        const campoClave = document.getElementById("password");
+        const iconoOjo = document.getElementById("iconoOjo");
+
+        if (campoClave.type === "password") {
+          campoClave.type = "text";
+          iconoOjo.setAttribute("data-lucide", "eye-off");
+        } else {
+          campoClave.type = "password";
+          iconoOjo.setAttribute("data-lucide", "eye");
+        }
+        lucide.createIcons();
+      }
+    </script>
+  </body>
+</html>

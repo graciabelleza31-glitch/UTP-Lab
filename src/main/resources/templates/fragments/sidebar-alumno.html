@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="sidebarAlumno(activo)" class="barra-lateral">
+    <div class="logo-lateral">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+    </div>
+
+    <nav class="navegacion-menu">
+        <a th:href="@{/alumno/cuenta}" 
+           th:classappend="${activo == 'cuenta' ? 'activo' : ''}" 
+           class="item-menu">
+            <i data-lucide="user"></i>
+            <span>Cuenta</span>
+        </a>
+        <a th:href="@{/alumno/laboratorios}" 
+           th:classappend="${activo == 'laboratorios' ? 'activo' : ''}" 
+           class="item-menu">
+            <i data-lucide="flask-conical"></i>
+            <span>Laboratorios</span>
+        </a>
+        <a th:href="@{/alumno/catalogos}" 
+           th:classappend="${activo == 'catalogos' ? 'activo' : ''}" 
+           class="item-menu">
+            <i data-lucide="box"></i>
+            <span>Catálogos</span>
+        </a>
+        <a th:href="@{/alumno/protocolos}" 
+           th:classappend="${activo == 'protocolos' ? 'activo' : ''}" 
+           class="item-menu">
+            <i data-lucide="file-text"></i>
+            <span>Protocolos</span>
+        </a>
+        <a th:href="@{/alumno/incidencias}" 
+           th:classappend="${activo == 'incidencias' ? 'activo' : ''}" 
+           class="item-menu item-incidencias">
+            <i data-lucide="alert-triangle"></i>
+            <span>Incidencias</span>
+            <span class="badge-alerta-roja" 
+                  th:if="${numIncidencias != null and numIncidencias > 0}" 
+                  th:text="${numIncidencias}">1</span>
+        </a>
+    </nav>
+</aside>
+
+</body>
+</html>

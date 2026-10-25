@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('UTP +Lab - Check-in Presencial')}"></head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-admin :: sidebar('checkin')}"></aside>
+
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
+
+      <section class="seccion-checkout">
+        
+        <div class="encabezado-checkin-seccion">
+          <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1>
+          <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
+        </div>
+
+        <!-- 1. LISTADO DE RESERVAS POR VALIDAR -->
+        <div id="contenedorListaCheckin" 
+             class="lista-tarjetas-checkin" 
+             th:style="${#lists.isEmpty(reservas)} ? 'display:none;' : 'display:flex;'">
+          
+          <div th:each="r : ${reservas}" 
+               class="tarjeta-reserva-checkin-fila" 
+               th:id="'tarjeta-reserva-' + ${r.idReserva}">
+            
+            <div class="icono-cuadro-checkin" th:classappend="${#strings.containsIgnoreCase(r.laboratorio, 'Física') ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:if="${#strings.containsIgnoreCase(r.laboratorio, 'Física')}">⚡</span>
+              <span th:unless="${#strings.containsIgnoreCase(r.laboratorio, 'Física')}">⚗️</span>
+            </div>
+
+            <div class="info-central-checkin">
+              <div class="fila-nombre-estado">
+                <strong class="nombre-lab-checkin" th:text="${r.laboratorio}">Lab. Química</strong>
+                <span class="badge-estado-pill" 
+                      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : 'estado-pendiente'}"
+                      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : 'Pendiente'}">
+                  Confirmada
+                </span>
+              </div>
+              
+              <div class="metadatos-horario-checkin">
+                <span th:text="${r.cubiculo + ' · ' + r.fecha + ' · ' + r.horario}">A-101 · 2026-08-21 · 09:00–11:00</span>
+              </div>
+              
+              <div class="pills-integrantes-flex">
+                <span th:each="integ : ${r.integrantes}" class="pill-integrante-nombre" th:text="${integ}">
+                  Mariafernanda Bruno Santos
+                </span>
+              </div>
+            </div>
+
+            <div class="accion-derecha-checkin">
+              <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
+              <button type="button" 
+                      class="btn-verde-iniciar" 
+                      th:data-id="${r.idReserva}"
+                      onclick="abrirModalCheckin(this.getAttribute('data-id'))">
+                <i data-lucide="check-square"></i> Iniciar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. ESTADO VACÍO -->
+        <div id="tarjetaSinCheckins" 
+             class="tarjeta-sin-checkins-vacia" 
+             th:style="${#lists.isEmpty(reservas)} ? 'display:flex;' : 'display:none;'">
+          <span class="icono-fiesta-confeti">🎉</span>
+          <strong>Sin check-ins pendientes</strong>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- MODAL DE CHECK-IN PRESENCIAL -->
+    <div id="modalCheckin" class="fondo-modal-oscuro" style="display: none;">
+      <div class="tarjeta-modal modal-checkin-ancho">
+        
+        <div class="cabecera-modal-checkin">
+          <div>
+            <h3 id="modalLabTitulo">Lab. Química</h3>
+            <p id="modalLabSubtitulo">R-001 · 09:00–11:00</p>
+          </div>
+          <button type="button" class="btn-cerrar-blanco" onclick="cerrarModalCheckin()">✕</button>
+        </div>
+
+        <div class="cuerpo-modal-checkin">
+          
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">1. VERIFICAR IDENTIDAD</span>
+            <div class="lista-verif-items" id="listaCheckIntegrantes"></div>
+          </div>
+
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">2. ENTREGAR INSUMOS</span>
+            <div class="lista-verif-items" id="listaCheckInsumos"></div>
+          </div>
+
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">3. ENTREGAR EPPS</span>
+            <div class="lista-verif-items" id="listaCheckEpps"></div>
+          </div>
+
+        </div>
+
+        <div class="pie-modal-checkin">
+          <span class="contador-verificados-txt" id="txtContadorVerificados">0/0 verificados</span>
+          <button type="button" class="btn-confirmar-checkin-verde" id="btnConfirmarCheckin" onclick="enviarConfirmacionCheckin()">
+            Confirmar check-in →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div th:replace="~{fragments/topbar-admin :: scripts}"></div>
+    
+  <!-- Carga tu JS separado -->
+  <script th:src="@{/js/admin-checkin.js}"></script>
+</body>
+</html>

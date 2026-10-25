@@ -1,0 +1,72 @@
+.contenido-incidencias { padding: 2.5rem 3.5rem; max-width: 1050px; }
+.header-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+.titulo-seccion { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+.subtitulo-seccion { font-size: 0.9rem; color: #64748b; margin-top: 0.2rem; }
+.badge-pendientes-rojo { background-color: #fee2e2; color: #dc2626; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.banner-bloqueo { background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; }
+.icono-bloqueo-banner { color: #e11d48; font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+.titulo-banner { font-size: 0.95rem; font-weight: 700; color: #be123c; margin-bottom: 0.25rem; }
+.desc-banner { font-size: 0.85rem; color: #e11d48; line-height: 1.4; }
+
+.card-incidencia-estudiante { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem 1.8rem; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; gap: 1.2rem; }
+.fila-top-card { display: flex; justify-content: space-between; align-items: flex-start; }
+.datos-item-danado { display: flex; gap: 1rem; align-items: flex-start; }
+.icono-caja-morada { width: 38px; height: 38px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid #e2e8f0; }
+.nombre-item-titulo { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+
+.badge-notificada-amarillo { background-color: #fef3c7; color: #b45309; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+.badge-pagada-verde { background-color: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+
+.desc-rotura { font-size: 0.88rem; color: #475569; margin-top: 0.35rem; }
+.codigo-inc-gris { font-size: 0.85rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
+
+.grid-info-incidencia { display: grid; grid-template-columns: 1fr 1fr 1fr; padding-left: 3.4rem; gap: 1rem; }
+.col-detalle { display: flex; flex-direction: column; gap: 0.2rem; }
+.etiqueta-dim { font-size: 0.78rem; color: #94a3b8; }
+.valor-fuerte { font-size: 0.88rem; font-weight: 600; color: #0f172a; }
+
+.fila-bottom-card { display: flex; justify-content: space-between; align-items: flex-end; padding-left: 3.4rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; }
+.seccion-costo-reposicion { display: flex; flex-direction: column; gap: 0.2rem; }
+.monto-rojo-grande { font-size: 1.25rem; font-weight: 800; color: #ef4444; }
+.texto-notificado-fecha { font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+
+.btn-pagar-ahora { background-color: #2563eb; color: #ffffff; border: none; padding: 0.65rem 1.4rem; font-size: 0.88rem; font-weight: 700; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s ease; }
+.btn-pagar-ahora:hover { background-color: #1d4ed8; }
+
+.texto-regularizado-verde { color: #059669; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; }
+
+/* MODAL DE PAGO */
+.fondo-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.caja-modal-pago { background-color: #ffffff; border-radius: 18px; width: 92%; max-width: 440px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; }
+.btn-cerrar-x { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94a3b8; }
+.btn-cerrar-x:hover { color: #0f172a; }
+.modal-titulo { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 0.15rem; }
+.modal-subtitulo { font-size: 0.82rem; color: #64748b; margin-bottom: 1.25rem; }
+
+.tarjeta-monto-azul { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.label-total-pagar { font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 0.25rem; }
+.valor-total-pagar { font-size: 1.45rem; font-weight: 800; }
+
+.grid-metodos-pago { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1.2rem; }
+.opcion-metodo { border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s; background-color: #ffffff; }
+.opcion-metodo.seleccionado { border-color: #10b981; background-color: #f0fdf4; }
+.opcion-metodo .icono-metodo { font-size: 1.3rem; }
+.opcion-metodo .label-metodo { font-size: 0.75rem; font-weight: 600; color: #334155; text-align: center; }
+
+.contenedor-qr-pago { border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.2rem; text-align: center; margin-bottom: 1.2rem; }
+.titulo-qr { font-size: 0.9rem; font-weight: 700; color: #059669; margin-bottom: 0.8rem; }
+.imagen-qr { width: 155px; height: 155px; margin: 0 auto 0.8rem auto; display: block; border-radius: 8px; }
+.subtexto-qr { font-size: 0.78rem; color: #64748b; margin-bottom: 0.2rem; }
+.comercio-qr { font-size: 0.88rem; font-weight: 800; color: #0f172a; }
+
+.btn-accion-modal { width: 100%; padding: 0.75rem; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-deshabilitado { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+.btn-primario-azul { background-color: #2563eb; color: #ffffff; }
+.btn-primario-azul:hover { background-color: #1d4ed8; }
+
+.pantalla-exito { text-align: center; padding: 1rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.icono-exito-verde { width: 64px; height: 64px; border-radius: 14px; background-color: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 0.5rem; }
+.titulo-exito { font-size: 1.3rem; font-weight: 800; color: #0f172a; }
+.monto-exito { font-size: 0.88rem; color: #475569; }
+.codigo-txn { font-size: 0.78rem; color: #94a3b8; font-weight: 600; }

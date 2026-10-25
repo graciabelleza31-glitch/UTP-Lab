@@ -1,0 +1,94 @@
+/* ==========================================================================
+   CONTENEDOR GENERAL DE LOGIN
+   ========================================================================== */
+.contenedor-principal {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ==========================================================================
+   PANEL IZQUIERDO (ILUSTRACIÓN)
+   ========================================================================== */
+.panel-izquierdo {
+  flex: 1;
+  background-color: #eaf1f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.envoltura-ilustracion { text-align: center; max-width: 380px; }
+
+.icono-microscopio {
+  font-size: 7rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.08));
+}
+
+.elementos-laboratorio {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 2.2rem;
+}
+
+/* ... (Aquí pegas .etiqueta-logo, .etiqueta-utp, .lema-titulo) ... */
+
+/* ==========================================================================
+   PANEL DERECHO (FORMULARIO)
+   ========================================================================== */
+.panel-derecho {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+.envoltura-formulario { width: 100%; max-width: 440px; }
+
+.titulo-principal {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1a365d;
+  line-height: 1.25;
+  margin-bottom: 0.4rem;
+}
+
+.subtitulo-principal {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+/* ALERTAS Y CAMPOS */
+.cuadro-alerta {
+  background-color: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #b91c1c;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+}
+
+.grupo-campo { margin-bottom: 1.35rem; }
+.grupo-campo label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 0.45rem; }
+
+.caja-entrada { position: relative; display: flex; align-items: center; }
+.caja-entrada input {
+  width: 100%;
+  padding: 0.85rem 2.8rem 0.85rem 1.1rem;
+  font-size: 0.92rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #0f172a;
+}
+
+/* ... (Aquí pegas .boton-iniciar, .boton-ojo, media queries) ... */

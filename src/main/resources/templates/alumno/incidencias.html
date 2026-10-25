@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Mis Incidencias</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno-incidencias.css}" />
+  
+  <!-- Fuentes y librerías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="contenedor-app">
+  <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('incidencias')}"></aside>
+
+  <main class="area-principal">
+    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+
+    <!-- SECCIÓN CONTENIDO -->
+    <section class="contenido-incidencias">
+      
+      <!-- ENCABEZADO -->
+      <div class="header-seccion">
+        <div>
+          <h1 class="titulo-seccion">Mis Incidencias</h1>
+          <p class="subtitulo-seccion">Daños reportados y estados de pago</p>
+        </div>
+
+        <span th:if="${pendientesCount > 0}" id="badgeHeaderPendientes" class="badge-pendientes-rojo">
+          <i data-lucide="minus-circle" style="width: 14px; height: 14px;"></i>
+          <span th:text="${pendientesCount} + ' pendiente(s)'">1 pendiente(s)</span>
+        </span>
+      </div>
+
+      <!-- BANNER DE BLOQUEO -->
+      <div th:if="${estaBloqueado}" id="bannerBloqueoAlerta" class="banner-bloqueo">
+        <i data-lucide="minus-circle" class="icono-bloqueo-banner"></i>
+        <div>
+          <h4 class="titulo-banner">Reservas bloqueadas por incidencias pendientes</h4>
+          <p class="desc-banner">
+            Tienes <span th:text="${pendientesCount}">1</span> incidencia(s) sin resolver. Debes pagar el costo de reposición para poder realizar nuevas reservas o unirte a grupos.
+          </p>
+        </div>
+      </div>
+
+      <!-- LISTADO DE TARJETAS -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- MENSAJE CUANDO NO HAY DEUDAS -->
+        <div th:if="${#lists.isEmpty(incidencias)}" style="text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px dashed #cbd5e1; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem auto; border: 2px solid #a7f3d0;">
+            ✓
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem;">¡Sin incidencias pendientes!</h3>
+          <p style="font-size: 0.88rem; color: #64748b; max-width: 420px; margin: 0 auto;">No tienes sanciones ni cargos pendientes de pago. Tu cuenta está habilitada para reservar laboratorios y materiales.</p>
+        </div>
+
+        <div th:each="inc : ${incidencias}" class="card-incidencia-estudiante" th:id="'tarjeta-inc-' + ${inc.idSancion}">
+          
+          <!-- PARTE SUPERIOR -->
+          <div class="fila-top-card">
+            <div class="datos-item-danado">
+              <div class="icono-caja-morada" th:id="'icono-box-' + ${inc.idSancion}">
+                <i th:if="${!inc.resuelto}" data-lucide="flask-conical" style="color: #6366f1; width: 20px; height: 20px;"></i>
+                <i th:if="${inc.resuelto}" data-lucide="check-square" style="color: #10b981; width: 20px; height: 20px;"></i>
+              </div>
+              <div>
+                <div class="nombre-item-titulo">
+                  <span th:text="${inc.item}">Erlenmeyer 250mL</span>
+                  <span th:id="'badge-estado-' + ${inc.idSancion}" 
+                        th:class="${inc.resuelto ? 'badge-pagada-verde' : 'badge-notificada-amarillo'}" 
+                        th:text="${inc.estado}">Notificada</span>
+                </div>
+                <p class="desc-rotura" th:text="${inc.motivo}">Frasco devuelto con fractura en el cuello del mismo.</p>
+              </div>
+            </div>
+
+            <span class="codigo-inc-gris" th:text="${inc.idSancion}">INC-003</span>
+          </div>
+
+          <!-- PARTE MEDIA (GRID) -->
+          <div class="grid-info-incidencia">
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Laboratorio</span>
+              <strong class="valor-fuerte" th:text="${inc.laboratorio}">Lab. Química</strong>
+            </div>
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Reserva</span>
+              <strong class="valor-fuerte" th:text="${inc.reserva}">R-001</strong>
+            </div>
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Fecha</span>
+              <strong class="valor-fuerte" th:text="${inc.fecha}">2026-08-19</strong>
+            </div>
+          </div>
+
+          <!-- PARTE INFERIOR (COSTO + BOTÓN) -->
+          <div class="fila-bottom-card">
+            <div class="seccion-costo-reposicion">
+              <span class="etiqueta-dim">Costo de reposición</span>
+              <strong class="monto-rojo-grande" th:text="${inc.costo}">S/ 350.00</strong>
+              <span class="texto-notificado-fecha">
+                📧 Notificado el: <span th:text="${inc.fechaNotificado}">2026-08-19 11:30</span>
+              </span>
+            </div>
+
+            <!-- Botón Pagar o Regularizado -->
+            <div th:id="'contenedor-accion-' + ${inc.idSancion}">
+              <button th:if="${!inc.resuelto}" 
+                      type="button" 
+                      class="btn-pagar-ahora" 
+                      th:data-id="${inc.idSancion}" 
+                      th:data-item="${inc.item}" 
+                      th:data-monto="${inc.costo}" 
+                      onclick="abrirModalPago(this)">
+                <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i>
+                Pagar ahora
+              </button>
+
+              <span th:if="${inc.resuelto}" class="texto-regularizado-verde">
+                ✓ Pagado y regularizado
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- MODAL DE PAGO -->
+  <div id="modalPagoIncidencia" class="fondo-modal" style="display: none;">
+    <div class="caja-modal-pago">
+      <button class="btn-cerrar-x" onclick="cerrarModalPago()">&times;</button>
+      
+      <!-- PASO 1: SELECCIONAR MÉTODO Y CONFIRMAR -->
+      <div id="pasoPagoSeleccion">
+        <h3 id="modalTituloInc" class="modal-titulo">Pago de Incidencia · Erlenmeyer 250mL</h3>
+        <p class="modal-subtitulo">Selecciona cómo pagar</p>
+
+        <div class="tarjeta-monto-azul">
+          <div>
+            <span class="label-total-pagar">TOTAL A PAGAR</span>
+            <span id="modalMontoPagar" class="valor-total-pagar">S/ 350.00</span>
+          </div>
+          <i data-lucide="credit-card" style="width: 28px; height: 28px; opacity: 0.8;"></i>
+        </div>
+
+        <div class="grid-metodos-pago">
+          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'yape')">
+            <span class="icono-metodo">📱</span>
+            <span class="label-metodo">Yape</span>
+          </div>
+          <div class="opcion-metodo seleccionado" id="metodoPlinDefault" onclick="seleccionarMetodo(this, 'plin')">
+            <span class="icono-metodo">💚</span>
+            <span class="label-metodo">Plin</span>
+          </div>
+          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'banco')">
+            <span class="icono-metodo">🏦</span>
+            <span class="label-metodo">Cuenta Interbancaria</span>
+          </div>
+        </div>
+
+        <div id="cajaDetalleMetodo" class="contenedor-qr-pago">
+          <h4 id="tituloQrMetodo" class="titulo-qr">Pagar con Plin</h4>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTP-LAB-PAGO-350&color=059669" 
+               alt="QR Plin" class="imagen-qr" />
+          <p class="subtexto-qr">Escanea con la app Plin</p>
+          <p id="labelComercioQr" class="comercio-qr">UTP Lab · S/ 350.00</p>
+        </div>
+
+        <button id="btnConfirmarPago" type="button" class="btn-accion-modal btn-primario-azul" onclick="ejecutarPagoBackend()">
+          Confirmar pago · S/ 350.00
+        </button>
+      </div>
+
+      <!-- PASO 2: ¡PAGO EXITOSO! -->
+      <div id="pasoPagoExitoso" class="pantalla-exito" style="display: none;">
+        <div class="icono-exito-verde">
+          <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h3 class="titulo-exito">¡Pago exitoso!</h3>
+        <p id="subtextoExitoMonto" class="monto-exito">S/ 350.00 procesados correctamente</p>
+        <span id="textoTxnCode" class="codigo-txn">TXN-0560042900</span>
+
+        <button type="button" class="btn-accion-modal btn-primario-azul" style="margin-top: 1rem;" onclick="finalizarPagoYRecargar()">
+          Listo
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
+  
+  <!-- Carga tu JS separado -->
+  <script th:src="@{/js/alumno-incidencias.js}"></script>
+</body>
+</html>

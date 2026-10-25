@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('UTP +Lab - Módulo de Incidencias')}"></head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-admin :: sidebar('incidencias')}"></aside>
+
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
+
+      <section class="seccion-checkout">
+        
+        <!-- ENCABEZADO Y MONTO TOTAL PENDIENTE -->
+        <div class="fila-dashboard-header">
+          <div>
+            <h1 class="titulo-seccion-catalogo">Módulo de Incidencias</h1>
+            <p class="subtitulo-seccion-catalogo">Daños, costos y notificaciones por correo</p>
+          </div>
+          <div class="monto-total-pendiente-tag" th:text="${totalPendiente + ' pendiente'}">
+            S/ 1650.00 pendiente
+          </div>
+        </div>
+
+        <!-- 3 TARJETAS RESUMEN DE ESTADO -->
+        <div class="grid-tres-estados-incidencias">
+          <!-- Abiertas -->
+          <div class="card-resumen-inc card-inc-abiertas">
+            <div class="circulo-icono-estado icon-red-glow">🔴</div>
+            <div class="datos-resumen-inc">
+              <strong class="num-inc-resumen" id="numAbiertas" th:text="${cantAbiertas}">1</strong>
+              <span class="label-inc-resumen">Abiertas</span>
+            </div>
+          </div>
+
+          <!-- Notificadas -->
+          <div class="card-resumen-inc card-inc-notificadas">
+            <div class="circulo-icono-estado icon-yellow-glow">📧</div>
+            <div class="datos-resumen-inc">
+              <strong class="num-inc-resumen" id="numNotificadas" th:text="${cantNotificadas}">2</strong>
+              <span class="label-inc-resumen">Notificadas</span>
+            </div>
+          </div>
+
+          <!-- Resueltas -->
+          <div class="card-resumen-inc card-inc-resueltas">
+            <div class="circulo-icono-estado icon-green-glow">✅</div>
+            <div class="datos-resumen-inc">
+              <strong class="num-inc-resumen" id="numResueltas" th:text="${cantResueltas}">0</strong>
+              <span class="label-inc-resumen">Resueltas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTA DE TARJETAS DE INCIDENCIAS -->
+        <div class="lista-tarjetas-incidencias-col">
+          <!-- Nota: idSancion ahora contiene el ID de la RESERVA (ej. RES005) -->
+          <div th:each="inc : ${incidencias}" 
+               class="tarjeta-incidencia-completa" 
+               th:id="'card-inc-' + ${inc.idSancion}">
+            
+            <div class="cuerpo-superior-inc">
+              <!-- Icono dinámico según estado -->
+              <div class="icono-tipo-incidencia" th:id="'icono-inc-' + ${inc.idSancion}">
+                <span th:if="${inc.notificada}">📧</span>
+                <span th:unless="${inc.notificada}">🔴</span>
+              </div>
+
+              <!-- Detalles del Item y Motivo -->
+              <div class="info-principal-inc">
+                <div class="fila-titulo-tag">
+                  <strong class="nombre-item-danado" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
+                  <span class="badge-estado-inc" 
+                        th:id="'badge-inc-' + ${inc.idSancion}"
+                        th:classappend="${inc.notificada ? 'badge-notificada' : 'badge-pendiente'}"
+                        th:text="${inc.estado}">
+                    Notificada
+                  </span>
+                </div>
+                <p class="motivo-desc-txt" th:text="${inc.motivo}">Cristalería rota por caída durante la práctica.</p>
+              </div>
+
+              <!-- Código y Botón Dinámico -->
+              <div class="accion-derecha-inc">
+                <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
+                
+                <!-- Botón Resolver (si ya está notificada) -->
+                <button th:if="${inc.notificada}" 
+                        type="button" 
+                        class="btn-resolver-verde"
+                        th:data-id="${inc.idSancion}"
+                        th:data-estudiante="${inc.estudiante}"
+                        onclick="ejecutarResolverIncidencia(this)">
+                  <i data-lucide="check"></i> Resolver Todo
+                </button>
+
+                <!-- Botón Notificar (si está pendiente) -->
+                <button th:unless="${inc.notificada}" 
+                        type="button" 
+                        class="btn-notificar-naranja"
+                        th:data-id="${inc.idSancion}"
+                        th:data-estudiante="${inc.estudiante}"
+                        th:data-correo="${inc.correo}"
+                        onclick="ejecutarNotificarIncidencia(this)">
+                  <i data-lucide="mail"></i> Notificar a Todos
+                </button>
+              </div>
+            </div>
+
+            <!-- Grilla inferior de metadatos -->
+            <div class="metadatos-grid-inc">
+              <div class="col-meta-inc">
+                <span class="label-meta-dim">Lab</span>
+                <strong class="val-meta-txt" th:text="${inc.laboratorio}">Lab. Química</strong>
+              </div>
+
+              <div class="col-meta-inc">
+                <span class="label-meta-dim">Estudiantes</span>
+                <strong class="val-meta-txt" th:text="${inc.estudiante}">Felipe, Miguel</strong>
+              </div>
+
+              <div class="col-meta-inc">
+                <span class="label-meta-dim">Correos</span>
+                <span class="val-meta-txt" style="font-size: 0.8rem; word-break: break-all;" th:text="${inc.correo}">U23200745@utp.edu.pe, U24207788@utp.edu.pe</span>
+              </div>
+
+              <div class="col-meta-inc">
+                <span class="label-meta-dim">Costo Total</span>
+                <strong class="val-meta-costo" th:text="${inc.costo}">S/ 90.00</strong>
+              </div>
+            </div>
+
+            <!-- Fila de fecha de notificación -->
+            <div class="fila-footer-notif" 
+                 th:id="'footer-notif-' + ${inc.idSancion}"
+                 th:style="${inc.notificada} ? 'display:flex;' : 'display:none;'">
+              <span class="emoji-sobre-mini">📧</span>
+              <span class="txt-fecha-envio" th:text="'Notificado: ' + ${inc.fechaNotificado}">Notificado: 2026-08-20 09:45</span>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- MODAL INFORMATIVO: CORREO ENVIADO Y ALUMNO BLOQUEADO -->
+    <div id="modalAvisoIncidencia" class="fondo-modal-incidencia" style="display: none;">
+      <div class="tarjeta-modal-inc">
+        <div id="modalAvisoIcono" class="icono-circulo-modal icono-modal-correo">
+          📧
+        </div>
+        <h3 id="modalAvisoTitulo" class="titulo-modal-aviso">
+          Notificación Enviada
+        </h3>
+        <p id="modalAvisoCuerpo" class="texto-modal-aviso">
+          Se ha notificado formalmente al estudiante.
+        </p>
+        
+        <div id="modalAvisoBanner" class="banner-bloqueo-aviso">
+          <i data-lucide="lock" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+          <span>Los estudiantes permanecerán <strong>bloqueados</strong> hasta que realicen el pago.</span>
+        </div>
+
+        <button type="button" class="btn-cerrar-modal-aviso" onclick="cerrarModalAviso()">
+          Entendido
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts globales -->
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico de Incidencias -->
+  <script th:src="@{/js/admin-incidencias.js}"></script>
+</body>
+</html>

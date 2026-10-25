@@ -1,0 +1,28 @@
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">UTP +Lab</title>
+    
+    <!-- Fuentes y librerías -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- CSS GLOBAL (se carga en todas las páginas) -->
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
+    
+    <!-- CSS DINÁMICO: Aquí cargaremos el CSS específico según la vista -->
+    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'alumno')}">
+        <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+    </th:block>
+    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'admin')}">
+        <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    </th:block>
+    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'login') or #strings.contains(#httpServletRequest.requestURI, 'recuperar') or #strings.contains(#httpServletRequest.requestURI, 'cambiar-password')}">
+        <link rel="stylesheet" th:href="@{/css/login.css}" />
+    </th:block>
+    
+    <!-- Los modales se cargan siempre porque se usan en varias vistas -->
+    <link rel="stylesheet" th:href="@{/css/modales.css}" />
+</head>

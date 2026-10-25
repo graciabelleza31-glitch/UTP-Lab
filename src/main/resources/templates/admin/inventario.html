@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('UTP +Lab - Inventario')}"></head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-admin :: sidebar('inventario')}"></aside>
+
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
+
+      <section class="seccion-checkout">
+        
+        <!-- ENCABEZADO Y BOTÓN DE ACCIÓN -->
+        <div class="fila-dashboard-header">
+          <div>
+            <h1 class="titulo-seccion-catalogo">Gestión de Inventario</h1>
+            <p class="subtitulo-seccion-catalogo">Control general de insumos, reactivos, herramientas y EPPs</p>
+          </div>
+          <div class="acciones-header-inventario">
+            <a th:href="@{/admin/inventario/alertas/pdf}" target="_blank" class="btn-pdf-inventario">
+              <i data-lucide="file-down"></i>
+              <span>Reporte PDF</span>
+            </a>
+            <button type="button" class="btn-nuevo-insumo-admin" onclick="abrirModalNuevoProducto()">
+            <i data-lucide="plus-circle" class="icono-btn-nuevo"></i>
+            <span>Nuevo Insumo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BÚSQUEDA Y CONTADORES -->
+        <div class="fila-busqueda-catalogo">
+          <div class="caja-input-busqueda">
+            <input type="text" id="inputBuscarInventario" placeholder="Buscar por código o nombre..." oninput="filtrarInventario()" />
+          </div>
+          <div class="badges-resumen-inventario">
+            <span class="badge-total-items-pill" id="badgeTotalItems" th:text="${totalItems + ' registrados'}">12 registrados</span>
+            <span class="badge-alerta-stock-pill" th:if="${stockCritico > 0}" th:text="${stockCritico + ' con stock crítico'}">37 con stock crítico</span>
+          </div>
+        </div>
+
+        <!-- FILTROS POR CATEGORÍA -->
+        <div class="barra-filtros-catalogo">
+          <button type="button" class="btn-filtro-cat activo" data-cat="TODOS" onclick="filtrarCategoria(this)">Todos</button>
+          <button th:each="c : ${categorias}" 
+                  type="button" 
+                  class="btn-filtro-cat" 
+                  th:text="${c}" 
+                  th:data-cat="${c}" 
+                  onclick="filtrarCategoria(this)">
+            Categoría
+          </button>
+        </div>
+
+        <!-- TABLA COMPLETA DE INVENTARIO -->
+        <div class="card-panel-blanco tabla-card-inventario">
+          <table class="tabla-admin-inventario" id="tablaInventario">
+            <thead>
+              <tr>
+                <th style="width: 10%;">Código</th>
+                <th style="width: 28%;">Insumo / Material</th>
+                <th style="width: 12%;">Categoría</th>
+                <th style="width: 11%;">Laboratorio</th>
+                <th style="width: 13%;">Modalidad</th>
+                <th style="width: 9%;">Stock</th>
+                <th style="width: 8%;">Estado</th>
+                <th style="width: 9%; text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="p : ${productos}" 
+                  class="fila-producto-inv"
+                  th:data-nombre="${p.nombre}"
+                  th:data-codigo="${p.idProducto}"
+                  th:data-categoria="${p.categoria != null ? p.categoria : ''}">
+                <td>
+                  <span class="codigo-reserva-gris" th:text="${p.idProducto}">IQ0001</span>
+                </td>
+                <td>
+                  <strong class="txt-nombre-insumo" th:text="${p.nombre}">pH-metro digital portátil con electrodo</strong>
+                </td>
+                <td>
+                  <span class="badge-cat-tag" th:text="${p.categoria != null ? p.categoria : 'General'}">Instrumentos</span>
+                </td>
+                <td>
+                  <span class="txt-lab-col" th:text="${p.laboratorio != null and p.laboratorio.tipo != null ? p.laboratorio.tipo : (p.laboratorio != null ? p.laboratorio.nombre : 'Química')}">Química</span>
+                </td>
+                <td>
+                  <span th:if="${p.costoReposicion != null and p.costoReposicion > 0}" 
+                        class="tag-tipo-venta" 
+                        th:text="'Reposición: S/ ' + ${#numbers.formatDecimal(p.costoReposicion, 1, 2)}">
+                    Reposición: S/ 280.00
+                  </span>
+                  <span th:unless="${p.costoReposicion != null and p.costoReposicion > 0}" class="tag-tipo-prestamo">
+                    Uso General
+                  </span>
+                </td>
+                <td>
+                  <span class="stock-numero-txt" th:id="'stock-val-' + ${p.idProducto}" th:text="${p.stockActual != null ? p.stockActual : 0}">6</span>
+                  <span class="unidad-medida-inv" 
+                        th:text="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Solvent') or #strings.containsIgnoreCase(p.categoria, 'Líquido')) ? 'mL' : (p.categoria != null and #strings.containsIgnoreCase(p.categoria, 'Polvo') ? 'g' : 'und')}">
+                    und
+                  </span>
+                </td>
+                <td>
+                  <span th:if="${p.stockActual != null and p.stockActual > 10}" class="badge-estado-stock disp">✓ Disp.</span>
+                  <span th:if="${p.stockActual != null and p.stockActual <= 10 and p.stockActual > 0}" class="badge-estado-stock bajo">⚠ Bajo</span>
+                  <span th:if="${p.stockActual == null or p.stockActual <= 0}" class="badge-estado-stock agotado">✕ Agotado</span>
+                </td>
+                <td style="text-align: center;">
+                  <div class="acciones-stock-botones">
+                    <button type="button" 
+                            class="btn-stock-mini btn-sumar" 
+                            th:data-id="${p.idProducto}" 
+                            data-cant="10" 
+                            onclick="ejecutarAjusteStock(this)" 
+                            title="Sumar 10">+10</button>
+                    <button type="button" 
+                            class="btn-stock-mini btn-sumar" 
+                            th:data-id="${p.idProducto}" 
+                            data-cant="1" 
+                            onclick="ejecutarAjusteStock(this)" 
+                            title="Sumar 1">+1</button>
+                    <button type="button" 
+                            class="btn-stock-mini btn-restar" 
+                            th:data-id="${p.idProducto}" 
+                            data-cant="-1" 
+                            onclick="ejecutarAjusteStock(this)" 
+                            title="Restar 1">-1</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- MODAL: REGISTRAR NUEVO INSUMO -->
+    <div id="modalNuevoProducto" class="fondo-modal-oscuro" style="display: none;">
+      <div class="tarjeta-modal modal-inventario-contenedor">
+        
+        <div class="cabecera-modal-figma">
+          <div>
+            <h3 class="titulo-modal-txt">Registrar Nuevo Insumo</h3>
+            <p class="subtitulo-modal-txt">Añade insumos o EPPs asignándolos al tipo de laboratorio</p>
+          </div>
+          <button type="button" class="btn-cerrar-modal-x" onclick="cerrarModalNuevoProducto()">✕</button>
+        </div>
+
+        <form th:action="@{/admin/inventario/guardar}" method="post">
+          <div class="cuerpo-modal-formulario">
+            
+            <div class="grupo-campo-inv">
+              <label class="label-campo-inv">Código del Insumo (ID):</label>
+              <input type="text" name="idProducto" class="input-estilizado" placeholder="Ej: IQ0005 o EPP005" required />
+            </div>
+
+            <div class="grupo-campo-inv">
+              <label class="label-campo-inv">Nombre del Insumo / Material:</label>
+              <input type="text" name="nombre" class="input-estilizado" placeholder="Ej: Multímetro digital o Probeta 100mL" required />
+            </div>
+
+            <div class="grilla-dos-columnas-inv">
+              <div class="grupo-campo-inv">
+                <label class="label-campo-inv">Categoría:</label>
+                <select name="categoria" class="select-estilizado" required>
+                  <option value="Instrumentos">Instrumentos</option>
+                  <option value="Cristalería">Cristalería</option>
+                  <option value="Equipos">Equipos</option>
+                  <option value="Herramientas">Herramientas</option>
+                  <option value="Material Metálico">Material Metálico</option>
+                  <option value="EPP">EPP</option>
+                </select>
+              </div>
+
+              <div class="grupo-campo-inv">
+                <label class="label-campo-inv">Stock Inicial:</label>
+                <input type="number" name="stockActual" class="input-estilizado" value="10" min="0" required />
+              </div>
+            </div>
+
+            <div class="grilla-dos-columnas-inv">
+              <div class="grupo-campo-inv">
+                <label class="label-campo-inv">Costo de Reposición (S/):</label>
+                <input type="number" name="costoReposicion" step="0.50" class="input-estilizado" value="0.00" placeholder="0.00" />
+                <span class="ayuda-sub-campo">Penalización en caso de rotura/pérdida</span>
+              </div>
+
+              <div class="grupo-campo-inv">
+                <label class="label-campo-inv">Tipo de Laboratorio:</label>
+                <select name="tipoLab" class="select-estilizado">
+                  <option value="">Uso General / Todos</option>
+                  <option th:each="tipo : ${tiposLaboratorios}" th:value="${tipo}" th:text="${'Lab. ' + tipo}">Lab. Química</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="pie-modal-formulario">
+            <button type="button" class="btn-cancelar-enlace" onclick="cerrarModalNuevoProducto()">Cancelar</button>
+            <button type="submit" class="btn-guardar-verde-teal">Guardar Insumo →</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico de Inventario -->
+  <script th:src="@{/js/admin-inventario.js}"></script>
+</body>
+</html>

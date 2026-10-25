@@ -1,0 +1,131 @@
+/* ==========================================================================
+   FONDOS OSCUROS (BACKDROPS)
+   ========================================================================== */
+.fondo-modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.fondo-modal-oscuro {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* ==========================================================================
+   TARJETAS BASE Y MODAL DE HORARIOS
+   ========================================================================== */
+.tarjeta-modal {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ... (Aquí pegas .modal-horarios-ancho, .cabecera-modal-azul, .btn-hora-slot, etc.) ... */
+
+/* ==========================================================================
+   WIZARD NUEVA RESERVA
+   ========================================================================== */
+.modal-wizard-ancho {
+    max-width: 580px !important;
+    padding: 1.75rem 2rem !important;
+}
+
+.cabecera-wizard {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+/* ... (Aquí pegas los indicadores de pasos, seleccionadores de labs, etc.) ... */
+
+/* ==========================================================================
+   MODAL DE PAGO Y BOLETA
+   ========================================================================== */
+.modal-pago-ancho {
+    max-width: 440px !important;
+    padding: 1.75rem !important;
+}
+
+.rejilla-metodos-pago {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.opcion-metodo-pago {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.15s;
+}
+
+.opcion-metodo-pago.seleccionado {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+/* ==========================================================================
+   MODAL DE RECIBO / RESUMEN
+   ========================================================================== */
+.modal-recibo-contenedor {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.cabecera-azul-recibo {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* ... (Aquí pegas el resto de estilos de recibo: metadatos, listas de integrantes, totales) ... */
+
+/* ==========================================================================
+   MODAL DE INVENTARIO (ADMIN)
+   ========================================================================== */
+.modal-inventario-contenedor {
+    background-color: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 540px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ... (Aquí pegas los inputs estilizados y botones del formulario de inventario) ... */

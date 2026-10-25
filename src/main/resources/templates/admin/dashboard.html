@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('UTP +Lab - Dashboard')}"></head>
+<body>
+  <div class="contenedor-app">
+    
+    <!-- Actualizado a sidebar-admin -->
+    <aside th:replace="~{fragments/sidebar-admin :: sidebar('dashboard')}"></aside>
+
+    <main class="area-principal">
+      <!-- Actualizado a topbar-admin -->
+      <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
+
+      <section class="seccion-checkout">
+        
+        <!-- ENCABEZADO CON SELECTOR DE FECHA -->
+        <div class="fila-dashboard-header">
+          <div>
+            <h1 class="titulo-seccion-catalogo">Dashboard</h1>
+            <p class="subtitulo-seccion-catalogo" th:text="'Monitoreo · ' + ${fechaHoy}">
+              Monitoreo · lunes, 28 de setiembre de 2026
+            </p>
+          </div>
+          
+          <div class="acciones-header-dashboard">
+            <div class="selector-fecha-dashboard">
+              <a th:href="@{/admin/dashboard(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+                <i data-lucide="chevron-left"></i>
+              </a>
+              <input type="date" 
+                     th:value="${fechaConsulta}"
+                     onchange="window.location.href='/admin/dashboard?fecha=' + this.value"
+                     class="input-fecha-dashboard">
+              <a th:href="@{/admin/dashboard(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+                <i data-lucide="chevron-right"></i>
+              </a>
+              <a th:href="@{/admin/dashboard}" class="btn-hoy-dash" th:if="${!esHoy}" title="Ir a hoy">
+                Hoy
+              </a>
+            </div>
+            
+            <div class="badge-sistema-activo">
+              <span class="punto-verde-latido"></span>
+              <span>Sistema Activo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AVISO DE INSPECCIONES PENDIENTES -->
+        <div th:if="${inspeccionesPendientes != null && inspeccionesPendientes > 0}" 
+             class="banner-alerta-amarillo" 
+             style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; gap: 1rem; flex-wrap: wrap;">
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="icono-alerta-triangulo" style="font-size: 1.5rem; background: #fef08a; padding: 0.5rem; border-radius: 50%;">🔔</span>
+                <div class="texto-alerta-amarillo">
+                    <strong style="font-size: 1rem; display: block; margin-bottom: 0.2rem;">Tienes inspecciones pendientes</strong>
+                    <p style="font-size: 0.85rem; margin: 0;">
+                        Hay <strong style="font-size: 1rem; background: #f59e0b; color: white; padding: 0 6px; border-radius: 4px;" th:text="${inspeccionesPendientes}">0</strong> laboratorio(s) esperando revisión de materiales.
+                    </p>
+                </div>
+            </div>
+            
+            <a th:href="@{/admin/inspeccion}" class="btn-nueva-reserva" style="background-color: #f59e0b; text-decoration: none; padding: 0.6rem 1.2rem; font-size: 0.85rem; color: white; border-radius: 8px; font-weight: 700;">
+                Ir a Inspecciones →
+            </a>
+        </div>
+
+        <!-- 4 TARJETAS SUPERIORES DE MÉTRICAS -->
+        <div class="grid-cuatro-metricas-figma">
+          
+          <!-- 1. Labs en uso -->
+          <div class="card-metrica-figma">
+            <div class="cabecera-card-metrica">
+              <span class="emoji-icono-metrica">🔬</span>
+              <span class="punto-estado-card dot-azul"></span>
+            </div>
+            <strong class="num-grande-metrica" th:text="${labsEnUso}">1</strong>
+            <span class="label-titulo-metrica">Labs en uso</span>
+            <span class="label-sub-metrica" th:text="'de ' + ${totalLabsDisp} + ' disponibles'">de 12 disponibles</span>
+          </div>
+
+          <!-- 2. Pendientes check-in -->
+          <div class="card-metrica-figma">
+            <div class="cabecera-card-metrica">
+              <span class="emoji-icono-metrica">⏳</span>
+              <span class="punto-estado-card dot-amarillo"></span>
+            </div>
+            <strong class="num-grande-metrica" th:text="${pendientesCheckin}">2</strong>
+            <span class="label-titulo-metrica">Pendientes check-in</span>
+            <span class="label-sub-metrica">reservas confirmadas</span>
+          </div>
+
+          <!-- 3. Préstamos activos -->
+          <div class="card-metrica-figma">
+            <div class="cabecera-card-metrica">
+              <span class="emoji-icono-metrica">📋</span>
+              <span class="punto-estado-card dot-morado"></span>
+            </div>
+            <strong class="num-grande-metrica" th:text="${prestamosActivos}">2</strong>
+            <span class="label-titulo-metrica">Préstamos activos</span>
+            <span class="label-sub-metrica">en uso o devueltos</span>
+          </div>
+
+          <!-- 4. Incidentes abiertos -->
+          <div class="card-metrica-figma">
+            <div class="cabecera-card-metrica">
+              <span class="emoji-icono-metrica">⚠️</span>
+              <span class="punto-estado-card dot-rojo"></span>
+            </div>
+            <strong class="num-grande-metrica" th:text="${incidentesAbiertos}">1</strong>
+            <span class="label-titulo-metrica">Incidentes abiertos</span>
+            <span class="label-sub-metrica" th:text="${cantAlertasStock} + ' alertas de stock'">3 alertas de stock</span>
+          </div>
+
+        </div>
+
+        <!-- CUERPO PRINCIPAL: ESTADOS DE LABORATORIOS (IZQUIERDA) Y AGENDA DE HOY (DERECHA) -->
+        <div class="grid-principal-dash-figma">
+          
+          <!-- COLUMNA IZQUIERDA: ESTADOS DE LABORATORIOS -->
+          <div class="card-panel-blanco">
+            <div class="cabecera-panel-flex">
+              <strong class="titulo-panel-txt">Estados de laboratorios</strong>
+              <div class="leyenda-dots-estados">
+                <span class="item-leyenda-dot"><span class="dot-color naranja"></span> Mantenimiento</span>
+                <span class="item-leyenda-dot"><span class="dot-color verde"></span> Disponible</span>
+                <span class="item-leyenda-dot"><span class="dot-color rojo"></span> En uso</span>
+              </div>
+            </div>
+
+            <!-- Grilla 2xN de cubículos -->
+            <div class="grilla-cubiculos-labs">
+              <div th:each="lab : ${estadosLabs}" class="tarjeta-cubiculo-item">
+                <div class="fila-cubiculo-top">
+                  <div class="cod-y-punto">
+                    <span class="dot-lab-status" 
+                          th:classappend="${lab.estado == 'En uso' ? 'dot-rojo' : (lab.estado == 'Mantenimiento' ? 'dot-amarillo' : 'dot-verde')}"></span>
+                    <span class="txt-cod-cubiculo" th:text="${lab.codigo}">A-101</span>
+                  </div>
+                  <span class="badge-tag-estado" 
+                        th:classappend="${lab.estado == 'En uso' ? 'tag-rojo' : (lab.estado == 'Mantenimiento' ? 'tag-naranja' : 'tag-verde')}"
+                        th:text="${lab.estado}">
+                    Libre
+                  </span>
+                </div>
+                <strong class="txt-nombre-lab-cub" th:text="${lab.nombre}">Lab. Química</strong>
+                <span class="txt-desc-bloque-cub" th:text="${lab.ubicacion}">Bloque A · 12 puestos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: AGENDA DE HOY -->
+          <div class="card-panel-blanco">
+            <div class="cabecera-panel-flex">
+              <strong class="titulo-panel-txt">Agenda de hoy</strong>
+            </div>
+
+            <div class="lista-agenda-hoy">
+              <div th:each="ag : ${agendaHoy}" class="fila-agenda-item">
+                <span class="horario-agenda-txt" th:text="${ag.horario}">07:00–09:00</span>
+                <div class="info-solicitante-col">
+                  <strong class="nom-lab-agenda" th:text="${ag.laboratorio}">Lab. Química</strong>
+                  <span class="nom-solic-agenda" th:text="${ag.solicitante}">Felipe Montoya +1</span>
+                </div>
+                
+                <span class="badge-agenda-pill" 
+                      th:classappend="${#strings.equalsIgnoreCase(ag.estado, 'Inspeccionada') ? 'badge-inspeccionada' : 
+                                      (#strings.equalsIgnoreCase(ag.estado, 'Devuelta') ? 'badge-devuelta' : 
+                                      (#strings.equalsIgnoreCase(ag.estado, 'Confirmada') ? 'badge-confirmada-dash' : 
+                                      (#strings.equalsIgnoreCase(ag.estado, 'Pendiente') ? 'badge-pendiente-dash' : 'badge-enuso-dash')))}"
+                      th:text="${ag.estado}">
+                  Confirmada
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FILA INFERIOR: INCIDENCIAS RECIENTES (IZQ) Y ALERTAS DE STOCK (DER) -->
+        <div class="grid-inferior-dash-figma">
+          
+          <!-- INCIDENCIAS RECIENTES -->
+          <div class="card-panel-blanco">
+            <div class="cabecera-panel-flex">
+              <strong class="titulo-panel-txt">Incidencias recientes</strong>
+              <a th:href="@{/admin/incidencias}" class="link-azul-vermas">Ver todas →</a>
+            </div>
+
+            <div class="lista-incidencias-dash">
+              <div th:each="inc : ${incidenciasRecientes}" class="fila-incidencia-item">
+                <div class="icono-emoji-incidencia">📦</div>
+                <div class="info-incidencia-col">
+                  <strong class="item-danado-txt" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
+                  <span class="estudiante-responsable-txt" th:text="${inc.estudiante}">Felipe Montoya</span>
+                </div>
+                <span class="monto-deuda-rojo" th:text="${inc.monto}">S/ 450.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ALERTAS DE STOCK -->
+          <div class="card-panel-blanco">
+            <div class="cabecera-panel-flex">
+              <strong class="titulo-panel-txt">Alertas de stock</strong>
+              <a th:href="@{/admin/inventario}" class="link-azul-vermas">Ver inventario →</a>
+            </div>
+
+            <div class="lista-alertas-amarillas">
+              <div th:each="stk : ${alertasStock}" class="card-alerta-amarilla-stock">
+                <span class="icono-triangulo-stock">⚠️</span>
+                <div class="info-alerta-stock-col">
+                  <strong class="nombre-insumo-stock" th:text="${stk.producto}">Hidróxido de sodio (NaOH)</strong>
+                  <span class="cant-minima-stock" th:text="${stk.stockActual} + ' (mín: ' + ${stk.minimo} + ')'">85 g (mín: 100)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+</body>
+</html>

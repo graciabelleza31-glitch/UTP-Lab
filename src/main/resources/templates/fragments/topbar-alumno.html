@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ============ FRAGMENT 1: TOPBAR ALUMNO ============ -->
+<header th:fragment="topbarAlumno" class="cabecera-superior">
+    <div class="logo-cabecera">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+    </div>
+
+    <div class="perfil-acciones">
+        
+        <!-- Campanita con burbuja -->
+        <div class="contenedor-campana-wrapper">
+            <button type="button" class="boton-campana-amarilla" onclick="toggleNotificaciones(event)">
+                <i data-lucide="bell"></i>
+                <span class="badge-campana" 
+                      th:if="${numIncidencias != null and numIncidencias > 0}" 
+                      th:text="${numIncidencias}">1</span>
+            </button>
+
+            <div id="burbujaNotificaciones" class="burbuja-notificaciones" style="display: none;">
+                <div class="cabecera-burbuja">
+                    <strong>Notificaciones</strong>
+                    <button type="button" class="btn-cerrar-burbuja" onclick="cerrarNotificaciones()">✕</button>
+                </div>
+                
+                <div class="lista-notificaciones">
+                    <a th:href="@{/alumno/incidencias}" class="item-notificacion" 
+                       th:if="${numIncidencias != null and numIncidencias > 0}">
+                        <div class="icono-notif icono-notif-rojo">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="info-notif">
+                            <strong>Tienes incidencias pendientes</strong>
+                            <span th:text="${numIncidencias} + ' incidencia(s) sin resolver'">1 incidencia</span>
+                        </div>
+                    </a>
+
+                    <div th:if="${numIncidencias == null or numIncidencias == 0}" 
+                         class="sin-notificaciones">
+                        <i data-lucide="check-circle"></i>
+                        <p>No tienes notificaciones pendientes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="datos-perfil">
+            <span class="titulo-saludo" th:text="'Hola, ' + ${alumno.nombre}">Hola, Mariafernanda</span>
+            <span class="subtitulo-rol">Estudiante</span>
+        </div>
+        <div class="circulo-avatar avatar-azul" 
+             th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>
+        <a th:href="@{/logout}" class="enlace-salir">
+            <i data-lucide="log-out"></i>
+            <span>Salir</span>
+        </a>
+    </div>
+</header>
+
+<!-- ============ FRAGMENT 2: SCRIPTS ============ -->
+<th:block th:fragment="scriptsAlumno">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        function toggleNotificaciones(event) {
+            event.stopPropagation();
+            const burbuja = document.getElementById('burbujaNotificaciones');
+            if (!burbuja) return;
+            if (burbuja.style.display === 'none' || burbuja.style.display === '') {
+                burbuja.style.display = 'block';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                burbuja.style.display = 'none';
+            }
+        }
+
+        function cerrarNotificaciones() {
+            const burbuja = document.getElementById('burbujaNotificaciones');
+            if (burbuja) burbuja.style.display = 'none';
+        }
+
+        document.addEventListener('click', function (event) {
+            const burbuja = document.getElementById('burbujaNotificaciones');
+            const boton = document.querySelector('.boton-campana-amarilla');
+            if (burbuja && boton && !boton.contains(event.target) && !burbuja.contains(event.target)) {
+                burbuja.style.display = 'none';
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

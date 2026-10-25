@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Catálogo de Insumos</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  
+  <!-- Fuentes y Librerías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('catalogos')}"></aside>
+
+    <main class="area-principal">
+    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+
+      <!-- SECCIÓN DEL CATÁLOGO -->
+      <section class="seccion-checkout">
+        
+        <div class="cabecera-catalogo-titulos">
+          <h1 class="titulo-seccion-catalogo">Catálogo de Insumos</h1>
+          <p class="subtitulo-seccion-catalogo">Materiales e instrumentos disponibles para tus prácticas</p>
+        </div>
+
+        <!-- BÚSQUEDA Y CONTADOR -->
+        <div class="fila-busqueda-catalogo">
+          <div class="caja-input-busqueda">
+            <input type="text" id="inputBuscarCatalogo" placeholder="Buscar insumo..." oninput="filtrarCatalogo()" />
+          </div>
+          <span class="badge-total-items-pill" id="badgeContadorItems" th:text="${totalItems + ' items'}">16 items</span>
+        </div>
+
+        <!-- FILTROS POR CATEGORÍA -->
+        <div class="barra-filtros-catalogo">
+          <button type="button" class="btn-filtro-cat activo" data-cat="TODOS" onclick="seleccionarCategoriaBtn(this)">Todos</button>
+          
+          <button th:each="c : ${categorias}" 
+                  type="button" 
+                  class="btn-filtro-cat" 
+                  th:text="${c}" 
+                  th:data-cat="${c}" 
+                  onclick="seleccionarCategoriaBtn(this)">
+            Categoría
+          </button>
+        </div>
+
+        <!-- REJILLA DE 4 COLUMNAS -->
+        <div class="rejilla-catalogo" id="rejillaProductos">
+          <div th:each="p : ${productos}" 
+               class="tarjeta-insumo-catalogo"
+               th:data-nombre="${p.nombre}"
+               th:data-categoria="${p.categoria != null ? p.categoria : ''}">
+            
+            <!-- FOTO Y BADGES -->
+            <div class="contenedor-foto-insumo">
+              <span class="badge-cat-tag" th:text="${p.categoria != null ? p.categoria : 'General'}">Reactivos</span>
+              
+              <span th:if="${p.stockActual != null and p.stockActual > 10}" class="badge-estado-stock disp">
+                ✓ Disp.
+              </span>
+              <span th:if="${p.stockActual != null and p.stockActual <= 10 and p.stockActual > 0}" class="badge-estado-stock bajo">
+                ⚠ Bajo
+              </span>
+              <span th:if="${p.stockActual == null or p.stockActual <= 0}" class="badge-estado-stock agotado">
+                ✕ Agotado
+              </span>
+
+              <!-- FOTOS REALES DE LABORATORIO SEGÚN CATEGORÍA -->
+              <img th:if="${p.categoria != null and #strings.containsIgnoreCase(p.categoria, 'Cristaler')}" 
+                   src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=60" 
+                   alt="Cristalería" class="foto-insumo-img" />
+
+              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Solvente') or #strings.containsIgnoreCase(p.categoria, 'Reactivo'))}" 
+                   src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=500&auto=format&fit=crop&q=60" 
+                   alt="Reactivo químico" class="foto-insumo-img" />
+
+              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Herramient') or #strings.containsIgnoreCase(p.categoria, 'Metal'))}" 
+                   src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60" 
+                   alt="Herramientas" class="foto-insumo-img" />
+
+              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Equip') or #strings.containsIgnoreCase(p.categoria, 'Instrument'))}" 
+                   src="https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=60" 
+                   alt="Instrumentos" class="foto-insumo-img" />
+
+              <img th:if="${p.categoria == null or (!#strings.containsIgnoreCase(p.categoria, 'Cristaler') and !#strings.containsIgnoreCase(p.categoria, 'Solvente') and !#strings.containsIgnoreCase(p.categoria, 'Reactivo') and !#strings.containsIgnoreCase(p.categoria, 'Herramient') and !#strings.containsIgnoreCase(p.categoria, 'Metal') and !#strings.containsIgnoreCase(p.categoria, 'Equip') and !#strings.containsIgnoreCase(p.categoria, 'Instrument'))}" 
+                   src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=500&auto=format&fit=crop&q=60" 
+                   alt="Insumo" class="foto-insumo-img" />
+            </div>
+
+            <!-- CUERPO DE LA TARJETA -->
+            <div class="cuerpo-info-insumo">
+              <strong class="nombre-insumo-txt" th:text="${p.nombre}">Nombre Insumo</strong>
+              <p class="descripcion-insumo-txt" th:text="${'Código: ' + p.idProducto + ' · Disponible para prácticas de laboratorio.'}">
+                Insumo asignado a prácticas experimentales.
+              </p>
+              
+              <div class="pie-info-stock">
+                <span class="unidad-txt" 
+                      th:text="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Cristaler') or #strings.containsIgnoreCase(p.categoria, 'Herramient') or #strings.containsIgnoreCase(p.categoria, 'Equip') or #strings.containsIgnoreCase(p.categoria, 'EPP')) ? 'und' : 'mL'}">
+                  und
+                </span>
+                
+                <span class="cantidad-disponible-txt"
+                      th:classappend="${p.stockActual != null and p.stockActual <= 10 ? 'color-bajo' : 'color-disp'}"
+                      th:text="${(p.stockActual != null ? p.stockActual : 0) + ' disponibles'}">
+                  12 disponibles
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico del Catálogo -->
+  <script th:src="@{/js/alumno-catalogos.js}"></script>
+</body>
+</html>

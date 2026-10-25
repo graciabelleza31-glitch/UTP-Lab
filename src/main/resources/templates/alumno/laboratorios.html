@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Laboratorios</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  <link rel="stylesheet" th:href="@{/css/modales.css}" />
+  
+  <!-- Fuentes y Librerías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('laboratorios')}"></aside>
+    <main class="area-principal">
+    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+
+      <section class="seccion-checkout">
+        
+        <!-- Botón de pago -->
+        <div th:if="${numIncidencias > 0}" class="banner-incidencias-bloqueo" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.location.href='/alumno/incidencias'">
+            <div class="texto-bloqueo-contenido">
+                <strong>⚠️ Tienes incidencias pendientes de pago</strong>
+                <p>Haz clic aquí para regularizar tu situación.</p>
+            </div>
+            <span class="btn-nueva-reserva" style="background-color: #ef4444; text-decoration: none;">
+                Pagar ahora
+            </span>
+        </div>
+
+        <!-- BIENVENIDA -->
+        <div class="fila-bienvenida">
+          <div>
+            <h1 class="titulo-bienvenida" th:text="'¡Bienvenida ' + ${alumno.nombre} + '!'">¡Bienvenida!</h1>
+            <p class="subtitulo-bienvenida"><strong>Laboratorios</strong> Reserva y gestiona tu tiempo en los laboratorios de la universidad</p>
+          </div>
+
+          <button th:if="${not estaBloqueado and puedeReservarPorCarrera and not limiteDiarioAlcanzado}" 
+                  type="button" class="btn-nueva-reserva" onclick="abrirWizardPaso1()">
+            + Nueva Reserva
+          </button>
+
+          <button th:if="${not estaBloqueado and puedeReservarPorCarrera and limiteDiarioAlcanzado}" 
+                  type="button" class="btn-reservas-bloqueadas" disabled>
+            🚫 Límite diario alcanzado
+          </button>
+
+          <button th:if="${not estaBloqueado and not puedeReservarPorCarrera}" 
+                  type="button" class="btn-reservas-bloqueadas" disabled>
+            🚫 Sin acceso por carrera
+          </button>
+
+          <button th:if="${estaBloqueado}" 
+                  type="button" class="btn-reservas-bloqueadas" disabled>
+            ⛔ Reservas bloqueadas
+          </button>
+        </div>
+
+        <!-- BANNER DE INCIDENCIAS -->
+        <div th:if="${estaBloqueado}" class="banner-incidencias-bloqueo">
+          <div class="icono-bloqueo-circulo">⛔</div>
+          <div class="texto-bloqueo-contenido">
+            <strong>Tienes incidencias pendientes de pago</strong>
+            <p>No puedes realizar ni unirte a reservas hasta que regularices tus incidencias en la sección "Incidencias".</p>
+          </div>
+        </div>
+
+        <!-- Banner informativo si la carrera no tiene laboratorios -->
+        <div th:if="${not puedeReservarPorCarrera}" class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem;">
+          <strong>Carrera sin acceso a laboratorios:</strong> Tu plan de estudios no cuenta con laboratorios asignados para reserva.
+        </div>
+
+        <!-- AVISO DE LÍMITE DIARIO -->
+        <th:block th:if="${puedeReservarPorCarrera and not estaBloqueado}">
+          <div th:if="${limiteDiarioAlcanzado}" class="alert alert-warning" role="alert" style="margin-bottom: 2rem;">
+            <strong>¡Límite diario alcanzado!</strong> Ya has utilizado tus dos reservas permitidas para hoy.
+          </div>
+
+          <div th:unless="${limiteDiarioAlcanzado}" class="alert alert-info" role="status" style="margin-bottom: 2rem; background-color: transparent; border: none; padding-left: 0;">
+            Hoy llevas <strong th:text="${reservasHoy}">0</strong> de 2 reservas permitidas. Te quedan <strong th:text="${reservasRestantes}">2</strong>.
+          </div>
+        </th:block>
+
+        <div th:if="${errorReserva != null}" class="alert alert-danger" role="alert" th:text="${errorReserva}"></div>
+
+        <!-- MIS RESERVAS ACTIVAS -->
+        <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
+          <span class="subtitulo-seccion-gris">MIS RESERVAS ACTIVAS</span>
+          <div class="lista-mis-reservas">
+            <div th:each="r : ${misReservas}" 
+                 class="tarjeta-reserva-activa clickeable" 
+                 style="cursor: pointer;"
+                 th:attr="data-id-reserva=${r.idReserva}"
+                 onclick="abrirModalResumen(this)">
+              
+              <div class="icono-matraz-verde">🧪</div>
+              <div class="info-reserva-activa">
+                <strong class="nombre-lab-activa" th:text="${r.laboratorio}">Lab. Química</strong>
+                <div class="detalles-reserva-activa">
+                  <span th:text="${r.cubiculo}">A-101</span> · 
+                  <span th:text="${r.fecha}">vie, 21 ago.</span> · 
+                  <span th:text="${r.horario}">09:00–11:00</span>
+                </div>
+              </div>
+              <span class="badge-confirmada" th:text="${r.estado}">Confirmada</span>
+              <span class="codigo-reserva-gris" th:text="${r.idReserva}">R-001</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUADRÍCULA DE LABORATORIOS -->
+        <div class="bloque-todos-labs">
+          <div class="barra-filtros">
+            <button type="button" class="btn-filtro activo" onclick="filtrarLabs('TODOS', this)">Todos</button>
+            <button type="button" class="btn-filtro" onclick="filtrarLabs('Química', this)">Química</button>
+            <button type="button" class="btn-filtro" onclick="filtrarLabs('Mecatrónica', this)">Mecatrónica</button>
+            <button type="button" class="btn-filtro" onclick="filtrarLabs('Física', this)">Física</button>
+          </div>
+
+          <span class="subtitulo-seccion-gris">TODOS LOS LABORATORIOS</span>
+
+          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0;">
+            <span style="font-size: 2.5rem;">🔬</span>
+            <p style="margin-top: 1rem; font-weight: 600;">No hay laboratorios disponibles para tu carrera.</p>
+          </div>
+
+          <div class="rejilla-laboratorios" th:unless="${#lists.isEmpty(laboratorios)}">
+            <div th:each="lab : ${laboratorios}" 
+                 class="tarjeta-lab-grid" 
+                 th:classappend="${estaBloqueado ? 'tarjeta-deshabilitada' : ''}"
+                 th:data-tipo="${lab.tipo}"
+                 th:data-id="${lab.idLab}"
+                 th:data-nombre="${lab.nombre}"
+                 th:data-cubiculo="${lab.ubicacionCubiculo}"
+                 onclick="gestionarClickLab(this)">
+              
+              <div class="icono-cuadro-lab" th:classappend="${lab.tipo == 'Mecatrónica' ? 'bg-engranaje' : (lab.tipo == 'Física' ? 'bg-rayo' : 'bg-quimica')}">
+                <i th:if="${lab.tipo == 'Química'}" data-lucide="beaker"></i>
+                <i th:if="${lab.tipo == 'Mecatrónica'}" data-lucide="settings"></i>
+                <i th:if="${lab.tipo == 'Física'}" data-lucide="zap"></i>
+              </div>
+
+              <div class="info-tarjeta-lab">
+                <strong class="titulo-lab-grid" th:text="${lab.nombre}">Lab. Química</strong>
+                <p class="ubicacion-lab-grid" th:text="'Bloque ' + ${lab.ubicacionCubiculo}">Bloque A, A-101</p>
+                <span class="puestos-tag">12 puestos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- MODAL 1: CONSULTA DE HORARIOS -->
+    <div id="modalHorarios" class="fondo-modal" style="display: none;">
+      <div class="tarjeta-modal modal-horarios-ancho">
+        <div class="cabecera-modal-azul">
+          <div class="icono-cabecera-lab"><i data-lucide="beaker"></i></div>
+          <div>
+            <h3 id="tituloLabModal">Lab. Química</h3>
+            <p id="subtituloLabModal">Bloque A · Sala A-101 · 12 puestos</p>
+          </div>
+          <button type="button" class="btn-cerrar-x" onclick="cerrarModalHorarios()">✕</button>
+        </div>
+
+        <div class="cuerpo-modal-horarios">
+          <div class="fila-selector-fecha">
+            <span class="txt-horarios-disp">Horarios disponibles</span>
+            <input type="date" id="inputFechaConsulta" class="input-fecha-box" onchange="actualizarHorariosModalConsulta()" />
+          </div>
+          <div class="matriz-horas-grid" id="gridHorariosConsulta"></div>
+          <div class="leyenda-horarios">
+            <div class="item-leyenda"><span class="bolita disp"></span> Disponible (<span id="txtCantDisp">0</span>)</div>
+            <div class="item-leyenda"><span class="bolita ocup"></span> Ocupado (<span id="txtCantOcup">0</span>)</div>
+          </div>
+          <div class="acciones-modal-horarios">
+            <button type="button" class="btn-gris-cerrar" onclick="cerrarModalHorarios()">Cerrar</button>
+            <button type="button" class="btn-azul-reservar" onclick="pasarDeHorariosAWizard()">+ Reservar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: WIZARD NUEVA RESERVA -->
+    <div id="modalWizard" class="fondo-modal" style="display: none;">
+      <div class="tarjeta-modal modal-wizard-ancho">
+        <div class="cabecera-wizard">
+          <div class="progreso-wizard">
+            <h3 class="titulo-wizard">Nueva Reserva</h3>
+            <div class="indicadores-pasos" id="contenedorIndicadoresPasos"></div>
+          </div>
+          <button type="button" class="btn-cerrar-x" onclick="cerrarWizard()">✕</button>
+        </div>
+
+        <form th:action="@{/alumno/reservas/confirmar-pago}" method="post" id="formReservaCompleta">
+          <input type="hidden" name="idLab" id="wizardIdLab" required />
+          <input type="hidden" name="fecha" id="wizardFechaEnvio" />
+          <input type="hidden" name="horaInicio" id="wizardHoraInicio" />
+          <input type="hidden" name="horaFin" id="wizardHoraFin" />
+          <input type="hidden" name="montoTotal" id="inputMontoTotalFinal" value="0.00" />
+          <input type="hidden" name="metodoPago" id="inputMetodoPagoSeleccionado" value="DIRECTO" />
+
+          <!-- PASO A: LAB Y HORARIOS -->
+          <div id="seccionPasoLab" class="cuerpo-paso-wizard">
+            <label class="etiqueta-form-wizard">Fecha</label>
+            <input type="date" id="wizardFechaInput" class="input-fecha-wizard" onchange="validarFechaNoPasada(this); cambiarFechaWizard(this.value);" />
+
+            <label class="etiqueta-form-wizard">Tipo de laboratorio</label>
+            <div class="barra-filtros mini">
+              <button type="button" class="btn-filtro activo" onclick="filtrarLabsWizard('TODOS', this)">Todos</button>
+              <button type="button" class="btn-filtro" onclick="filtrarLabsWizard('Química', this)">Química</button>
+              <button type="button" class="btn-filtro" onclick="filtrarLabsWizard('Mecatrónica', this)">Mecatrónica</button>
+              <button type="button" class="btn-filtro" onclick="filtrarLabsWizard('Física', this)">Física</button>
+            </div>
+
+            <label class="etiqueta-form-wizard">Laboratorio</label>
+            <div class="rejilla-labs-wizard">
+              <div th:each="lab : ${laboratorios}" 
+                   class="item-lab-radio"
+                   th:data-tipo="${lab.tipo}"
+                   th:data-id="${lab.idLab}"
+                   th:data-nombre="${lab.nombre}"
+                   th:data-cubiculo="${lab.ubicacionCubiculo}"
+                   onclick="seleccionarLabWizard(this)">
+                <div class="icono-cuadro-lab mini" th:classappend="${lab.tipo == 'Mecatrónica' ? 'bg-engranaje' : (lab.tipo == 'Física' ? 'bg-rayo' : 'bg-quimica')}">
+                  <i th:if="${lab.tipo == 'Química'}" data-lucide="beaker"></i>
+                  <i th:if="${lab.tipo == 'Mecatrónica'}" data-lucide="settings"></i>
+                  <i th:if="${lab.tipo == 'Física'}" data-lucide="zap"></i>
+                </div>
+                <div class="info-lab-mini">
+                  <strong th:text="${lab.nombre}">Lab. Química</strong>
+                  <span th:text="'Bloque ' + ${lab.ubicacionCubiculo}">Bloque A, A-101</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fila-cabecera-bloques">
+              <label class="etiqueta-form-wizard">Bloques horarios</label>
+              <span class="alerta-max-horas" id="tagMax2Horas" style="display: none;">⚠ Máx. 2 horas</span>
+            </div>
+
+            <div class="rejilla-horas-seleccion" id="gridHorasWizard"></div>
+
+            <div class="pie-wizard-paso">
+              <button type="button" class="btn-gris-cancelar" onclick="cerrarWizard()">Cancelar</button>
+              <button type="button" class="btn-azul-continuar" onclick="validarEIrAIntegrantes()">Continuar →</button>
+            </div>
+          </div>
+
+          <!-- PASO B: INTEGRANTES -->
+          <div id="seccionPasoIntegrantes" class="cuerpo-paso-wizard" style="display: none;">
+            <div class="cabecera-integrantes-flex">
+              <div>
+                <strong class="titulo-integrantes-txt">Integrantes</strong>
+                <p class="sub-integrantes-txt">Eres el responsable. Máximo 5 integrantes</p>
+              </div>
+              <span class="contador-badge-integrantes" id="contadorBadgeIntegrantes">1/5</span>
+            </div>
+
+            <div class="lista-integrantes-box" id="listaIntegrantesAgregados">
+              <div class="tarjeta-integrante-fila">
+                <div class="avatar-circulo-estudiante" th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>
+                <div class="info-estud-fila">
+                  <strong class="nombre-estud-txt" th:text="${alumno.nombre + ' ' + alumno.apellido}">Mariafernanda Bruno Santos</strong>
+                  <span class="codigo-estud-txt" th:text="${alumno.idEstud}">U24201349</span>
+                </div>
+                <input type="hidden" name="integrantesCodigos" th:value="${alumno.idEstud}" />
+              </div>
+            </div>
+
+            <div class="buscador-integrante-grupo">
+              <input type="text" id="inputNombreAutocompletado" class="input-nombre-solo-lectura" placeholder="Nombre completo" readonly />
+              <input type="text" id="inputCodigoBuscar" class="input-codigo-ingreso" placeholder="U2XXXXXXX o DNI" />
+              <button type="button" class="btn-mas-azul" onclick="agregarIntegrantePorCodigo()">+</button>
+            </div>
+            <p id="msgErrorBusqueda" class="mensaje-error-busqueda" style="display: none;"></p>
+
+            <div class="caja-checkbox-insumos">
+              <label class="label-checkbox-custom">
+                <input type="checkbox" id="checkSolicitarInsumos" onchange="toggleInsumosInmediato(this)" />
+                <span class="txt-checkbox-titulo">¿Solicitar insumos o instrumentos?</span>
+              </label>
+              <p class="sub-checkbox-txt">Podrás seleccionar hasta 10 materiales de tu laboratorio</p>
+            </div>
+
+            <div class="pie-wizard-paso">
+              <button type="button" class="btn-gris-cancelar" onclick="irALaboratorio()">← Anterior</button>
+              <button type="button" class="btn-azul-continuar" onclick="validarIntegrantesYSiguiente()">Continuar →</button>
+            </div>
+          </div>
+
+          <!-- PASO C: INSUMOS -->
+          <div id="seccionPasoInsumos" class="cuerpo-paso-wizard" style="display: none;">
+            <div class="cabecera-integrantes-flex">
+              <div>
+                <strong class="titulo-integrantes-txt">Catálogo de insumos</strong>
+                <p class="sub-integrantes-txt">Selecciona hasta 10 ítems</p>
+              </div>
+              <span class="contador-badge-integrantes" id="contadorInsumosBadge">0/10</span>
+            </div>
+
+            <input type="text" id="filtroTextoInsumos" class="input-buscar-insumo" placeholder="Buscar insumo..." oninput="buscarInsumos(this.value)" />
+
+            <div class="barra-filtros mini">
+              <button type="button" class="btn-filtro activo" onclick="filtrarCategoriaInsumos('TODOS', this)">Todos</button>
+              <button type="button" class="btn-filtro" onclick="filtrarCategoriaInsumos('Equipos', this)">Equipos</button>
+              <button type="button" class="btn-filtro" onclick="filtrarCategoriaInsumos('Herramientas', this)">Herramientas</button>
+              <button type="button" class="btn-filtro" onclick="filtrarCategoriaInsumos('Material metálico', this)">Material metálico</button>
+              <button type="button" class="btn-filtro" onclick="filtrarCategoriaInsumos('Cristalería', this)">Cristalería</button>
+            </div>
+
+            <div class="lista-checkbox-insumos" id="listaInsumosContenedor">
+              <div th:each="insumo : ${insumos}" 
+                   class="item-insumo-check" 
+                   th:data-categoria="${insumo.categoria}"
+                   th:data-nombre="${insumo.nombre}">
+                <label class="label-insumo">
+                  <input type="checkbox" 
+                         name="insumosIds" 
+                         th:value="${insumo.idProducto}"
+                         th:data-nombre="${insumo.nombre}"
+                         onchange="actualizarContadorInsumos(this)" />
+                  <div class="info-insumo-text">
+                    <strong class="nombre-insumo-label" th:text="${insumo.nombre}">Cautín</strong>
+                    <span class="sub-categoria-label" th:text="${insumo.categoria}">Herramientas</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="pie-wizard-paso">
+              <button type="button" class="btn-gris-cancelar" onclick="irAIntegrantes()">← Anterior</button>
+              <button type="button" class="btn-azul-continuar" onclick="irAEPPs()">Continuar →</button>
+            </div>
+          </div>
+
+          <!-- PASO D: EPPs -->
+          <div id="seccionPasoEpps" class="cuerpo-paso-wizard" style="display: none;">
+            <strong class="titulo-integrantes-txt">Equipos de Protección Personal (EPP)</strong>
+            <p class="sub-integrantes-txt">Bata y gafas incluidas. Los demás tienen costo adicional.</p>
+
+            <div class="rejilla-epps-grid">
+              <div class="card-epp-select incluido">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP001" checked disabled />
+                  <span class="icono-epp-emoji">🥼</span>
+                  <div class="info-epp-txt">
+                    <strong>Bata de laboratorio</strong>
+                    <span class="gratis">Sin costo</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="card-epp-select incluido">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP002" checked disabled />
+                  <span class="icono-epp-emoji">🥽</span>
+                  <div class="info-epp-txt">
+                    <strong>Gafas de seguridad</strong>
+                    <span class="gratis">Sin costo</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="card-epp-select" onclick="toggleEpp(this)">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP003" data-precio="15.00" data-nombre="Guantes de nitrilo" onchange="calcularCostos()" />
+                  <span class="icono-epp-emoji">🧤</span>
+                  <div class="info-epp-txt">
+                    <strong>Guantes de nitrilo</strong>
+                    <span class="costo">+ S/ 15.00</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="card-epp-select" onclick="toggleEpp(this)">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP004" data-precio="25.00" data-nombre="Tapabocas N95" onchange="calcularCostos()" />
+                  <span class="icono-epp-emoji">😷</span>
+                  <div class="info-epp-txt">
+                    <strong>Tapabocas N95</strong>
+                    <span class="costo">+ S/ 25.00</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="card-epp-select" onclick="toggleEpp(this)">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP005" data-precio="35.00" data-nombre="Protector facial" onchange="calcularCostos()" />
+                  <span class="icono-epp-emoji">🛡️</span>
+                  <div class="info-epp-txt">
+                    <strong>Protector facial</strong>
+                    <span class="costo">+ S/ 35.00</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="card-epp-select" onclick="toggleEpp(this)">
+                <label class="label-epp-box">
+                  <input type="checkbox" name="eppsIds" value="EPP006" data-precio="50.00" data-nombre="Delantal anti-ácido" onchange="calcularCostos()" />
+                  <span class="icono-epp-emoji">🦺</span>
+                  <div class="info-epp-txt">
+                    <strong>Delantal anti-ácido</strong>
+                    <span class="costo">+ S/ 50.00</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="pie-wizard-paso">
+              <button type="button" class="btn-gris-cancelar" onclick="volverDesdeEpps()">← Anterior</button>
+              <button type="button" class="btn-azul-continuar" onclick="irABoleta()">Continuar →</button>
+            </div>
+          </div>
+
+          <!-- PASO E: BOLETA -->
+          <div id="seccionPasoBoleta" class="cuerpo-paso-wizard" style="display: none;">
+            <div class="recuadro-boleta-reserva">
+              <div class="cabecera-boleta-azul">
+                <span>BOLETA DE RESERVA</span>
+                <strong id="boletaLabCubiculo">Lab. Química · A-101</strong>
+              </div>
+
+              <div class="cuerpo-boleta-detalle">
+                <div class="fila-meta-boleta">
+                  <div>
+                    <span class="txt-lbl-boleta">Fecha</span>
+                    <strong id="boletaFechaTxt">viernes, 25 de setiembre de 2026</strong>
+                  </div>
+                  <div>
+                    <span class="txt-lbl-boleta">Horario</span>
+                    <strong id="boletaHorarioTxt">08:00 – 10:00</strong>
+                  </div>
+                </div>
+
+                <div class="seccion-lista-boleta">
+                  <span class="txt-lbl-boleta" id="boletaIntegrantesTitulo">Integrantes (1)</span>
+                  <p id="boletaIntegrantesNombres" class="txt-resumen-bold" th:text="${alumno.nombre + ' ' + alumno.apellido}">Mariafernanda Bruno Santos</p>
+                </div>
+
+                <div class="seccion-lista-boleta" id="boletaSeccionInsumosBloque">
+                  <span class="txt-lbl-boleta" id="boletaInsumosTitulo">Insumos (0)</span>
+                  <ul id="boletaInsumosLista" class="lista-items-bullet"></ul>
+                </div>
+
+                <div class="tabla-totales-boleta">
+                  <div class="fila-cobro" id="filaCobroEpps" style="display: none;">
+                    <span>EPPs seleccionados</span>
+                    <span id="boletaMontoEpps">S/ 0.00</span>
+                  </div>
+                  <div class="fila-cobro total">
+                    <strong>Total a pagar</strong>
+                    <strong id="boletaMontoTotalTxt">S/ 0.00</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="caja-checkbox-terminos">
+              <label class="label-checkbox-custom">
+                <input type="checkbox" id="checkAceptoTerminos" required />
+                <span class="txt-terminos-peq">
+                  Acepto los 
+                  <a th:href="@{/docs/terminos.pdf}" target="_blank" rel="noopener noreferrer" class="enlace-protocolos">
+                    términos, condiciones y protocolos de seguridad
+                  </a>
+                  del laboratorio.
+                </span>
+              </label>
+            </div>
+
+            <div class="pie-wizard-paso">
+              <button type="button" class="btn-gris-cancelar" onclick="irAEPPs()">← Anterior</button>
+              <button type="button" id="btnAccionBoleta" class="btn-azul-continuar" onclick="procesarBotonFinalBoleta()">
+                Confirmar reserva →
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 3: PAGO -->
+    <div id="modalPagoReserva" class="fondo-modal" style="display: none; z-index: 1100;">
+      <div class="tarjeta-modal modal-pago-ancho">
+        <div class="cabecera-pago-flex">
+          <div>
+            <h3 class="titulo-pago-txt">Pago de Reserva</h3>
+            <p class="sub-pago-txt">Selecciona cómo pagar tus EPPs</p>
+          </div>
+          <button type="button" class="btn-cerrar-x" onclick="cerrarModalPago()">✕</button>
+        </div>
+
+        <div class="tarjeta-monto-azul">
+          <div class="info-monto-izq">
+            <span class="lbl-total-pagar">TOTAL A PAGAR</span>
+            <strong class="monto-total-num" id="pasarelaTotalMonto">S/ 0.00</strong>
+          </div>
+          <div class="icono-tarjeta-chip">💳</div>
+        </div>
+
+        <div class="rejilla-metodos-pago">
+          <div class="opcion-metodo-pago seleccionado" onclick="seleccionarMetodo(this, 'YAPE')">
+            <div class="icono-metodo">📱</div>
+            <span>Yape</span>
+          </div>
+          <div class="opcion-metodo-pago" onclick="seleccionarMetodo(this, 'PLIN')">
+            <div class="icono-metodo">💚</div>
+            <span>Plin</span>
+          </div>
+          <div class="opcion-metodo-pago" onclick="seleccionarMetodo(this, 'TRANSFERENCIA')">
+            <div class="icono-metodo">🏛️</div>
+            <span>Cuenta Interbancaria</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-confirmar-pago-final" onclick="enviarFormularioFinal()">
+          Confirmar y Pagar
+        </button>
+      </div>
+    </div>
+    
+    <!-- MODAL RESUMEN DE RESERVA Y CANCELACIÓN -->
+    <div id="modalResumenReserva" class="fondo-modal-oscuro" style="display: none;">
+        <div class="tarjeta-modal modal-recibo-contenedor">
+            <div class="cabecera-modal-recibo">
+                <div>
+                    <h3 class="titulo-modal-recibo">Resumen de Reserva</h3>
+                    <p class="subtitulo-modal-recibo" id="resumenId">RES001</p>
+                </div>
+                <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalResumen()">✕</button>
+            </div>
+            
+            <div class="cuerpo-modal-recibo">
+                <div class="cabecera-azul-recibo">
+                    <span class="lbl-recibo">LABORATORIO</span>
+                    <strong id="resumenLab" class="nombre-lab-recibo">Lab. Química</strong>
+                    <span id="resumenCubiculo" class="cubiculo-recibo">A-101</span>
+                </div>
+                
+                <div class="fila-meta-recibo">
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">FECHA</span>
+                        <strong id="resumenFecha">2026-09-27</strong>
+                    </div>
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">HORARIO</span>
+                        <strong id="resumenHorario">07:00 – 09:00</strong>
+                    </div>
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">ESTADO</span>
+                        <span id="resumenEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                    </div>
+                </div>
+                
+                <div class="seccion-recibo">
+                    <span class="titulo-seccion-recibo">Integrantes</span>
+                    <div id="resumenIntegrantes" class="lista-integrantes-recibo"></div>
+                </div>
+                
+                <div class="seccion-recibo" id="seccionInsumosResumen">
+                    <span class="titulo-seccion-recibo">Insumos y EPPs</span>
+                    <div id="resumenItems" class="lista-items-recibo"></div>
+                </div>
+            </div>
+            
+            <div class="pie-modal-recibo" style="justify-content: space-between;">
+                <form id="formCancelarReserva" action="" method="post" style="margin: 0;">
+                    <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
+                            onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
+                        Cancelar Reserva
+                    </button>
+                </form>
+                <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico de Laboratorios -->
+  <script th:src="@{/js/alumno-laboratorios.js}"></script>
+</body>
+</html>

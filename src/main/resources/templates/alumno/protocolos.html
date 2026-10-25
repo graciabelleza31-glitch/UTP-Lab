@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Protocolos de Seguridad</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  
+  <!-- Fuentes y Librerías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('protocolos')}"></aside>
+
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+
+      <!-- SECCIÓN PROTOCOLOS -->
+      <section class="seccion-checkout">
+        
+        <div class="cabecera-protocolos-titulos">
+          <h1 class="titulo-seccion-protocolos">Protocolos de Seguridad</h1>
+          <p class="subtitulo-seccion-protocolos">Normas obligatorias para todos los usuarios</p>
+        </div>
+
+        <div class="contenedor-acordeones-protocolos">
+          
+          <!-- ACORDEÓN 1: NORMAS GENERALES -->
+          <div class="acordeon-item abierto" id="acordeon1">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon1')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🛡️</span>
+                <strong>Normas generales</strong>
+              </div>
+              <span class="flecha-indicador">▲</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Usar bata en todo momento.</li>
+                <li>Prohibido consumir alimentos.</li>
+                <li>Reportar accidentes al instante.</li>
+                <li>No correr dentro del laboratorio.</li>
+                <li>Conocimiento de extintor, lavaojos y ducha.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 2: MANEJO DE SUSTANCIAS -->
+          <div class="acordeon-item" id="acordeon2">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon2')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🧪</span>
+                <strong>Manejo de sustancias</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Consultar la ficha MSDS antes de usar reactivos.</li>
+                <li>Nunca pipetear con la boca.</li>
+                <li>Ácidos y bases en campana de extracción.</li>
+                <li>Agregar ácido al agua, nunca al revés.</li>
+                <li>Residuos en contenedores designados.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 3: USO DE EQUIPOS -->
+          <div class="acordeon-item" id="acordeon3">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon3')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🔬</span>
+                <strong>Uso de equipos</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Verificar el estado del equipo antes de encenderlo.</li>
+                <li>No manipular equipos eléctricos con manos mojadas.</li>
+                <li>Reportar cualquier falla técnica al instructor de inmediato.</li>
+                <li>Apagar y desconectar al terminar la práctica.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 4: RESIDUOS Y DISPOSICIÓN -->
+          <div class="acordeon-item" id="acordeon4">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon4')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">♻️</span>
+                <strong>Residuos y disposición</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Separar residuos por tipo.</li>
+                <li>No verter reactivos al desagüe.</li>
+                <li>Solventes en bidones especiales.</li>
+                <li>Cortopunzantes en guardianes.</li>
+                <li>Limpiar mesón con hipoclorito al final.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="bloque-terminos">
+          <h2 class="subtitulo-terminos">Términos y Condiciones</h2>
+          <p class="descripcion-terminos">
+            Reglamento aplicable para el acceso y uso de los portales, herramientas digitales y servicios en línea del Grupo UTP. Conoce las disposiciones operativas, responsabilidades y normativas sobre derechos de autor y protección de credenciales institucionales.
+          </p>
+          
+          <button type="button" class="btn-descarga-estilo" onclick="descargarTerminos()">
+            Descargar Términos y Condiciones
+          </button>
+        </div>
+
+        <!-- ALERTA AMARILLA INFERIOR: SOLO APARECE SI EL ESTUDIANTE ESTÁ BLOQUEADO POR DEUDA/INCIDENCIA -->
+        <div th:if="${estaBloqueado}" class="banner-alerta-amarillo">
+          <div class="icono-alerta-triangulo">⚠️</div>
+          <div class="texto-alerta-amarillo">
+            <strong>Emergencias: ext. 1234</strong>
+            <p>El incumplimiento puede derivar en suspensión del acceso al laboratorio.</p>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div th:replace="~{fragments/scripts}"></div>
+  
+  <!-- JS específico de Protocolos -->
+  <script th:src="@{/js/alumno-protocolos.js}"></script>
+</body>
+</html>
