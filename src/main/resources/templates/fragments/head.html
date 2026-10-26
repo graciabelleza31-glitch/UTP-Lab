@@ -13,16 +13,20 @@
     <!-- CSS GLOBAL (se carga en todas las páginas) -->
     <link rel="stylesheet" th:href="@{/css/base.css}" />
     
-    <!-- CSS DINÁMICO: Aquí cargaremos el CSS específico según la vista -->
-    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'alumno')}">
-        <link rel="stylesheet" th:href="@{/css/alumno.css}" />
-    </th:block>
-    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'admin')}">
-        <link rel="stylesheet" th:href="@{/css/admin.css}" />
-    </th:block>
-    <th:block th:if="${#strings.contains(#httpServletRequest.requestURI, 'login') or #strings.contains(#httpServletRequest.requestURI, 'recuperar') or #strings.contains(#httpServletRequest.requestURI, 'cambiar-password')}">
-        <link rel="stylesheet" th:href="@{/css/login.css}" />
-    </th:block>
+    <!-- CSS DINÁMICO: usando el atributo requestURI del ControllerAdvice -->
+<th:block th:if="${#strings.contains(requestURI, 'alumno')}">
+    <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+</th:block>
+
+<th:block th:if="${#strings.contains(requestURI, 'admin')}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</th:block>
+
+<th:block th:if="${#strings.contains(requestURI, 'login') 
+                 or #strings.contains(requestURI, 'recuperar') 
+                 or #strings.contains(requestURI, 'cambiar-password')}">
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+</th:block>
     
     <!-- Los modales se cargan siempre porque se usan en varias vistas -->
     <link rel="stylesheet" th:href="@{/css/modales.css}" />
