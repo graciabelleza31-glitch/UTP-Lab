@@ -54,7 +54,7 @@
 
             <div class="accion-derecha-checkin">
               <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
-              
+              <!-- CASO 1: Si está EN_USO -->
               <button th:if="${ins.estado == 'EN_USO'}"
                       type="button" 
                       class="btn-verde-iniciar" 
@@ -84,22 +84,8 @@
               </button>
             </div>
 
-              <button th:if="${ins.estado == 'DEVUELTA'}"
-                      type="button" 
-                      class="btn-verde-iniciar" 
-                      style="background:#2563eb;"
-                      th:data-id="${ins.idReserva}"
-                      onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
-                <i data-lucide="clipboard-check"></i> Inspeccionar
-              </button>
 
-              <button th:if="${ins.estado == 'NO_INSPECCIONADO'}"
-                      type="button" 
-                      class="btn-verde-iniciar" 
-                      style="background:#e2e8f0; color:#94a3b8; cursor:not-allowed;"
-                      disabled>
-                <i data-lucide="x-circle"></i> Tiempo Expirado
-              </button>
+            
             </div>
 
           </div>
