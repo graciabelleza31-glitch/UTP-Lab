@@ -218,7 +218,7 @@ public class AlumnoPortalController {
         modelo.addAttribute("categorias", categoriasBD);
         modelo.addAttribute("totalItems", todosLosProductos.size());
 
-        return "alumno-catalogos";
+        return "alumno/catalogos";
     }
 
     // =========================================================================
@@ -515,7 +515,7 @@ for (Reserva reservaExistente : reservasDelLaboratorio) {
         modelo.addAttribute("estaBloqueado", estaBloqueado);
         modelo.addAttribute("numIncidencias", incidenciasPendientes);
 
-        return "alumno-protocolos";
+        return "alumno/protocolos";
     }
 
     // =========================================================================
@@ -645,7 +645,7 @@ public String verCuenta(
     todasLasIncidencias.sort((a, b) -> b.getIdSancion().compareTo(a.getIdSancion()));
 
     modelo.addAttribute("historialIncidencias", todasLasIncidencias);
-    return "alumno-cuenta";
+    return "alumno/cuenta";
 }
 
 @GetMapping("/api/recibo/{idReserva}")
