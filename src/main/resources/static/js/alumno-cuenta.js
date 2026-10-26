@@ -138,53 +138,48 @@ let chartInstance = null;
 let datosEstadisticas = null;
 
 function abrirGrafico(tipo) {
-    // 1. Mostramos el modal PRIMERO
     document.getElementById('modalGrafico').style.display = 'flex';
     
-    // 2. Obtenemos el mes actual
+    // Obtenemos el mes actual del input o de la URL
     const urlParams = new URLSearchParams(window.location.search);
-    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7);
+    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7); // YYYY-MM
     
-    // 3. Esperamos 150ms a que el navegador pinte el modal, y luego dibujamos
-    setTimeout(() => {
-        fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
+    const cargarDatos = () => {
+        return fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
             .then(res => res.json())
             .then(data => {
                 datosEstadisticas = data;
                 dibujarGrafico(tipo);
-            })
-            .catch(err => console.error("Error al cargar estadísticas", err));
-    }, 150); 
+            });
+    };
+    
+    // Siempre cargar datos nuevos para el mes actual
+    cargarDatos();
 }
 
 function dibujarGrafico(tipo) {
-    const canvas = document.getElementById('canvasGrafico');
-    const ctx = canvas.getContext('2d');
+    const ctx = document.getElementById('canvasGrafico').getContext('2d');
     
-    // Si ya había un gráfico, lo destruimos para que no se superponga
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
+    if (chartInstance) chartInstance.destroy();
     
     let titulo = '', datos = [], color = '';
     
     if (tipo === 'reservas') {
-        titulo = 'Reservas por día';
+        titulo = 'Reservas por mes';
         datos = datosEstadisticas.reservas;
         color = '#2563eb';
     } else if (tipo === 'horas') {
-        titulo = 'Horas de laboratorio por día';
+        titulo = 'Horas de laboratorio por mes';
         datos = datosEstadisticas.horas;
         color = '#8b5cf6';
     } else {
-        titulo = 'Materiales solicitados por día';
+        titulo = 'Materiales solicitados por mes';
         datos = datosEstadisticas.materiales;
         color = '#f59e0b';
     }
     
     document.getElementById('tituloGrafico').innerText = titulo;
     
-    // Crear el gráfico con las opciones de tamaño correctas
     chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -199,7 +194,7 @@ function dibujarGrafico(tipo) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // 👈 IMPORTANTE: Esto hace que respete el height: 340px del CSS
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: false }
             },
@@ -211,10 +206,6 @@ function dibujarGrafico(tipo) {
             }
         }
     });
-}
-
-function cerrarGrafico() {
-    document.getElementById('modalGrafico').style.display = 'none';
 }
 
 function cerrarGrafico() {

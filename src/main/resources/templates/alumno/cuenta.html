@@ -87,46 +87,23 @@
           </div>
 
           <!-- 3 TARJETAS DE ESTADÍSTICAS -->
-          <div class="grid-tres-estadisticas-alumno">
-            <div class="card-estadistica-alumno">
-              <strong class="num-estadistica azul" th:text="${reservasDelMes}"
-                >7</strong
-              >
-              <span class="label-estadistica">Reservas de este mes</span>
-              <a
-                href="javascript:void(0)"
-                onclick="abrirGrafico('reservas')"
-                class="link-estadistica"
-                >Ver gráfico →</a
-              >
-            </div>
-            <div class="card-estadistica-alumno">
-              <strong class="num-estadistica morado" th:text="${horasTotales}"
-                >30</strong
-              >
-              <span class="label-estadistica">Horas de laboratorio</span>
-              <a
-                href="javascript:void(0)"
-                onclick="abrirGrafico('horas')"
-                class="link-estadistica"
-                >Ver gráfico →</a
-              >
-            </div>
-            <div class="card-estadistica-alumno">
-              <strong
-                class="num-estadistica naranja"
-                th:text="${materialesTotales}"
-                >24</strong
-              >
-              <span class="label-estadistica">Materiales solicitados</span>
-              <a
-                href="javascript:void(0)"
-                onclick="abrirGrafico('materiales')"
-                class="link-estadistica"
-                >Ver gráfico →</a
-              >
-            </div>
+        <div class="grid-tres-estadisticas-alumno">
+          <div class="card-estadistica-alumno">
+            <strong class="num-estadistica azul" th:text="${reservasDelMes}">7</strong>
+            <span class="label-estadistica">Reservas de este mes</span>
+            <a href="javascript:void(0)" onclick="abrirGrafico('reservas')" class="link-estadistica">Ver gráfico →</a>
           </div>
+          <div class="card-estadistica-alumno">
+            <strong class="num-estadistica morado" th:text="${horasTotales}">30</strong>
+            <span class="label-estadistica">Horas de laboratorio</span>
+            <a href="javascript:void(0)" onclick="abrirGrafico('horas')" class="link-estadistica">Ver gráfico →</a>
+          </div>
+          <div class="card-estadistica-alumno">
+            <strong class="num-estadistica naranja" th:text="${materialesTotales}">24</strong>
+            <span class="label-estadistica">Materiales solicitados</span>
+            <a href="javascript:void(0)" onclick="abrirGrafico('materiales')" class="link-estadistica">Ver gráfico →</a>
+          </div>
+        </div>
 
           <!-- HISTORIAL DE RESERVAS -->
           <div class="cabecera-historial-con-filtro">
