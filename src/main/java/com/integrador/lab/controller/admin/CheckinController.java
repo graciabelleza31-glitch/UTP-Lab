@@ -50,30 +50,24 @@ public class CheckinController {
     private SancionRepository sancionRepositorio;
 
     // 1. VISTA PRINCIPAL DE CHECK-IN (CON FILTRO POR FECHA)
-    @GetMapping
+        @GetMapping
     @Transactional(readOnly = true)
     public String verCheckin(
             @RequestParam(required = false) String fecha,
             HttpSession sesion, 
             Model modelo) {
 
-        // A. Calcular fecha de consulta (si no viene, usa hoy)
-        LocalDate fechaConsulta;
-        try {
-            fechaConsulta = (fecha != null && !fecha.isEmpty()) 
-                    ? LocalDate.parse(fecha) 
-                    : LocalDate.now();
-        } catch (Exception e) {
-            fechaConsulta = LocalDate.now();
-        }
+        // 1. Calcular fecha de consulta (si no viene, usa hoy)
+         // 1. Obtener la fecha como String directamente
+        String fechaConsultaStr = (fecha != null && !fecha.isEmpty()) ? fecha : LocalDate.now().toString();
 
-        // B. Buscar reservas de esa fecha que estén CONFIRMADAS o PENDIENTES
+        // 2. Buscar reservas filtrando por el String de la fecha
         List<Reserva> todas = reservaRepositorio.findAll().stream()
-                .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().equals(fechaConsulta))
+                .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().toString().equals(fechaConsultaStr))
                 .filter(r -> "CONFIRMADA".equals(r.getEstado()) || "PENDIENTE".equals(r.getEstado()))
                 .toList();
 
-        // C. Armar la lista de DTOs para la vista
+        // 3. Armar la lista de DTOs para la vista
         List<CheckinReservaDto> listaCheckin = new ArrayList<>();
 
         for (Reserva r : todas) {
@@ -108,14 +102,15 @@ public class CheckinController {
 
         long incidenciasAbiertas = sancionRepositorio.count();
 
-        // D. Pasar datos al modelo
+        // 4. Pasar datos al modelo
         modelo.addAttribute("reservas", listaCheckin);
         modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
-
-        // E. Pasar fechas para el selector de la vista
-        modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
-        modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
-        modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+ String ayer = LocalDate.parse(fechaConsultaStr).minusDays(1).toString();
+        String manana = LocalDate.parse(fechaConsultaStr).plusDays(1).toString();
+        // 5. Pasar fechas para el selector de la vista
+        modelo.addAttribute("fechaConsulta", fechaConsultaStr);
+        modelo.addAttribute("fechaAnterior", ayer);
+        modelo.addAttribute("fechaSiguiente", manana);
 
         return "admin/checkin";
     }
