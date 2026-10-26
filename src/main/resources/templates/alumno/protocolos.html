@@ -110,11 +110,8 @@
               </ul>
             </div>
           </div>
-
-        </div>
-
-                <!-- TÉRMINOS Y CONDICIONES (Dentro de un cuadrado) -->
-        <div class="acordeon-item" style="padding: 1.5rem; margin-top: 1.5rem;">
+                  <!-- TÉRMINOS Y CONDICIONES (Usando las clases del acordeón) -->
+        <div class="acordeon-item" style="padding: 1.5rem; margin-top: 1.5rem; max-width: 860px;">
             <h2 class="subtitulo-terminos" style="margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: 700;">Términos y Condiciones</h2>
             <p class="descripcion-terminos" style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.5;">
                 Reglamento aplicable para el acceso y uso de los portales, herramientas digitales y servicios en línea del Grupo UTP. Conoce las disposiciones operativas, responsabilidades y normativas sobre derechos de autor y protección de credenciales institucionales.
@@ -123,6 +120,9 @@
                 Descargar Términos y Condiciones
             </button>
         </div>
+        </div>
+
+        
 
         <!-- ALERTA AMARILLA INFERIOR: SOLO APARECE SI EL ESTUDIANTE ESTÁ BLOQUEADO POR DEUDA/INCIDENCIA -->
         <div th:if="${estaBloqueado}" class="banner-alerta-amarillo">

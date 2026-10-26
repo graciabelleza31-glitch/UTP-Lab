@@ -138,31 +138,33 @@ let chartInstance = null;
 let datosEstadisticas = null;
 
 function abrirGrafico(tipo) {
-    const modal = document.getElementById('modalGrafico');
-    modal.style.display = 'flex';
+    // 1. Mostramos el modal PRIMERO
+    document.getElementById('modalGrafico').style.display = 'flex';
     
-    // Obtenemos el mes de la URL o el actual
+    // 2. Obtenemos el mes actual
     const urlParams = new URLSearchParams(window.location.search);
     const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7);
     
-    // Cambiamos el subtítulo del modal para que muestre el mes
-    const nombreMes = new Date(mesActual + "-01").toLocaleString('es-PE', { month: 'long', year: 'numeric' });
-    document.querySelector('.subtitulo-modal-grafico').innerText = "Mes de " + nombreMes;
-
-    fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
-        .then(res => res.json())
-        .then(data => {
-            datosEstadisticas = data;
-            // Esperamos 100ms a que el modal se haga visible antes de dibujar
-            setTimeout(() => dibujarGrafico(tipo), 100);
-        });
+    // 3. Esperamos 150ms a que el navegador pinte el modal, y luego dibujamos
+    setTimeout(() => {
+        fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
+            .then(res => res.json())
+            .then(data => {
+                datosEstadisticas = data;
+                dibujarGrafico(tipo);
+            })
+            .catch(err => console.error("Error al cargar estadísticas", err));
+    }, 150); 
 }
 
 function dibujarGrafico(tipo) {
     const canvas = document.getElementById('canvasGrafico');
     const ctx = canvas.getContext('2d');
     
-    if (chartInstance) chartInstance.destroy();
+    // Si ya había un gráfico, lo destruimos para que no se superponga
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
     
     let titulo = '', datos = [], color = '';
     
@@ -182,6 +184,7 @@ function dibujarGrafico(tipo) {
     
     document.getElementById('tituloGrafico').innerText = titulo;
     
+    // Crear el gráfico con las opciones de tamaño correctas
     chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -196,7 +199,7 @@ function dibujarGrafico(tipo) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: false, // 👈 IMPORTANTE: Esto hace que respete el height: 340px del CSS
             plugins: {
                 legend: { display: false }
             },
@@ -208,6 +211,10 @@ function dibujarGrafico(tipo) {
             }
         }
     });
+}
+
+function cerrarGrafico() {
+    document.getElementById('modalGrafico').style.display = 'none';
 }
 
 function cerrarGrafico() {
