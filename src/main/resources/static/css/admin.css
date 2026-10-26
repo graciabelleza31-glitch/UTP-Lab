@@ -1,772 +1,182 @@
 /* ==========================================================================
-   DASHBOARD ADMIN - ESTILOS DEFINITIVOS (SOBRESCRIBEN ANTERIORES)
+   ESTILOS DEFINITIVOS PARA VISTAS ADMIN (DASHBOARD, INVENTARIO, CHECKIN, ETC)
    ========================================================================== */
 
-/* 1. Header del Dashboard */
-.fila-dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.75rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
+/* 1. DASHBOARD */
+.fila-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem; }
+.acciones-header-dashboard { display: flex; align-items: center; gap: 1rem; }
+.selector-fecha-dashboard { display: flex; align-items: center; gap: 0.5rem; background: #ffffff; padding: 0.35rem 0.75rem; border-radius: 10px; border: 1px solid #e2e8f0; }
+.btn-fecha-nav { color: #64748b; text-decoration: none; }
+.input-fecha-dashboard { border: none; font-size: 0.85rem; font-weight: 600; outline: none; background: transparent; }
+.badge-sistema-activo { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 0.4rem 0.95rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; }
+.punto-verde-latido { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; }
 
-.acciones-header-dashboard {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.selector-fecha-dashboard {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #ffffff;
-    padding: 0.35rem 0.75rem;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.btn-fecha-nav {
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    padding: 0.2rem;
-    border-radius: 4px;
-}
-.btn-fecha-nav:hover { background: #f1f5f9; color: #0f172a; }
-
-.input-fecha-dashboard {
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #0f172a;
-    outline: none;
-    background: transparent;
-    cursor: pointer;
-}
-
-.badge-sistema-activo {
-    background-color: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-    padding: 0.4rem 0.95rem;
-    border-radius: 9999px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.punto-verde-latido {
-    width: 8px;
-    height: 8px;
-    background-color: #10b981;
-    border-radius: 50%;
-}
-
-/* 2. Tarjetas de Métricas (Fila de 4) */
-.grid-cuatro-metricas-figma {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
-    margin-bottom: 1.75rem;
-}
-
-.card-metrica-figma {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.35rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.cabecera-card-metrica {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-}
-
+.grid-cuatro-metricas-figma { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.75rem; }
+.card-metrica-figma { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.35rem 1.5rem; display: flex; flex-direction: column; }
+.cabecera-card-metrica { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
 .emoji-icono-metrica { font-size: 1.6rem; }
-
-.punto-estado-card {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-.dot-azul     { background-color: #2563eb; }
-.dot-amarillo { background-color: #f59e0b; }
-.dot-morado   { background-color: #8b5cf6; }
-.dot-rojo     { background-color: #ef4444; }
-
-.num-grande-metrica {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #1d4ed8;
-    line-height: 1.1;
-    margin-bottom: 0.35rem;
-}
+.punto-estado-card { width: 10px; height: 10px; border-radius: 50%; }
+.dot-azul { background-color: #2563eb; } .dot-amarillo { background-color: #f59e0b; } .dot-morado { background-color: #8b5cf6; } .dot-rojo { background-color: #ef4444; }
+.num-grande-metrica { font-size: 2.2rem; font-weight: 800; color: #1d4ed8; line-height: 1.1; margin-bottom: 0.35rem; }
 .card-metrica-figma:nth-child(2) .num-grande-metrica { color: #d97706; }
 .card-metrica-figma:nth-child(3) .num-grande-metrica { color: #7c3aed; }
 .card-metrica-figma:nth-child(4) .num-grande-metrica { color: #dc2626; }
+.label-titulo-metrica { font-size: 0.92rem; font-weight: 700; color: #0f172a; }
+.label-sub-metrica { font-size: 0.76rem; color: #64748b; margin-top: 0.15rem; }
 
-.label-titulo-metrica {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.label-sub-metrica {
-    font-size: 0.76rem;
-    color: #64748b;
-    margin-top: 0.15rem;
-}
-
-/* 3. Layout de Paneles (2 columnas y luego 2 columnas) */
-.grid-principal-dash-figma {
-    display: grid;
-    grid-template-columns: 2fr 1.15fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    align-items: start;
-}
-
-.grid-inferior-dash-figma {
-    display: grid;
-    grid-template-columns: 2fr 1.15fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    align-items: start;
-}
-
-.card-panel-blanco {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.cabecera-panel-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.35rem;
-}
-
-.titulo-panel-txt {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: #0f172a;
-}
-
-.leyenda-dots-estados {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.78rem;
-    color: #64748b;
-    font-weight: 600;
-}
-
-.item-leyenda-dot {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
+.grid-principal-dash-figma { display: grid; grid-template-columns: 2fr 1.15fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-inferior-dash-figma { display: grid; grid-template-columns: 2fr 1.15fr; gap: 1.5rem; margin-bottom: 2rem; }
+.card-panel-blanco { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; }
+.cabecera-panel-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.35rem; }
+.titulo-panel-txt { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+.leyenda-dots-estados { display: flex; gap: 1rem; font-size: 0.78rem; color: #64748b; font-weight: 600; }
+.item-leyenda-dot { display: flex; align-items: center; gap: 0.35rem; }
 .dot-color { width: 8px; height: 8px; border-radius: 50%; }
-.dot-color.naranja { background-color: #f59e0b; }
-.dot-color.verde   { background-color: #10b981; }
-.dot-color.rojo    { background-color: #ef4444; }
+.dot-color.naranja { background-color: #f59e0b; } .dot-color.verde { background-color: #10b981; } .dot-color.rojo { background-color: #ef4444; }
 
-/* 4. Grilla de Laboratorios (Dentro del panel izquierdo) */
-.grilla-cubiculos-labs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.85rem;
-}
-
-.tarjeta-cubiculo-item {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.9rem 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.fila-cubiculo-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.25rem;
-}
-
-.cod-y-punto {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-}
-
+.grilla-cubiculos-labs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+.tarjeta-cubiculo-item { border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.9rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.fila-cubiculo-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+.cod-y-punto { display: flex; align-items: center; gap: 0.45rem; }
 .dot-lab-status { width: 8px; height: 8px; border-radius: 50%; }
-.dot-lab-status.dot-verde { background-color: #10b981; }
-.dot-lab-status.dot-rojo  { background-color: #ef4444; }
-.dot-lab-status.dot-amarillo { background-color: #f59e0b; }
-
+.dot-lab-status.dot-verde { background-color: #10b981; } .dot-lab-status.dot-rojo { background-color: #ef4444; } .dot-lab-status.dot-amarillo { background-color: #f59e0b; }
 .txt-cod-cubiculo { font-size: 0.8rem; color: #64748b; font-weight: 600; }
-
 .badge-tag-estado { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-.tag-verde   { background: #dcfce7; color: #059669; }
-.tag-rojo    { background: #fee2e2; color: #dc2626; }
-.tag-naranja { background: #fef3c7; color: #d97706; }
-
+.tag-verde { background: #dcfce7; color: #059669; } .tag-rojo { background: #fee2e2; color: #dc2626; } .tag-naranja { background: #fef3c7; color: #d97706; }
 .txt-nombre-lab-cub { font-size: 0.92rem; color: #0f172a; font-weight: 700; }
 .txt-desc-bloque-cub { font-size: 0.74rem; color: #64748b; }
 
-/* 5. Agenda de Hoy (Panel derecho) */
-.lista-agenda-hoy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-}
-
-.fila-agenda-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid #f1f5f9;
-    gap: 0.75rem;
-}
-.fila-agenda-item:last-child { border-bottom: none; }
-
-.horario-agenda-txt { font-size: 0.78rem; color: #64748b; font-weight: 600; width: 90px; flex-shrink: 0; }
+.lista-agenda-hoy { display: flex; flex-direction: column; gap: 0.65rem; }
+.fila-agenda-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.5rem; border-bottom: 1px solid #f1f5f9; gap: 0.75rem; }
+.horario-agenda-txt { font-size: 0.78rem; color: #64748b; font-weight: 600; width: 90px; }
 .info-solicitante-col { display: flex; flex-direction: column; flex: 1; }
 .nom-lab-agenda { font-size: 0.85rem; color: #0f172a; font-weight: 700; }
 .nom-solic-agenda { font-size: 0.74rem; color: #64748b; }
+.badge-agenda-pill { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 9999px; }
+.badge-confirmada-dash { background-color: #dbeafe; color: #1d4ed8; } .badge-enuso-dash { background-color: #dcfce7; color: #15803d; } .badge-devuelta { background-color: #f3e8ff; color: #7e22ce; } .badge-inspeccionada { background-color: #f1f5f9; color: #475569; } .badge-pendiente-dash { background-color: #fef3c7; color: #b45309; }
 
-.badge-agenda-pill {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.2rem 0.65rem;
-    border-radius: 9999px;
-    white-space: nowrap;
-}
-.badge-inspeccionada  { background-color: #f1f5f9; color: #475569; }
-.badge-devuelta       { background-color: #f3e8ff; color: #7e22ce; }
-.badge-confirmada-dash{ background-color: #dbeafe; color: #1d4ed8; }
-.badge-pendiente-dash { background-color: #fef3c7; color: #b45309; }
-.badge-enuso-dash     { background-color: #dcfce7; color: #15803d; }
-
-/* 6. Incidencias Recientes (Abajo izquierda) */
 .link-azul-vermas { font-size: 0.8rem; font-weight: 700; color: #2563eb; text-decoration: none; }
-.link-azul-vermas:hover { text-decoration: underline; }
-
 .lista-incidencias-dash { display: flex; flex-direction: column; gap: 0.75rem; }
-.fila-incidencia-item {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid #f8fafc;
-}
-.fila-incidencia-item:last-child { border-bottom: none; }
-
-.icono-emoji-incidencia {
-    width: 32px;
-    height: 32px;
-    background-color: #eff6ff;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-}
-
+.fila-incidencia-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 0.5rem; border-bottom: 1px solid #f8fafc; }
+.icono-emoji-incidencia { width: 32px; height: 32px; background-color: #eff6ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 .info-incidencia-col { display: flex; flex-direction: column; flex: 1; }
 .item-danado-txt { font-size: 0.86rem; color: #0f172a; font-weight: 700; }
 .estudiante-responsable-txt { font-size: 0.74rem; color: #64748b; }
 .monto-deuda-rojo { font-size: 0.88rem; font-weight: 800; color: #ef4444; }
-
-/* 7. Alertas de Stock (Abajo derecha) */
 .lista-alertas-amarillas { display: flex; flex-direction: column; gap: 0.65rem; }
-.card-alerta-amarilla-stock {
-    background-color: #fffdf5;
-    border: 1px solid #fef08a;
-    border-radius: 12px;
-    padding: 0.85rem 1.15rem;
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-}
-.icono-triangulo-stock { font-size: 1.25rem; }
-.info-alerta-stock-col { display: flex; flex-direction: column; }
+.card-alerta-amarilla-stock { background-color: #fffdf5; border: 1px solid #fef08a; border-radius: 12px; padding: 0.85rem 1.15rem; display: flex; align-items: center; gap: 0.85rem; }
 .nombre-insumo-stock { font-size: 0.86rem; color: #854d0e; font-weight: 700; }
 .cant-minima-stock { font-size: 0.74rem; color: #a16207; font-weight: 600; }
 
-/* ==========================================================================
-   ESTILOS GENERALES PARA VISTAS ADMIN (Inventario, Incidencias, Check-in)
-   ========================================================================== */
+/* 2. INVENTARIO */
+.btn-pdf-inventario { background-color: #dc2626; color: white; padding: 0.65rem 1.35rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+.btn-nuevo-insumo-admin { background-color: #0d9488; color: white; padding: 0.65rem 1.35rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+.acciones-header-inventario { display: flex; gap: 0.75rem; }
+.barra-busqueda-inventario { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; }
+.barra-busqueda-inventario input { border: none; outline: none; width: 100%; background: transparent; }
+.tabla-card-inventario { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.25rem 1.5rem; overflow-x: auto; }
+.tabla-admin-inventario { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+.tabla-admin-inventario th { padding: 0.85rem; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+.tabla-admin-inventario td { padding: 1rem 0.75rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+.badge-cat-tag { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600; }
+.badge-estado-stock { padding: 0.25rem 0.65rem; border-radius: 9999px; font-weight: 700; font-size: 0.74rem; }
+.badge-estado-stock.disp { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.badge-estado-stock.bajo { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.badge-estado-stock.agotado { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.acciones-stock-botones { display: flex; gap: 0.35rem; justify-content: center; }
+.btn-stock-mini { border: 1px solid #cbd5e1; background: #ffffff; border-radius: 6px; font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.5rem; cursor: pointer; }
+.btn-stock-mini:hover { background: #f1f5f9; }
 
-/* Contenedor principal de la sección */
-.seccion-admin {
-    padding: 2.5rem 3.5rem;
-    background-color: #f1f5f9;
-    min-height: calc(100vh - 64px);
-}
-
-/* Cabecera de cada vista (Título y botones a la derecha) */
-.cabecera-vista-admin {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.titulos-vista-admin h1 {
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin-bottom: 0.25rem;
-}
-
-.titulos-vista-admin p {
-    font-size: 0.9rem;
-    color: #64748b;
-}
-
-/* Botón Nuevo / Reporte */
-.btn-accion-admin {
-    background-color: #0d9488;
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 0.65rem 1.35rem;
-    font-size: 0.88rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
-    transition: background-color 0.2s, transform 0.1s;
-    text-decoration: none;
-}
-
-.btn-accion-admin:hover {
-    background-color: #0f766e;
-    transform: translateY(-1px);
-}
-
-/* ==========================================================================
-   VISTA: INVENTARIO (Imagen 3)
-   ========================================================================== */
-.barra-busqueda-inventario {
-    display: flex;
-    align-items: center;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.barra-busqueda-inventario input {
-    border: none;
-    outline: none;
-    width: 100%;
-    font-size: 0.9rem;
-    color: #1e293b;
-    background: transparent;
-}
-
-.barra-busqueda-inventario input::placeholder {
-    color: #94a3b8;
-}
-
-.filtros-categorias-inventario {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.btn-filtro-categoria {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    padding: 0.45rem 1.25rem;
-    border-radius: 9999px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.btn-filtro-categoria.activo {
-    background-color: #1a1d3b;
-    color: #ffffff;
-    border-color: #1a1d3b;
-}
-
-/* Tabla de Inventario */
-.tabla-card-inventario {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    overflow-x: auto;
-}
-
-.tabla-admin-inventario {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.85rem;
-    text-align: left;
-}
-
-.tabla-admin-inventario th {
-    padding: 0.85rem 0.75rem;
-    color: #64748b;
-    font-weight: 700;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    border-bottom: 2px solid #f1f5f9;
-    white-space: nowrap;
-}
-
-.tabla-admin-inventario td {
-    padding: 1rem 0.75rem;
-    border-bottom: 1px solid #f8fafc;
-    color: #1e293b;
-    vertical-align: middle;
-}
-
-.tabla-admin-inventario tr:last-child td {
-    border-bottom: none;
-}
-
-/* Badges de Inventario */
-.badge-cat-tag {
-    background-color: #f8fafc;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    font-size: 0.74rem;
-    font-weight: 600;
-    padding: 0.25rem 0.6rem;
-    border-radius: 6px;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.badge-estado-stock {
-    font-size: 0.74rem;
-    font-weight: 700;
-    padding: 0.25rem 0.65rem;
-    border-radius: 9999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
-.badge-estado-stock.disp {
-    background-color: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-}
-
-.badge-estado-stock.bajo {
-    background-color: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fde68a;
-}
-
-.badge-estado-stock.agotado {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-}
-
-/* Botones de Stock (+10, +1, -1) */
-.acciones-stock-botones {
-    display: inline-flex;
-    gap: 0.35rem;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-stock-mini {
-    border: 1px solid #cbd5e1;
-    background-color: #ffffff;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.3rem 0.5rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    line-height: 1;
-    color: #334155;
-}
-
-.btn-stock-mini:hover {
-    background-color: #f1f5f9;
-}
-
-/* ==========================================================================
-   VISTA: INCIDENCIAS (Imagen 5)
-   ========================================================================== */
-.cabecera-incidencias-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-}
-
-.monto-total-pendiente-tag {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #ef4444;
-}
-
-/* Tarjetas de resumen (Abiertas, Notificadas, Resueltas) */
-.grid-tres-estados-incidencias {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-}
-
-.card-resumen-inc {
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-}
-
-.card-inc-abiertas    { background-color: #fee2e2; border: 1px solid #fecaca; }
-.card-inc-notificadas { background-color: #fef3c7; border: 1px solid #fde68a; }
-.card-inc-resueltas   { background-color: #dcfce7; border: 1px solid #bbf7d0; }
-
-.circulo-icono-estado {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    background-color: #ffffff;
-}
-
+/* 3. INCIDENCIAS */
+.monto-total-pendiente-tag { font-size: 1.15rem; font-weight: 800; color: #ef4444; }
+.grid-tres-estados-incidencias { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+.card-resumen-inc { border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
+.card-inc-abiertas { background: #fee2e2; border: 1px solid #fecaca; } .card-inc-notificadas { background: #fef3c7; border: 1px solid #fde68a; } .card-inc-resueltas { background: #dcfce7; border: 1px solid #bbf7d0; }
+.circulo-icono-estado { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: #ffffff; }
 .datos-resumen-inc { display: flex; flex-direction: column; }
 .num-inc-resumen { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
-
-.card-inc-abiertas .num-inc-resumen    { color: #991b1b; }
-.card-inc-notificadas .num-inc-resumen { color: #92400e; }
-.card-inc-resueltas .num-inc-resumen   { color: #166534; }
-
+.card-inc-abiertas .num-inc-resumen { color: #991b1b; } .card-inc-notificadas .num-inc-resumen { color: #92400e; } .card-inc-resueltas .num-inc-resumen { color: #166534; }
 .label-inc-resumen { font-size: 0.84rem; font-weight: 700; }
-.card-inc-abiertas .label-inc-resumen    { color: #b91c1c; }
-.card-inc-notificadas .label-inc-resumen { color: #b45309; }
-.card-inc-resueltas .label-inc-resumen   { color: #15803d; }
+.card-inc-abiertas .label-inc-resumen { color: #b91c1c; } .card-inc-notificadas .label-inc-resumen { color: #b45309; } .card-inc-resueltas .label-inc-resumen { color: #15803d; }
 
-/* Lista de Incidencias */
-.lista-tarjetas-incidencias-col {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.tarjeta-incidencia-completa {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.5rem 1.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.cuerpo-superior-inc {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.25rem;
-}
-
-.icono-tipo-incidencia {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background-color: #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
+.tarjeta-incidencia-completa { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem 1.75rem; display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1rem; }
+.cuerpo-superior-inc { display: flex; align-items: flex-start; gap: 1.25rem; }
+.icono-tipo-incidencia { width: 40px; height: 40px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
 .info-principal-inc { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
 .fila-titulo-tag { display: flex; align-items: center; gap: 0.75rem; }
 .nombre-item-danado { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
-
-.badge-estado-inc {
-    font-size: 0.74rem;
-    font-weight: 700;
-    padding: 0.2rem 0.65rem;
-    border-radius: 9999px;
-}
-.badge-pendiente  { background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
-.badge-notificada { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
-
-.motivo-desc-txt { font-size: 0.86rem; color: #64748b; margin: 0; }
-
+.badge-estado-inc { font-size: 0.74rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 9999px; }
+.badge-pendiente { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; } .badge-notificada { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+.motivo-desc-txt { font-size: 0.86rem; color: #64748b; }
 .accion-derecha-inc { display: flex; align-items: center; gap: 1rem; }
 .cod-inc-gris { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
-
-/* Grilla de metadatos de la incidencia */
-.metadatos-grid-inc {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr 1.5fr 1fr;
-    gap: 1rem;
-    padding-left: 3.75rem;
-}
-
+.btn-notificar-naranja { background: #f59e0b; color: white; border: none; border-radius: 8px; padding: 0.55rem 1.15rem; font-weight: 700; cursor: pointer; display: inline-flex; gap: 0.45rem; }
+.btn-resolver-verde { background: #059669; color: white; border: none; border-radius: 8px; padding: 0.55rem 1.15rem; font-weight: 700; cursor: pointer; display: inline-flex; gap: 0.45rem; }
+.metadatos-grid-inc { display: grid; grid-template-columns: 1fr 1.5fr 1.5fr 1fr; gap: 1rem; padding-left: 3.75rem; }
 .col-meta-inc { display: flex; flex-direction: column; gap: 0.2rem; }
 .label-meta-dim { font-size: 0.74rem; color: #94a3b8; font-weight: 600; }
 .val-meta-txt { font-size: 0.88rem; color: #0f172a; font-weight: 700; }
-.val-meta-link { font-size: 0.88rem; color: #2563eb; font-weight: 600; text-decoration: none; }
 .val-meta-costo { font-size: 1rem; font-weight: 800; color: #ef4444; }
+.fila-footer-notif { display: flex; align-items: center; gap: 0.5rem; padding-left: 3.75rem; font-size: 0.78rem; color: #64748b; }
 
-.btn-notificar-naranja {
-    background-color: #f59e0b;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.55rem 1.15rem;
-    font-size: 0.86rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    transition: background-color 0.15s ease;
-}
-.btn-notificar-naranja:hover { background-color: #d97706; }
-
-/* ==========================================================================
-   VISTA: CHECK-IN (Imagen 11)
-   ========================================================================== */
-.lista-tarjetas-checkin {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    max-width: 980px;
-}
-
-.tarjeta-reserva-checkin-fila {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.5rem 1.75rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.icono-cuadro-checkin {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    flex-shrink: 0;
-    background-color: #ecfeff; /* Fondo celeste claro */
-}
-
-.info-central-checkin {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
+/* 4. CHECK-IN E INSPECCIÓN */
+.lista-tarjetas-checkin { display: flex; flex-direction: column; gap: 1.25rem; max-width: 980px; }
+.tarjeta-reserva-checkin-fila { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 1.5rem; }
+.icono-cuadro-checkin { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; }
+.bg-quimica { background: #ecfeff; } .bg-rayo { background: #fef2f2; }
+.info-central-checkin { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
 .fila-nombre-estado { display: flex; align-items: center; gap: 0.75rem; }
 .nombre-lab-checkin { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
-
-.badge-estado-pill {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.15rem 0.65rem;
-    border-radius: 9999px;
-}
-.badge-estado-pill.estado-confirmada { background-color: #dbeafe; color: #1d4ed8; }
-
+.badge-estado-pill { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.65rem; border-radius: 9999px; }
+.estado-confirmada { background: #dbeafe; color: #1d4ed8; } .estado-pendiente { background: #fef3c7; color: #b45309; }
 .metadatos-horario-checkin { font-size: 0.82rem; color: #64748b; }
-
 .pills-integrantes-flex { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
-.pill-integrante-nombre {
-    background-color: #f1f5f9;
-    color: #475569;
-    font-size: 0.76rem;
-    font-weight: 600;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-}
-
-.accion-derecha-checkin {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.75rem;
-}
-
+.pill-integrante-nombre { background: #f1f5f9; color: #475569; font-size: 0.76rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+.accion-derecha-checkin { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; }
 .codigo-reserva-checkin { font-size: 0.85rem; font-weight: 600; color: #94a3b8; }
+.btn-verde-iniciar { background: #0d9488; color: white; border: none; border-radius: 10px; padding: 0.65rem 1.4rem; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; gap: 0.45rem; }
+.tarjeta-sin-checkins-vacia { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 5rem 2rem; text-align: center; max-width: 980px; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 
-.btn-verde-iniciar {
-    background-color: #0d9488;
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 0.65rem 1.4rem;
-    font-size: 0.88rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-.btn-verde-iniciar:hover { background-color: #0f766e; }
+/* ==========================================================================
+   5. MODALES (Fondo, tarjetas y botones)
+   ========================================================================== */
+.fondo-modal-oscuro { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.tarjeta-modal { background: #ffffff; border-radius: 16px; padding: 2rem 2.2rem; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+.modal-checkin-ancho { width: 90%; max-width: 540px; background: #ffffff; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
+.modal-inventario-contenedor { background: #ffffff; border-radius: 16px; width: 90%; max-width: 540px; overflow: hidden; display: flex; flex-direction: column; }
 
-/* Tarjeta vacía de Check-in */
-.tarjeta-sin-checkins-vacia {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 5rem 2rem;
-    text-align: center;
-    max-width: 980px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-.icono-fiesta-confeti { font-size: 2.75rem; }
+.cabecera-modal-figma { background: #171738; color: #ffffff; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
+.titulo-modal-txt { font-size: 1.15rem; font-weight: 800; margin: 0; }
+.subtitulo-modal-txt { font-size: 0.78rem; color: #a5b4fc; margin-top: 0.3rem; }
+.btn-cerrar-modal-x { background: transparent; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer; }
+.cuerpo-modal-formulario { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; overflow-y: auto; }
+.pie-modal-formulario { padding: 1rem 1.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1.25rem; border-top: 1px solid #f1f5f9; }
+.btn-cancelar-enlace { background: transparent; border: none; font-size: 0.88rem; font-weight: 600; color: #64748b; cursor: pointer; }
+.btn-guardar-verde-teal { background: #0d9488; color: white; border: none; border-radius: 8px; padding: 0.65rem 1.4rem; font-weight: 700; cursor: pointer; }
+
+/* Tarjetas de Inspección (Items) */
+.tarjeta-item-inspeccionar { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.9rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.tarjeta-item-inspeccionar.marcado-danado { background: #fff1f2; border-color: #f43f5e; }
+.fila-principal-item-insp { display: flex; justify-content: space-between; align-items: center; }
+.acciones-estado-item { display: flex; gap: 0.5rem; }
+.btn-estado-check { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 700; color: #64748b; cursor: pointer; }
+.btn-estado-check.activo-conforme { background: #ecfdf5; border-color: #10b981; color: #059669; }
+.btn-estado-check.activo-danado { background: #ef4444; border-color: #dc2626; color: #ffffff; }
+.input-motivo-dano { width: 100%; padding: 0.55rem 0.75rem; border: 1.5px solid #f87171; border-radius: 8px; font-size: 0.82rem; display: none; }
+
+/* Modales de Resultado / Avisos */
+.modal-resultado-card { background: #ffffff; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.icono-resultado-circulo { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+.res-exito { background: #ecfdf5; color: #059669; } .res-danio { background: #fee2e2; color: #dc2626; }
+.btn-entendido-modal { background: #0f172a; color: white; border: none; border-radius: 8px; padding: 0.65rem 1.75rem; font-weight: 700; cursor: pointer; }
+
+/* Modal Incidencias (Aviso) */
+.fondo-modal-incidencia { position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.tarjeta-modal-inc { background: #ffffff; border-radius: 16px; width: 90%; max-width: 460px; padding: 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.1rem; }
+.icono-circulo-modal { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+.icono-modal-correo { background: #fef3c7; color: #d97706; border: 2px solid #fde68a; }
+.icono-modal-resuelto { background: #ecfdf5; color: #059669; border: 2px solid #a7f3d0; }
+.titulo-modal-aviso { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
+.texto-modal-aviso { font-size: 0.88rem; color: #64748b; line-height: 1.5; }
+.banner-bloqueo-aviso { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.78rem; color: #dc2626; display: flex; gap: 0.5rem; width: 100%; text-align: left; }
+.btn-cerrar-modal-aviso { background: #0f172a; color: white; border: none; border-radius: 8px; padding: 0.65rem 1.85rem; font-weight: 700; cursor: pointer; width: 100%; }

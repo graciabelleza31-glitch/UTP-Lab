@@ -10,42 +10,22 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- CSS GLOBAL (se carga en todas las páginas) -->
+    <!-- CSS GLOBAL -->
     <link rel="stylesheet" th:href="@{/css/base.css}" />
-    
-    <!-- CSS DINÁMICO: usando el atributo requestURI del ControllerAdvice -->
-<th:block th:if="${#strings.contains(requestURI, 'alumno')}">
-    <link rel="stylesheet" th:href="@{/css/alumno.css}" />
-</th:block>
 
-<th:block th:if="${#strings.contains(requestURI, 'admin')}">
-    <link rel="stylesheet" th:href="@{/css/admin.css}" />
-</th:block>
+    <!-- CSS DINÁMICO -->
+    <th:block th:if="${#strings.contains(requestURI, 'alumno')}">
+        <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+    </th:block>
 
-<th:block th:if="${#strings.contains(requestURI, 'login') 
-                 or #strings.contains(requestURI, 'recuperar') 
-                 or #strings.contains(requestURI, 'cambiar-password')}">
-    <link rel="stylesheet" th:href="@{/css/login.css}" />
-</th:block>
-    
-    <!-- Los modales se cargan siempre porque se usan en varias vistas -->
+    <th:block th:if="${#strings.contains(requestURI, 'admin')}">
+        <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    </th:block>
+
+    <th:block th:if="${#strings.contains(requestURI, 'login') or #strings.contains(requestURI, 'recuperar') or #strings.contains(requestURI, 'cambiar-password')}">
+        <link rel="stylesheet" th:href="@{/css/login.css}" />
+    </th:block>
+
+    <!-- MODALES AL FINAL (Para que sobrescriban si hay conflictos) -->
     <link rel="stylesheet" th:href="@{/css/modales.css}" />
-</head><head th:fragment="head(title)">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">UTP +Lab</title>
-    
-    <!-- Fuentes y librerías -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-    <!-- CSS GLOBAL (se cargan todos para evitar errores de ruta) -->
-    <link rel="stylesheet" th:href="@{/css/base.css}" />
-    <link rel="stylesheet" th:href="@{/css/modales.css}" />
-    <link rel="stylesheet" th:href="@{/css/alumno.css}" />
-    <link rel="stylesheet" th:href="@{/css/admin.css}" />
-    <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>

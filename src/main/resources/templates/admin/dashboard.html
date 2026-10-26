@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('UTP +Lab - Dashboard')}"></head>
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
 <body>
   <div class="contenedor-app">
     
     <!-- Actualizado a sidebar-admin -->
-    <aside th:replace="~{fragments/sidebar-admin :: sidebar('dashboard')}"></aside>
-
+<aside th:replace="~{fragments/sidebar-admin :: sidebar('dashboard')}"></aside>
     <main class="area-principal">
       <!-- Actualizado a topbar-admin -->
       <header th:replace="~{fragments/topbar-admin :: topbar}"></header>

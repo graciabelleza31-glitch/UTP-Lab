@@ -133,79 +133,88 @@ function abrirModalIncidencia(fila) {
 function cerrarModalIncidencia() {
     document.getElementById('modalDetalleIncidencia').style.display = 'none';
 }
-
 let chartInstance = null;
 let datosEstadisticas = null;
 
 function abrirGrafico(tipo) {
-    document.getElementById('modalGrafico').style.display = 'flex';
-    
-    // Obtenemos el mes actual del input o de la URL
+    // 1. Mostrar el modal
+    const modal = document.getElementById('modalGrafico');
+    modal.style.display = 'flex'; 
+
+    // 2. Título dinámico inicial
+    const titulo = document.getElementById('tituloGrafico');
+    if (tipo === 'reservas') titulo.innerText = 'Reservas por mes';
+    if (tipo === 'horas') titulo.innerText = 'Horas de laboratorio por mes';
+    if (tipo === 'materiales') titulo.innerText = 'Materiales solicitados por mes';
+
+    // 3. Obtener el mes actual para la consulta
     const urlParams = new URLSearchParams(window.location.search);
-    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7); // YYYY-MM
-    
-    const cargarDatos = () => {
-        return fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
-            .then(res => res.json())
-            .then(data => {
-                datosEstadisticas = data;
-                dibujarGrafico(tipo);
-            });
-    };
-    
-    // Siempre cargar datos nuevos para el mes actual
-    cargarDatos();
+    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7); 
+
+    // 4. Cargar los datos reales desde el backend
+    fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
+        .then(res => res.json())
+        .then(data => {
+            datosEstadisticas = data;
+            dibujarGraficoConDatos(tipo); // Llamamos a la función que dibuja
+        })
+        .catch(() => {
+            alert("Error al cargar las estadísticas.");
+            cerrarGrafico();
+        });
 }
 
-function dibujarGrafico(tipo) {
-    const ctx = document.getElementById('canvasGrafico').getContext('2d');
-    
-    if (chartInstance) chartInstance.destroy();
-    
-    let titulo = '', datos = [], color = '';
-    
-    if (tipo === 'reservas') {
-        titulo = 'Reservas por mes';
-        datos = datosEstadisticas.reservas;
-        color = '#2563eb';
-    } else if (tipo === 'horas') {
-        titulo = 'Horas de laboratorio por mes';
-        datos = datosEstadisticas.horas;
-        color = '#8b5cf6';
-    } else {
-        titulo = 'Materiales solicitados por mes';
-        datos = datosEstadisticas.materiales;
-        color = '#f59e0b';
+function dibujarGraficoConDatos(tipo) {
+    // 1. Si ya hay un gráfico, lo destruimos para que no se superponga
+    if (chartInstance) {
+        chartInstance.destroy();
     }
-    
-    document.getElementById('tituloGrafico').innerText = titulo;
-    
-    chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: datosEstadisticas.labels,
-            datasets: [{
-                label: titulo,
-                data: datos,
-                backgroundColor: color,
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+
+    // 2. Esperamos un poquito a que el modal se pinte en pantalla (evita deformaciones)
+    setTimeout(() => {
+        const ctx = document.getElementById('canvasGrafico').getContext('2d');
+        
+        let datos = [];
+        let color = '';
+
+        if (tipo === 'reservas') {
+            datos = datosEstadisticas.reservas;
+            color = '#2563eb';
+        } else if (tipo === 'horas') {
+            datos = datosEstadisticas.horas;
+            color = '#8b5cf6';
+        } else {
+            datos = datosEstadisticas.materiales;
+            color = '#f59e0b';
+        }
+
+        // 3. Dibujamos el gráfico
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: datosEstadisticas.labels,
+                datasets: [{
+                    label: 'Total',
+                    data: datos,
+                    backgroundColor: color,
+                    borderRadius: 6
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false } 
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
                 }
             }
-        }
-    });
+        });
+    }, 100); // 100ms de delay para que el CSS haga su magia
 }
 
 function cerrarGrafico() {
