@@ -138,40 +138,44 @@ let chartInstance = null;
 let datosEstadisticas = null;
 
 function abrirGrafico(tipo) {
-    document.getElementById('modalGrafico').style.display = 'flex';
+    const modal = document.getElementById('modalGrafico');
+    modal.style.display = 'flex';
     
+    // Obtenemos el mes de la URL o el actual
     const urlParams = new URLSearchParams(window.location.search);
     const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7);
     
-    const cargarDatos = () => {
-        return fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
-            .then(res => res.json())
-            .then(data => {
-                datosEstadisticas = data;
-                dibujarGrafico(tipo);
-            });
-    };
-    
-    cargarDatos();
+    // Cambiamos el subtítulo del modal para que muestre el mes
+    const nombreMes = new Date(mesActual + "-01").toLocaleString('es-PE', { month: 'long', year: 'numeric' });
+    document.querySelector('.subtitulo-modal-grafico').innerText = "Mes de " + nombreMes;
+
+    fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
+        .then(res => res.json())
+        .then(data => {
+            datosEstadisticas = data;
+            // Esperamos 100ms a que el modal se haga visible antes de dibujar
+            setTimeout(() => dibujarGrafico(tipo), 100);
+        });
 }
 
 function dibujarGrafico(tipo) {
-    const ctx = document.getElementById('canvasGrafico').getContext('2d');
+    const canvas = document.getElementById('canvasGrafico');
+    const ctx = canvas.getContext('2d');
     
     if (chartInstance) chartInstance.destroy();
     
     let titulo = '', datos = [], color = '';
     
     if (tipo === 'reservas') {
-        titulo = 'Reservas por mes';
+        titulo = 'Reservas por día';
         datos = datosEstadisticas.reservas;
         color = '#2563eb';
     } else if (tipo === 'horas') {
-        titulo = 'Horas de laboratorio por mes';
+        titulo = 'Horas de laboratorio por día';
         datos = datosEstadisticas.horas;
         color = '#8b5cf6';
     } else {
-        titulo = 'Materiales solicitados por mes';
+        titulo = 'Materiales solicitados por día';
         datos = datosEstadisticas.materiales;
         color = '#f59e0b';
     }

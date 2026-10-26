@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.integrador.lab.modelo.Alumno;
@@ -37,33 +38,63 @@ public class AlumnoIncidenciasController {
     private AlumnoRepository alumnoRepositorio;
 
     @GetMapping
-public String verMisIncidencias(HttpSession session, Model model) {
-    Alumno alumnoLogueado = (Alumno) session.getAttribute("usuarioLogueado");
-    if (alumnoLogueado == null) {
-        alumnoLogueado = alumnoRepositorio.findById("U24201349").orElse(null);
-    }
-
-    List<SancionAlumnoDto> listaIncidencias = new ArrayList<>();
-    int pendientesCount = 0;
-    boolean estaBloqueado = false;
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    if (alumnoLogueado != null) {
-        // Refrescamos los datos del alumno de la BD para tener su estado actual (HABILITADO / BLOQUEADO)
-        alumnoLogueado = alumnoRepositorio.findById(alumnoLogueado.getIdEstud()).orElse(alumnoLogueado);
+    public String verMisIncidencias(
+            @RequestParam(required = false) String mes,
+            HttpSession session, 
+            Model model) {
         
+        Alumno alumnoLogueado = (Alumno) session.getAttribute("usuarioLogueado");
+        if (alumnoLogueado == null) {
+            return "redirect:/login";
+        }
+
+        // 1. Calcular la fecha del mes seleccionado
+        java.time.LocalDate fechaConsulta;
+        try {
+            fechaConsulta = (mes != null && !mes.isEmpty()) 
+                    ? java.time.LocalDate.parse(mes + "-01") 
+                    : java.time.LocalDate.now();
+        } catch (Exception e) {
+            fechaConsulta = java.time.LocalDate.now();
+        }
+
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        java.time.LocalDate mesAnterior = fechaConsulta.minusMonths(1);
+        java.time.LocalDate mesSiguiente = fechaConsulta.plusMonths(1);
+        
+        java.util.Locale espLocale = new java.util.Locale("es", "PE");
+        String nombreMes = fechaConsulta.getMonth().getDisplayName(java.time.format.TextStyle.FULL, espLocale);
+        nombreMes = nombreMes.substring(0, 1).toUpperCase() + nombreMes.substring(1);
+        String mesFormateado = nombreMes + " " + fechaConsulta.getYear();
+        
+        String mesInput = String.format("%04d-%02d", fechaConsulta.getYear(), fechaConsulta.getMonthValue());
+
+        List<SancionAlumnoDto> listaIncidencias = new ArrayList<>();
+        int pendientesCount = 0;
+        boolean estaBloqueado = false;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
         List<Sancion> misSanciones = sancionRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
 
         for (Sancion s : misSanciones) {
             String est = (s.getEstado() != null) ? s.getEstado().toUpperCase().trim() : "PENDIENTE";
             boolean resuelta = "RESUELTA".equals(est) || "PAGADO".equals(est) || "PAGADA".equals(est);
 
-            // SI YA ESTÁ RESUELTA/PAGADA, NO LA MOSTRAMOS EN LA LISTA ACTIVA
             if (resuelta) {
                 continue; 
             }
 
             pendientesCount++;
+
+            // ⭐ FILTRAR POR MES
+            if (s.getReserva() != null && s.getReserva().getFechaReserva() != null) {
+                int mesSancion = s.getReserva().getFechaReserva().getMonthValue();
+                int anioSancion = s.getReserva().getFechaReserva().getYear();
+                
+                if (mesSancion != fechaConsulta.getMonthValue() || anioSancion != fechaConsulta.getYear()) {
+                    continue; // Si no es del mes, lo saltamos
+                }
+            }
 
             String item = (s.getProducto() != null) ? s.getProducto().getNombre() : "Material / Equipo";
             String motivo = (s.getMotivo() != null) ? s.getMotivo() : "Daño reportado";
@@ -88,19 +119,22 @@ public String verMisIncidencias(HttpSession session, Model model) {
             ));
         }
 
-        // El alumno solo está bloqueado si tiene deudas pendientes reales o su estado es deudor
         estaBloqueado = (pendientesCount > 0) || "BLOQUEADO_POR_DEUDA".equalsIgnoreCase(alumnoLogueado.getEstadoCuenta());
+
+        model.addAttribute("alumno", alumnoLogueado);
+        model.addAttribute("incidencias", listaIncidencias);
+        model.addAttribute("pendientesCount", pendientesCount);
+        model.addAttribute("estaBloqueado", estaBloqueado);
+
+        // Datos del selector de mes
+        model.addAttribute("mesFormateado", mesFormateado);
+        model.addAttribute("mesInput", mesInput);
+        model.addAttribute("mesAnterior", String.format("%04d-%02d", mesAnterior.getYear(), mesAnterior.getMonthValue()));
+        model.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
+        model.addAttribute("esMesActual", fechaConsulta.getMonthValue() == hoy.getMonthValue() && fechaConsulta.getYear() == hoy.getYear());
+
+        return "alumno/incidencias";
     }
-
-    // NOTA: Se retira el mock 'if (listaIncidencias.isEmpty())' para no revivir incidencias fantasmas
-
-    model.addAttribute("alumno", alumnoLogueado);
-    model.addAttribute("incidencias", listaIncidencias);
-    model.addAttribute("pendientesCount", pendientesCount);
-    model.addAttribute("estaBloqueado", estaBloqueado);
-
-    return "alumno/incidencias";
-}
 
         // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO
     @PostMapping("/pagar/{id}")

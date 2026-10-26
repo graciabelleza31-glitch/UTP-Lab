@@ -39,6 +39,27 @@
         </span>
       </div>
 
+      <!-- ⭐ SELECTOR DE MES (AGREGADO AQUÍ) -->
+      <div class="cabecera-historial-con-filtro" style="margin-bottom: 2rem;">
+        <span class="subtitulo-seccion-gris" th:text="'Mostrando incidencias de ' + ${mesFormateado}">Mostrando incidencias</span>
+        
+        <div class="selector-mes-historial">
+            <a th:href="@{/alumno/incidencias(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
+                <i data-lucide="chevron-left"></i>
+            </a>
+            <input type="month" 
+                   th:value="${mesInput}"
+                   onchange="window.location.href='/alumno/incidencias?mes=' + this.value"
+                   class="input-mes-historial">
+            <a th:href="@{/alumno/incidencias(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
+                <i data-lucide="chevron-right"></i>
+            </a>
+            <a th:href="@{/alumno/incidencias}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
+                Actual
+            </a>
+        </div>
+      </div>
+
       <!-- BANNER DE BLOQUEO -->
       <div th:if="${estaBloqueado}" id="bannerBloqueoAlerta" class="banner-bloqueo">
         <i data-lucide="minus-circle" class="icono-bloqueo-banner"></i>

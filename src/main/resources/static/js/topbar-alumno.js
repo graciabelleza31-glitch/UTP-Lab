@@ -6,9 +6,35 @@ function toggleNotificaciones(event) {
     event.stopPropagation();
     const burbuja = document.getElementById('burbujaNotificaciones');
     if (!burbuja) return;
+    
     if (burbuja.style.display === 'none' || burbuja.style.display === '') {
         burbuja.style.display = 'block';
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        // ⭐ CARGAR NOTIFICACIONES AL ABRIR
+        fetch('/alumno/api/notificaciones')
+            .then(res => res.json())
+            .then(data => {
+                const contenedor = document.getElementById('listaNotificaciones');
+                if (!contenedor) return;
+                contenedor.innerHTML = '';
+                
+                if (data.length === 0) {
+                    contenedor.innerHTML = `<div class="sin-notificaciones"><p>No hay notificaciones</p></div>`;
+                } else {
+                    data.forEach(n => {
+                        contenedor.innerHTML += `
+                            <a href="${n.url}" class="item-notificacion">
+                                <div class="icono-notif icono-notif-amarillo"><i data-lucide="bell"></i></div>
+                                <div class="info-notif">
+                                    <strong>${n.titulo}</strong>
+                                    <span>${n.mensaje}</span>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
     } else {
         burbuja.style.display = 'none';
     }

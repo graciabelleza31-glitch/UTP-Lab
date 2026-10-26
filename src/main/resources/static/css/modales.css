@@ -268,7 +268,16 @@
 .cabecera-modal-recibo { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; }
 .titulo-modal-recibo { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; }
 .subtitulo-modal-recibo { font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0; }
-.btn-cerrar-recibo { background: transparent; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.btn-cerrar-recibo {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-left: auto; /* 👈 Esto empuja la X a la derecha */
+}
 .btn-cerrar-recibo:hover { background: #f1f5f9; color: #475569; }
 .cuerpo-modal-recibo { padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
 .cabecera-azul-recibo { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 1.25rem; color: #ffffff; display: flex; flex-direction: column; gap: 0.25rem; }
