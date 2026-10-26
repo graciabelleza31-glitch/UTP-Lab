@@ -37,7 +37,7 @@ public class LoginController {
             String rol = (String) sesion.getAttribute("rol");
             return "ADMIN".equalsIgnoreCase(rol) ? "redirect:/admin/dashboard" : "redirect:/alumno/laboratorios";
         }
-        return "auth/ogin";
+        return "auth/login";
     }
 
      @PostMapping("/login")
