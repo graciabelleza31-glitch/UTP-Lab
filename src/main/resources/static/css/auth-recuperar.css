@@ -1,0 +1,230 @@
+body {
+  background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+.tarjeta-recuperar {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 460px;
+  width: 100%;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+}
+.logo-recuperar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.insignia-utp {
+  background: #000;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 5px;
+}
+.texto-lab {
+  color: #1e1b4b;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.icono-lock {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+.titulo-recuperar {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+.subtitulo-recuperar {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+.grupo-campo {
+  margin-bottom: 1.25rem;
+}
+.grupo-campo label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+.campo-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.campo-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.btn-enviar {
+  width: 100%;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  margin-top: 0.5rem;
+}
+.btn-enviar:hover:not(:disabled) {
+  background: #15803d;
+}
+.btn-enviar:disabled {
+  background: #cbd5e1 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+.alerta-error {
+  background: #fee2e2;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.ayuda-campo {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 0.35rem;
+}
+.enlace-volver {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+.enlace-volver:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+/* Estilos del checklist interactivo */
+.requisitos-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0 1.25rem 0;
+  font-size: 0.82rem;
+}
+.requisito-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+  transition: color 0.2s ease;
+}
+.requisito-item .icono {
+  font-size: 0.85rem;
+  width: 14px;
+  text-align: center;
+}
+.requisito-item.cumplido {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Estilos específicos para Restablecer Contraseña */
+.btn-enviar-azul {
+  width: 100%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-enviar-azul:hover {
+  background: #1d4ed8;
+}
+
+/* Estilos específicos para el campo de código de verificación */
+.campo-codigo {
+  width: 100%;
+  padding: 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  font-weight: 700;
+  font-family: "Inter", sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.campo-codigo:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Icono del email (opcional, si quieres mantener el diseño original) */
+.icono-email {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Botón azul (usado en restablecer y verificar) */
+.btn-enviar-azul {
+  width: 100%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-enviar-azul:hover {
+  background: #1d4ed8;
+}

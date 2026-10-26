@@ -4,17 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UTP +Lab - Iniciar Sesión</title>
-    <link
-      rel="stylesheet"
-      th:href="@{/css/estilos.css}"
-      href="/css/estilos.css"
-    />
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+    
+    <!-- Fuentes y Librerías -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
@@ -142,22 +140,7 @@
       </section>
     </div>
 
-    <script>
-      lucide.createIcons();
-
-      function alternarVisibilidadClave() {
-        const campoClave = document.getElementById("password");
-        const iconoOjo = document.getElementById("iconoOjo");
-
-        if (campoClave.type === "password") {
-          campoClave.type = "text";
-          iconoOjo.setAttribute("data-lucide", "eye-off");
-        } else {
-          campoClave.type = "password";
-          iconoOjo.setAttribute("data-lucide", "eye");
-        }
-        lucide.createIcons();
-      }
-    </script>
+    <!-- JS específico de Autenticación -->
+    <script th:src="@{/js/auth.js}"></script>
   </body>
 </html>

@@ -480,3 +480,19 @@ body {
         opacity: 0.7;
     }
 }
+
+/* Badge de alerta roja en el menú lateral */
+.badge-alerta-roja {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto; /* Empuja el badge a la derecha */
+}

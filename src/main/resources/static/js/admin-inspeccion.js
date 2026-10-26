@@ -225,3 +225,24 @@ function mostrarModalResultado(huboDanio, titulo, mensaje) {
 function cerrarModalResultado() {
   document.getElementById('modalResultado').style.display = 'none';
 }
+
+// Función para registrar la salida (Check-out)
+function abrirModalCheckout(idReserva) {
+    if (!confirm('¿Registrar la salida del estudiante y liberar el laboratorio? El material pasará a estado DEVUELTO para su inspección.')) {
+        return;
+    }
+
+    // Hacemos la petición al endpoint de checkin que ya tenías
+    fetch(`/admin/checkin/confirmar/${idReserva}`, {
+        method: 'POST'
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Error al registrar checkout");
+        return res.json();
+    })
+    .then(() => {
+        alert("✅ Salida registrada. Ahora puedes inspeccionar el material.");
+        window.location.reload(); // Recargamos para que el botón cambie a "Inspeccionar"
+    })
+    .catch(() => alert("Ocurrió un error al registrar la salida."));
+}

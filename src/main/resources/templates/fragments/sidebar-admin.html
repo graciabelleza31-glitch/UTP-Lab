@@ -27,12 +27,6 @@
             <i data-lucide="package"></i>
             <span>Inventario</span>
         </a>
-        <a th:href="@{/admin/checkout}" 
-           th:classappend="${activo == 'checkout' ? 'activo' : ''}" 
-           class="item-menu">
-            <i data-lucide="corner-down-left"></i>
-            <span>Check-out</span>
-        </a>
         <a th:href="@{/admin/inspeccion}" 
            th:classappend="${activo == 'inspeccion' ? 'activo' : ''}" 
            class="item-menu">
@@ -40,17 +34,17 @@
             <span>Inspección</span>
         </a>
         <a th:href="@{/admin/incidencias}" 
-   th:classappend="${activo == 'incidencias' ? 'activo' : ''}" 
-   class="item-menu item-incidencias">
-    <i data-lucide="alert-triangle"></i>
-    <span>Incidencias</span>
-    <span class="badge-alerta-roja" 
-          th:if="${totalIncidencias != null and totalIncidencias > 0}" 
-          th:text="${totalIncidencias}">1</span>
-    <span class="punto-rojo-sin-numero" 
-          th:if="${totalIncidencias == null or totalIncidencias == 0}"
-          title="Sin incidencias"></span>
-</a>
+           th:classappend="${activo == 'incidencias' ? 'activo' : ''}" 
+           class="item-menu item-incidencias">
+            <i data-lucide="alert-triangle"></i>
+            <span>Incidencias</span>
+            <span class="badge-alerta-roja" 
+                  th:if="${totalIncidencias != null and totalIncidencias > 0}" 
+                  th:text="${totalIncidencias}">1</span>
+            <span class="punto-rojo-sin-numero" 
+                  th:if="${totalIncidencias == null or totalIncidencias == 0}"
+                  title="Sin incidencias"></span>
+        </a>
     </nav>
 </aside>
 

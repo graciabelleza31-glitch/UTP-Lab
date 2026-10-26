@@ -4,123 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UTP +Lab - Restablecer contraseña</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        margin: 0;
-        font-family: "Inter", sans-serif;
-      }
-      .tarjeta-recuperar {
-        background: #ffffff;
-        border-radius: 20px;
-        max-width: 460px;
-        width: 100%;
-        padding: 2.5rem;
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-      }
-      .logo-recuperar {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-      }
-      .insignia-utp {
-        background: #000;
-        color: #fff;
-        font-weight: 800;
-        font-size: 0.85rem;
-        padding: 0.25rem 0.55rem;
-        border-radius: 5px;
-      }
-      .texto-lab {
-        color: #1e1b4b;
-        font-weight: 700;
-        font-size: 1.1rem;
-      }
-      .titulo-recuperar {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 0.5rem;
-      }
-      .subtitulo-recuperar {
-        font-size: 0.9rem;
-        color: #64748b;
-        margin-bottom: 2rem;
-        line-height: 1.5;
-      }
-      .grupo-campo {
-        margin-bottom: 1.25rem;
-      }
-      .grupo-campo label {
-        display: block;
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 0.5rem;
-      }
-      .campo-input {
-        width: 100%;
-        padding: 0.85rem 1rem;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 10px;
-        font-size: 0.95rem;
-        font-family: "Inter", sans-serif;
-        outline: none;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-        box-sizing: border-box;
-      }
-      .campo-input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .btn-enviar {
-        width: 100%;
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        padding: 0.9rem;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .btn-enviar:hover {
-        background: #1d4ed8;
-      }
-      .alerta-error {
-        background: #fee2e2;
-        border-left: 4px solid #dc2626;
-        color: #991b1b;
-        padding: 0.85rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.25rem;
-        font-size: 0.85rem;
-      }
-      .link-volver {
-        display: block;
-        text-align: center;
-        font-size: 0.85rem;
-        color: #64748b;
-        text-decoration: none;
-        margin-top: 1.25rem;
-      }
-      .link-volver:hover {
-        color: #2563eb;
-      }
-    </style>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/auth-recuperar.css}" />
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div class="tarjeta-recuperar">
@@ -135,6 +24,7 @@
         correo institucional.
       </p>
 
+      <!-- Alerta de error -->
       <div th:if="${error}" class="alerta-error" th:text="${error}">Error</div>
 
       <form th:action="@{/recuperar/restablecer}" method="post">
@@ -151,12 +41,10 @@
           />
         </div>
 
-        <button type="submit" class="btn-enviar">Enviar código →</button>
+        <button type="submit" class="btn-enviar-azul">Enviar código →</button>
       </form>
 
-      <a th:href="@{/login}" class="link-volver"
-        >← Volver al inicio de sesión</a
-      >
+      <a th:href="@{/login}" class="link-volver">← Volver al inicio de sesión</a>
     </div>
   </body>
 </html>
