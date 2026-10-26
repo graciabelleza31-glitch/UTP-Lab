@@ -61,6 +61,12 @@ public class EmailService {
         }
     }
 
+        // Método público genérico para enviar cualquier correo
+    public void enviarCorreo(String destinatario, String asunto, String cuerpo) {
+        // Como no tenemos el nombre del alumno a la mano, usamos un genérico
+        enviarCorreoBrevo(destinatario, "Estudiante UTP", asunto, cuerpo);
+    }
+
     // 1. Método existente para Restablecimiento de Contraseña
     public void enviarCodigoRestablecimiento(String destinatario, String nombreAlumno, String codigo) {
         String cuerpo = "Hola " + nombreAlumno + ",\n\n"

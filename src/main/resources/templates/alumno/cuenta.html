@@ -119,25 +119,24 @@
 
                 <!-- HISTORIAL DE INCIDENCIAS -->
         <div class="cabecera-historial-con-filtro" style="margin-top: 2rem;">
-            <span class="subtitulo-seccion-gris">HISTORIAL DE INCIDENCIAS</span>
-            
-            <!-- Selector de mes (Igual al de reservas) -->
-            <div class="selector-mes-historial">
-                <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
-                    <i data-lucide="chevron-left"></i>
-                </a>
-                <input type="month" 
-                       th:value="${mesInput}"
-                       onchange="window.location.href='/alumno/cuenta?mes=' + this.value"
-                       class="input-mes-historial">
-                <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
-                    <i data-lucide="chevron-right"></i>
-                </a>
-                <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
-                    Actual
-                </a>
-            </div>
-        </div>
+    <span class="subtitulo-seccion-gris">HISTORIAL DE INCIDENCIAS</span>
+    
+    <div class="selector-mes-historial">
+        <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
+            <i data-lucide="chevron-left"></i>
+        </a>
+        <input type="month" 
+               th:value="${mesInput}"
+               onchange="window.location.href='/alumno/cuenta?mes=' + this.value"
+               class="input-mes-historial">
+        <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
+            <i data-lucide="chevron-right"></i>
+        </a>
+        <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
+            Actual
+        </a>
+    </div>
+</div>
 
         <!-- Mensaje si no hay incidencias en ese mes -->
         <div th:if="${#lists.isEmpty(historialIncidencias)}" class="tarjeta-perfil-alumno" style="text-align: center; padding: 2rem; margin-bottom: 2rem;">

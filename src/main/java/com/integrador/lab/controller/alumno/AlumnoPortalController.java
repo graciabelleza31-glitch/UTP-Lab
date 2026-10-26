@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.time.format.DateTimeParseException;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.integrador.lab.modelo.Alumno;
 import com.integrador.lab.modelo.Boleta;
@@ -35,6 +38,8 @@ import com.integrador.lab.repository.ReservaIntegranteRepository;
 import com.integrador.lab.repository.ReservaItemRepository;
 import com.integrador.lab.repository.ReservaRepository;
 import com.integrador.lab.repository.SancionRepository;
+import com.integrador.lab.service.EmailService;
+
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 
@@ -65,6 +70,9 @@ public class AlumnoPortalController {
 
     @Autowired
     private SancionRepository sancionRepositorio;
+
+    @Autowired 
+    private EmailService emailService;
 
     // =========================================================================
     // 1. PANTALLA PRINCIPAL: LABORATORIOS Y GESTIÓN DE RESERVAS
@@ -122,8 +130,8 @@ public class AlumnoPortalController {
 
             String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
             
-            // ⭐ SOLO CONTAMOS SI ESTÁ CONFIRMADA O EN USO
-            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO")) {
+                        // ⭐ CAMBIO: Ahora NO_ASISTIO también cuenta.
+            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO") || estado.equals("NO_ASISTIO")) {
                 if (!idsReservasHoy.contains(r.getIdReserva())) {
                     idsReservasHoy.add(r.getIdReserva());
                 }
@@ -431,6 +439,21 @@ public class AlumnoPortalController {
                 "PAGO_" + metodoPago.toUpperCase()
         );
         boletaRepositorio.save(boleta);
+                // ⭐ ENVIAR CORREO DE CONFIRMACIÓN
+        try {
+            String correoDestino = alumnoLogueado.getIdEstud().toLowerCase() + "@utp.edu.pe";
+            String asunto = "✅ Confirmación de Reserva - UTP +Lab";
+            String mensaje = "Hola " + alumnoLogueado.getNombre() + ",\n\n" +
+                    "Tu reserva en " + lab.getNombre() + " (" + lab.getUbicacionCubiculo() + ") ha sido confirmada.\n" +
+                    "Fecha: " + fecha + "\n" +
+                    "Horario: " + horaInicio + " - " + horaFin + "\n\n" +
+                    "Recuerda llegar 10 minutos antes para tu check-in.\n\n" +
+                    "Atentamente,\nEl equipo de UTP +Lab";
+
+            emailService.enviarCorreo(correoDestino, asunto, mensaje);
+        } catch (Exception e) {
+            System.out.println("❌ Error al enviar correo: " + e.getMessage());
+        }
 
         return "redirect:/alumno/laboratorios";
     }
@@ -844,6 +867,48 @@ public class AlumnoPortalController {
         return "redirect:/alumno/cuenta";
     }
 
+            @GetMapping("/api/notificaciones")
+    @org.springframework.web.bind.annotation.ResponseBody
+    @Transactional(readOnly = true)
+    public java.util.List<java.util.Map<String, String>> obtenerNotificaciones(HttpSession sesion) {
+        java.util.List<java.util.Map<String, String>> notificaciones = new java.util.ArrayList<>();
+        Object usuario = sesion.getAttribute("usuarioLogueado");
+        
+        if (!(usuario instanceof Alumno)) return notificaciones;
+        Alumno alumno = (Alumno) usuario;
+
+        // 1. Notificación si tiene incidencias pendientes
+        long incidencias = sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE").size();
+        if (incidencias > 0) {
+            java.util.Map<String, String> notif = new java.util.HashMap<>();
+            notif.put("titulo", "Tienes incidencias pendientes");
+            notif.put("mensaje", "Tienes " + incidencias + " incidencia(s) sin resolver. Ve a la sección Incidencias.");
+            notif.put("url", "/alumno/incidencias");
+            notificaciones.add(notif);
+        }
+
+        // 2. Notificación si tiene una reserva próxima (menos de 1 hora)
+        List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
+        java.time.LocalDateTime ahora = java.time.LocalDateTime.now(java.time.ZoneId.of("America/Lima"));
+
+        for (ReservaIntegrante ri : participaciones) {
+            Reserva r = ri.getReserva();
+            if (r == null || r.getFechaReserva() == null || !"CONFIRMADA".equals(r.getEstado())) continue;
+
+            java.time.LocalDateTime inicio = java.time.LocalDateTime.of(r.getFechaReserva(), r.getHoraInicio());
+            long minutosFaltantes = java.time.Duration.between(ahora, inicio).toMinutes();
+
+            if (minutosFaltantes > 0 && minutosFaltantes <= 60) {
+                java.util.Map<String, String> notif = new java.util.HashMap<>();
+                notif.put("titulo", "¡Reserva próxima!");
+                notif.put("mensaje", "Tu reserva en " + r.getLaboratorio().getNombre() + " empieza en " + minutosFaltantes + " minutos.");
+                notif.put("url", "/alumno/laboratorios");
+                notificaciones.add(notif);
+            }
+        }
+
+        return notificaciones;
+    }
     // =========================================================================
     // DTOs AUXILIARES
     // =========================================================================
