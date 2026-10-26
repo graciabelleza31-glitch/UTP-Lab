@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ========================================================= -->
+<!-- SCRIPTS GLOBALES                                          -->
+<!-- ========================================================= -->
+<th:block th:fragment="scripts">
+    <!-- Librería de íconos (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Inicializar los íconos en todas las páginas -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>
