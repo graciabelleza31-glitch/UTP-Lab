@@ -30,28 +30,30 @@
         </div>
 
         <!-- BÚSQUEDA Y CONTADORES -->
-        <div class="fila-busqueda-catalogo">
-          <div class="caja-input-busqueda">
-            <input type="text" id="inputBuscarInventario" placeholder="Buscar por código o nombre..." oninput="filtrarInventario()" />
-          </div>
-          <div class="badges-resumen-inventario">
-            <span class="badge-total-items-pill" id="badgeTotalItems" th:text="${totalItems + ' registrados'}">12 registrados</span>
-            <span class="badge-alerta-stock-pill" th:if="${stockCritico > 0}" th:text="${stockCritico + ' con stock crítico'}">37 con stock crítico</span>
-          </div>
-        </div>
+<div class="barra-busqueda-inventario-figma">
+    <div class="caja-input-busqueda-figma">
+        <i data-lucide="search" style="width: 18px; height: 18px; color: #94a3b8; margin-right: 10px;"></i>
+        <input type="text" id="inputBuscarInventario" placeholder="Buscar por código o nombre..." oninput="filtrarInventario()" />
+    </div>
+    
+    <div class="contadores-inventario">
+        <span class="badge-total-items-figma" id="badgeTotalItems" th:text="${totalItems + ' registrados'}">12 registrados</span>
+        <span class="badge-alerta-stock-figma" th:if="${stockCritico > 0}" th:text="${stockCritico + ' con stock crítico'}">37 con stock crítico</span>
+    </div>
+</div>
 
-        <!-- FILTROS POR CATEGORÍA -->
-        <div class="barra-filtros-catalogo">
-          <button type="button" class="btn-filtro-cat activo" data-cat="TODOS" onclick="filtrarCategoria(this)">Todos</button>
-          <button th:each="c : ${categorias}" 
-                  type="button" 
-                  class="btn-filtro-cat" 
-                  th:text="${c}" 
-                  th:data-cat="${c}" 
-                  onclick="filtrarCategoria(this)">
-            Categoría
-          </button>
-        </div>
+<!-- FILTROS POR CATEGORÍA -->
+<div class="barra-filtros-inventario-figma">
+    <button type="button" class="btn-filtro-inv activo" data-cat="TODOS" onclick="filtrarCategoria(this)">Todos</button>
+    <button th:each="c : ${categorias}" 
+            type="button" 
+            class="btn-filtro-inv" 
+            th:text="${c}" 
+            th:data-cat="${c}" 
+            onclick="filtrarCategoria(this)">
+        Categoría
+    </button>
+</div>
 
         <!-- TABLA COMPLETA DE INVENTARIO -->
         <div class="card-panel-blanco tabla-card-inventario">

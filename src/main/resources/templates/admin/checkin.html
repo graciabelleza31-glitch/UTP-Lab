@@ -16,6 +16,30 @@
           <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
         </div>
 
+        <!-- SELECTOR DE FECHA -->
+<div class="fila-dashboard-header" style="margin-bottom: 1rem;">
+    <div>
+        <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1> <!-- Cambia el título según la vista -->
+        <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
+    </div>
+    
+    <div class="selector-fecha-dashboard">
+        <a th:href="@{/admin/checkin(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+            <i data-lucide="chevron-left"></i>
+        </a>
+        
+        <!-- El input actualiza la URL al cambiar de fecha -->
+        <input type="date" 
+               th:value="${fechaConsulta}"
+               onchange="window.location.href='/admin/checkin?fecha=' + this.value"
+               class="input-fecha-dashboard">
+               
+        <a th:href="@{/admin/checkin(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+            <i data-lucide="chevron-right"></i>
+        </a>
+    </div>
+</div>
+
         <!-- 1. LISTADO DE RESERVAS POR VALIDAR -->
         <div id="contenedorListaCheckin" 
              class="lista-tarjetas-checkin" 

@@ -15,18 +15,21 @@
             <i data-lucide="layout-dashboard"></i>
             <span>Dashboard</span>
         </a>
-        <a th:href="@{/admin/checkin}" 
-           th:classappend="${activo == 'checkin' ? 'activo' : ''}" 
-           class="item-menu">
-            <i data-lucide="check-square"></i>
-            <span>Check-in</span>
-        </a>
+
         <a th:href="@{/admin/inventario}" 
            th:classappend="${activo == 'inventario' ? 'activo' : ''}" 
            class="item-menu">
             <i data-lucide="package"></i>
             <span>Inventario</span>
         </a>
+        
+        <a th:href="@{/admin/checkin}" 
+           th:classappend="${activo == 'checkin' ? 'activo' : ''}" 
+           class="item-menu">
+            <i data-lucide="check-square"></i>
+            <span>Check-in</span>
+        </a>
+        
         <a th:href="@{/admin/inspeccion}" 
            th:classappend="${activo == 'inspeccion' ? 'activo' : ''}" 
            class="item-menu">

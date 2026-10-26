@@ -1,5 +1,6 @@
 package com.integrador.lab.controller.admin;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.integrador.lab.modelo.Producto;
@@ -47,21 +49,31 @@ public class CheckinController {
     @Autowired
     private SancionRepository sancionRepositorio;
 
-    // 1. VISTA PRINCIPAL DE CHECK-IN
+    // 1. VISTA PRINCIPAL DE CHECK-IN (CON FILTRO POR FECHA)
     @GetMapping
     @Transactional(readOnly = true)
-    public String verCheckin(HttpSession sesion, Model modelo) {
-        List<Reserva> confirmadas = reservaRepositorio.findByEstado("CONFIRMADA");
-        List<Reserva> pendientes = reservaRepositorio.findByEstado("PENDIENTE");
+    public String verCheckin(
+            @RequestParam(required = false) String fecha,
+            HttpSession sesion, 
+            Model modelo) {
 
-        List<Reserva> todas = new ArrayList<>();
-        if (confirmadas != null) {
-            todas.addAll(confirmadas);
-        }
-        if (pendientes != null) {
-            todas.addAll(pendientes);
+        // A. Calcular fecha de consulta (si no viene, usa hoy)
+        LocalDate fechaConsulta;
+        try {
+            fechaConsulta = (fecha != null && !fecha.isEmpty()) 
+                    ? LocalDate.parse(fecha) 
+                    : LocalDate.now();
+        } catch (Exception e) {
+            fechaConsulta = LocalDate.now();
         }
 
+        // B. Buscar reservas de esa fecha que estén CONFIRMADAS o PENDIENTES
+        List<Reserva> todas = reservaRepositorio.findAll().stream()
+                .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().equals(fechaConsulta))
+                .filter(r -> "CONFIRMADA".equals(r.getEstado()) || "PENDIENTE".equals(r.getEstado()))
+                .toList();
+
+        // C. Armar la lista de DTOs para la vista
         List<CheckinReservaDto> listaCheckin = new ArrayList<>();
 
         for (Reserva r : todas) {
@@ -96,13 +108,19 @@ public class CheckinController {
 
         long incidenciasAbiertas = sancionRepositorio.count();
 
+        // D. Pasar datos al modelo
         modelo.addAttribute("reservas", listaCheckin);
         modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
+
+        // E. Pasar fechas para el selector de la vista
+        modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
+        modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+        modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
 
         return "admin/checkin";
     }
 
-    // 2. ENDPOINT JSON PARA CARGAR EL MODAL CON INTEGRANTES, INSUMOS Y EPPS (COMPRADOS + SIN COSTO)
+    // 2. ENDPOINT JSON PARA CARGAR EL MODAL CON INTEGRANTES, INSUMOS Y EPPS
     @GetMapping("/api/{idReserva}")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -222,30 +240,6 @@ public class CheckinController {
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
-    // Agrega este método en tu CheckinController.java
-@PostMapping("/checkout/{idReserva}")
-@ResponseBody
-@Transactional
-public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idReserva) {
-    Optional<Reserva> resOpt = reservaRepositorio.findById(idReserva);
-    if (resOpt.isEmpty()) {
-        return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Reserva no encontrada"));
-    }
-
-    Reserva r = resOpt.get();
-    
-    // Solo permitimos checkout si está EN_USO
-    if (!"EN_USO".equals(r.getEstado())) {
-        return ResponseEntity.badRequest().body(Collections.singletonMap("error", "La reserva no está en uso"));
-    }
-
-    // CAMBIO CLAVE: Pasa a DEVUELTA para que aparezca en Inspección
-    r.setEstado("DEVUELTA"); 
-    reservaRepositorio.save(r);
-
-    return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
-}
-
     // DTOs Auxiliares
     public static class CheckinReservaDto {
 
@@ -269,37 +263,14 @@ public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idR
             this.integrantes = integrantes;
         }
 
-        public String getIdReserva() {
-            return idReserva;
-        }
-
-        public String getLaboratorio() {
-            return laboratorio;
-        }
-
-        public String getTipoLab() {
-            return tipoLab;
-        }
-
-        public String getCubiculo() {
-            return cubiculo;
-        }
-
-        public String getFecha() {
-            return fecha;
-        }
-
-        public String getHorario() {
-            return horario;
-        }
-
-        public String getEstado() {
-            return estado;
-        }
-
-        public List<String> getIntegrantes() {
-            return integrantes;
-        }
+        public String getIdReserva() { return idReserva; }
+        public String getLaboratorio() { return laboratorio; }
+        public String getTipoLab() { return tipoLab; }
+        public String getCubiculo() { return cubiculo; }
+        public String getFecha() { return fecha; }
+        public String getHorario() { return horario; }
+        public String getEstado() { return estado; }
+        public List<String> getIntegrantes() { return integrantes; }
     }
 
     public static class DetalleModalCheckinDto {
@@ -320,29 +291,12 @@ public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idR
             this.epps = epps;
         }
 
-        public String getIdReserva() {
-            return idReserva;
-        }
-
-        public String getLaboratorio() {
-            return laboratorio;
-        }
-
-        public String getHorario() {
-            return horario;
-        }
-
-        public List<IntegranteDetalleDto> getIntegrantes() {
-            return integrantes;
-        }
-
-        public List<ItemDetalleDto> getInsumos() {
-            return insumos;
-        }
-
-        public List<ItemDetalleDto> getEpps() {
-            return epps;
-        }
+        public String getIdReserva() { return idReserva; }
+        public String getLaboratorio() { return laboratorio; }
+        public String getHorario() { return horario; }
+        public List<IntegranteDetalleDto> getIntegrantes() { return integrantes; }
+        public List<ItemDetalleDto> getInsumos() { return insumos; }
+        public List<ItemDetalleDto> getEpps() { return epps; }
     }
 
     public static class IntegranteDetalleDto {
@@ -357,17 +311,9 @@ public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idR
             this.iniciales = iniciales;
         }
 
-        public String getCodigo() {
-            return codigo;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public String getIniciales() {
-            return iniciales;
-        }
+        public String getCodigo() { return codigo; }
+        public String getNombre() { return nombre; }
+        public String getIniciales() { return iniciales; }
     }
 
     public static class ItemDetalleDto {
@@ -384,20 +330,9 @@ public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idR
             this.emoji = emoji;
         }
 
-        public String getId() {
-            return id;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public String getUnidad() {
-            return unidad;
-        }
-
-        public String getEmoji() {
-            return emoji;
-        }
+        public String getId() { return id; }
+        public String getNombre() { return nombre; }
+        public String getUnidad() { return unidad; }
+        public String getEmoji() { return emoji; }
     }
 }
