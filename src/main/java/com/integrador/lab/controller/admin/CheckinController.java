@@ -99,7 +99,7 @@ public class CheckinController {
         modelo.addAttribute("reservas", listaCheckin);
         modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
 
-        return "admin-checkin";
+        return "admin/checkin";
     }
 
     // 2. ENDPOINT JSON PARA CARGAR EL MODAL CON INTEGRANTES, INSUMOS Y EPPS (COMPRADOS + SIN COSTO)

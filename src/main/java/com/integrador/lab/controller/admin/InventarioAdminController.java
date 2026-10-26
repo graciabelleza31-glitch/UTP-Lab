@@ -79,7 +79,7 @@ public class InventarioAdminController {
         modelo.addAttribute("stockCritico", stockCritico);
         modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
 
-        return "admin-inventario";
+        return "admin/inventario";
     }
 
     @PostMapping("/actualizar-stock/{idProducto}")

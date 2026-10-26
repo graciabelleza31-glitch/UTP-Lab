@@ -213,7 +213,7 @@ public class AdminDashboardController {
         modelo.addAttribute("incidenciasRecientes", incidenciasRecientes);
         modelo.addAttribute("alertasStock", alertasStock);
 
-        return "admin-dashboard";
+        return "admin/dashboard";
     }
 
     public static class EstadoLabDto {

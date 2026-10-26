@@ -30,7 +30,7 @@ public class CambioPasswordController {
         }
 
         modelo.addAttribute("cambioPasswordDTO", new CambioPasswordDTO());
-        return "cambiar-password"; 
+        return "auth/cambiar-password"; 
     }
 
     // 2. POST: Procesa el cambio
@@ -59,10 +59,10 @@ public class CambioPasswordController {
             // Error de negocio (ej. "la nueva contraseña no puede ser igual")
             modelo.addAttribute("error", ex.getMessage());
             modelo.addAttribute("cambioPasswordDTO", dto); 
-            return "cambiar-password";
+            return "auth/cambiar-password";
         } catch (Exception ex) {
             modelo.addAttribute("error", "Ocurrió un error inesperado. Intenta de nuevo.");
-            return "cambiar-password";
+            return "auth/cambiar-password";
         }
     }
 }

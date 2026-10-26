@@ -99,7 +99,7 @@ public String verMisIncidencias(HttpSession session, Model model) {
     model.addAttribute("pendientesCount", pendientesCount);
     model.addAttribute("estaBloqueado", estaBloqueado);
 
-    return "alumno-incidencias";
+    return "alumno/incidencias";
 }
 
         // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO

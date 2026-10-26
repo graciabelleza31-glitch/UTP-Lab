@@ -139,7 +139,7 @@ public class IncidenciasAdminController {
         modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
         modelo.addAttribute("totalIncidencias", cantAbiertas + cantNotificadas);
 
-        return "admin-incidencias";
+        return "admin/incidencias";
     }
 
        // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO (PASA A ESTADO 'NOTIFICADA' Y ENVÍA CORREO)

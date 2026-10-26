@@ -169,7 +169,7 @@ public class AlumnoPortalController {
         modelo.addAttribute("epps", epps);
         modelo.addAttribute("misReservas", misReservas);
 
-        return "alumno-laboratorios";
+        return "alumno/laboratorios";
     }
 
     // =========================================================================
