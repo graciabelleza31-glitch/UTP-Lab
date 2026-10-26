@@ -35,7 +35,45 @@
   font-size: 2.2rem;
 }
 
-/* ... (Aquí pegas .etiqueta-logo, .etiqueta-utp, .lema-titulo) ... */
+.etiqueta-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.etiqueta-logo.compacto { margin-bottom: 1.5rem; }
+
+.etiqueta-utp {
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.texto-lab {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #0f172a;
+}
+
+.lema-titulo {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-top: 0.6rem;
+}
+
+.lema-subtitulo {
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
 
 /* ==========================================================================
    PANEL DERECHO (FORMULARIO)
@@ -65,6 +103,14 @@
   margin-bottom: 2rem;
 }
 
+.mensaje-indicacion {
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.mensaje-indicacion strong { font-weight: 700; }
+
 /* ALERTAS Y CAMPOS */
 .cuadro-alerta {
   background-color: #fef2f2;
@@ -91,4 +137,89 @@
   color: #0f172a;
 }
 
-/* ... (Aquí pegas .boton-iniciar, .boton-ojo, media queries) ... */
+.caja-entrada input::placeholder { color: #94a3b8; }
+
+.caja-entrada input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.icono-entrada {
+  position: absolute;
+  right: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.boton-ojo {
+  position: absolute;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-ojo .icono-entrada {
+  position: static;
+  pointer-events: auto;
+}
+
+/* NOTA DEBAJO DEL INPUT DE CÓDIGO */
+.nota-ayuda {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 0.4rem;
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.icono-info {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* ENLACE DE RESTABLECER CLAVE */
+.olvido-clave {
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.olvido-clave a {
+  color: #2563eb;
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.olvido-clave a:hover { text-decoration: underline; }
+
+/* BOTÓN DE ENVÍO AZUL */
+.boton-iniciar {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.05s;
+}
+
+.boton-iniciar:hover { background-color: #1d4ed8; }
+.boton-iniciar:active { transform: scale(0.99); }
+
+@media (max-width: 860px) {
+  .contenedor-principal { flex-direction: column; }
+  .panel-izquierdo { display: none; }
+  .panel-derecho { padding: 2rem 1.5rem; }
+}
