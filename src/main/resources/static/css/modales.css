@@ -368,3 +368,386 @@
 .btn-cancelar-reserva:active {
     transform: scale(0.98);
 }
+
+/* ==========================================================================
+   MODAL DE GRÁFICOS (ALUMNO)
+   ========================================================================== */
+.modal-grafico-contenedor {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem 1.5rem 2rem 1.5rem;
+    width: 90%;
+    max-width: 600px; /* Ancho ideal para que el gráfico se vea bien */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.cabecera-modal-grafico {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.titulo-modal-grafico {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.subtitulo-modal-grafico {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0.2rem 0 0 0;
+}
+
+.cuerpo-modal-grafico {
+    position: relative;
+    height: 320px !important; /* Altura fija para que Chart.js no se desborde */
+    width: 100%;
+    display: block;
+}
+
+/* ==========================================================================
+   1. FONDOS OSCUROS (BACKDROPS)
+   ========================================================================== */
+.fondo-modal,
+.fondo-modal-oscuro,
+.fondo-modal-incidencia {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* ==========================================================================
+   2. TARJETA BASE DE MODAL (Para Inspección, Inventario, etc.)
+   ========================================================================== */
+.tarjeta-modal {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    width: 90%;
+    max-width: 440px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-checkin-ancho {
+    max-width: 540px; /* Para el modal de inspección */
+    padding: 0;
+    overflow: hidden;
+    max-height: 90vh;
+}
+
+/* ==========================================================================
+   3. ESTRUCTURA INTERNA (Cabecera, Cuerpo, Pie)
+   ========================================================================== */
+.cabecera-modal-figma,
+.cabecera-modal-checkin {
+    background-color: #171738;
+    color: #ffffff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.titulo-modal-txt {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.subtitulo-modal-txt {
+    font-size: 0.78rem;
+    color: #a5b4fc;
+    margin: 0.3rem 0 0 0;
+}
+
+.btn-cerrar-modal-x,
+.btn-cerrar-blanco {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.btn-cerrar-modal-x:hover,
+.btn-cerrar-blanco:hover {
+    color: #ffffff;
+}
+
+.cuerpo-modal-formulario {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    overflow-y: auto;
+}
+
+.pie-modal-formulario {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.25rem;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+}
+
+/* ==========================================================================
+   4. BOTONES INTERNOS DE MODALES
+   ========================================================================== */
+.btn-cancelar-enlace {
+    background: transparent;
+    border: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.btn-cancelar-enlace:hover {
+    color: #0f172a;
+    text-decoration: underline;
+}
+
+.btn-guardar-verde-teal {
+    background-color: #0d9488;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-guardar-verde-teal:hover {
+    background-color: #0f766e;
+}
+
+/* ==========================================================================
+   5. MODAL DE INSPECCIÓN (Tarjetas de Items)
+   ========================================================================== */
+.tarjeta-item-inspeccionar {
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.15s ease;
+}
+
+.tarjeta-item-inspeccionar.marcado-danado {
+    background-color: #fff1f2;
+    border-color: #f43f5e;
+}
+
+.fila-principal-item-insp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.acciones-estado-item {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-estado-check {
+    background-color: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.15s ease;
+}
+
+.btn-estado-check.activo-conforme {
+    background-color: #ecfdf5;
+    border-color: #10b981;
+    color: #059669;
+}
+
+.btn-estado-check.activo-danado {
+    background-color: #ef4444;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.input-motivo-dano {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem;
+    border: 1.5px solid #f87171;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    outline: none;
+    display: none;
+    background-color: #ffffff;
+}
+
+.input-motivo-dano:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+/* ==========================================================================
+   6. MODAL DE RESULTADO (Éxito / Error)
+   ========================================================================== */
+.modal-resultado-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 440px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icono-resultado-circulo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.res-exito {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.res-danio {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-entendido-modal {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.75rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.btn-entendido-modal:hover {
+    background-color: #1e293b;
+}
+
+/* ==========================================================================
+   7. MODAL DE AVISO DE INCIDENCIA (Notificación)
+   ========================================================================== */
+.tarjeta-modal-inc {
+    background-color: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 460px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+}
+
+.icono-circulo-modal {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.icono-modal-correo {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 2px solid #fde68a;
+}
+
+.icono-modal-resuelto {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 2px solid #a7f3d0;
+}
+
+.titulo-modal-aviso {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.texto-modal-aviso {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.banner-bloqueo-aviso {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-cerrar-modal-aviso {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.85rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    width: 100%;
+}
+
+.btn-cerrar-modal-aviso:hover {
+    background-color: #1e293b;
+}

@@ -247,23 +247,54 @@ function abrirModalCheckout(idReserva) {
     .catch(() => alert("Ocurrió un error al registrar la salida."));
 }
 
-// Función para registrar la salida (Check-out) desde la vista de Inspección
-function abrirModalCheckout(idReserva) {
-    if (!confirm('¿Registrar la salida del estudiante y liberar el laboratorio? El material pasará a estado DEVUELTO para su inspección.')) {
-        return;
-    }
+// Reemplaza TODO el bloque de abrirModalCheckout al final de admin-inspeccion.js por esto:
 
-    // Hacemos la petición al endpoint que ya tienes en tu CheckinController
-    fetch(`/admin/checkin/confirmar/${idReserva}`, {
-        method: 'POST'
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("Error al registrar checkout");
-        return res.json();
-    })
-    .then(() => {
-        alert("✅ Salida registrada. Ahora puedes inspeccionar el material.");
-        window.location.reload(); // Recargamos para que el botón cambie a "Inspeccionar"
-    })
-    .catch(() => alert("Ocurrió un error al registrar la salida."));
+function abrirModalCheckout(idReserva) {
+    // Mostramos un modal de confirmación (puedes usar el modalResultado o uno nuevo)
+    const modalConfirm = document.getElementById('modalResultado');
+    const icono = document.getElementById('iconoResultado');
+    const tit = document.getElementById('tituloResultado');
+    const desc = document.getElementById('mensajeResultado');
+    const btnEntendido = document.querySelector('.btn-entendido-modal');
+
+    // Cambiamos el aspecto para que parezca una confirmación
+    icono.className = 'icono-resultado-circulo';
+    icono.style.backgroundColor = '#fef3c7';
+    icono.style.color = '#d97706';
+    icono.innerText = '?';
+    
+    tit.innerText = 'Registrar Salida (Check-out)';
+    desc.innerHTML = '¿Confirmas que el estudiante está devolviendo los materiales y el laboratorio quedará libre?<br><br><small>El material pasará a estado <strong>DEVUELTO</strong> y deberás inspeccionarlo.</small>';
+    
+    // Cambiamos el botón para que ejecute la acción
+    btnEntendido.innerText = 'Confirmar Salida';
+    btnEntendido.style.backgroundColor = '#0d9488'; // Verde teal
+    
+    modalConfirm.style.display = 'flex';
+
+    // Asignamos la acción al botón de confirmar
+    btnEntendido.onclick = function() {
+        btnEntendido.innerText = 'Procesando...';
+        btnEntendido.disabled = true;
+
+        fetch(`/admin/checkin/confirmar/${idReserva}`, {
+            method: 'POST'
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Error al registrar checkout");
+            return res.json();
+        })
+        .then(() => {
+            // Cerramos el modal
+            document.getElementById('modalResultado').style.display = 'none';
+            
+            // Recargamos la página para que el botón cambie a "Inspeccionar"
+            window.location.reload();
+        })
+        .catch(() => {
+            alert("Ocurrió un error al registrar la salida.");
+            btnEntendido.innerText = 'Confirmar Salida';
+            btnEntendido.disabled = false;
+        });
+    };
 }
