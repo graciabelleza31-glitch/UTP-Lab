@@ -775,7 +775,7 @@ public class AlumnoPortalController {
         return resp;
     }
 
-    // =========================================================================
+        // =========================================================================
     // 7. CANCELAR RESERVA
     // =========================================================================
     @PostMapping("/reservas/{idReserva}/cancelar")
@@ -820,8 +820,16 @@ public class AlumnoPortalController {
             return "redirect:/alumno/cuenta";
         }
 
-        LocalDateTime inicioReserva = LocalDateTime.of(reserva.getFechaReserva(), reserva.getHoraInicio());
-        LocalDateTime limiteCancelacion = LocalDateTime.now().plusMinutes(30);
+        // ⭐ ZONA HORARIA DE PERÚ
+        java.time.ZoneId zonaPeru = java.time.ZoneId.of("America/Lima");
+        java.time.LocalDateTime ahoraPeru = java.time.LocalDateTime.now(zonaPeru);
+
+        java.time.LocalDateTime inicioReserva = java.time.LocalDateTime.of(
+                reserva.getFechaReserva(),
+                reserva.getHoraInicio()
+        );
+        
+        java.time.LocalDateTime limiteCancelacion = ahoraPeru.plusMinutes(30);
 
         if (inicioReserva.isBefore(limiteCancelacion)) {
             redirectAttributes.addFlashAttribute("errorReserva", "No puedes cancelar la reserva porque faltan menos de 30 minutos para su inicio.");

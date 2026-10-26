@@ -28,18 +28,13 @@ public class TareasProgramadasService {
     // =========================================================================
     // TAREA 1: CANCELAR RESERVAS NO ASISTIDAS (Las que se quedaron en CONFIRMADA)
     // =========================================================================
-    @Scheduled(fixedRate = 60000, initialDelay = 10000)
+        @Scheduled(fixedRate = 60000, initialDelay = 10000)
     @Transactional
     public void cancelarReservasNoAsistidas() {
         LocalDate hoy = LocalDate.now(ZONA_PERU);
         LocalTime ahora = LocalTime.now(ZONA_PERU);
-        LocalDateTime ahoraCompleto = LocalDateTime.now(ZONA_PERU);
 
         List<Reserva> reservasConfirmadas = reservaRepository.findByEstado("CONFIRMADA");
-
-        System.out.println("⏰ [JOB] " + ahoraCompleto + 
-                " (Perú: " + ahora + ")" +
-                " - Reservas CONFIRMADAS encontradas: " + reservasConfirmadas.size());
 
         int canceladas = 0;
         for (Reserva r : reservasConfirmadas) {
@@ -47,9 +42,9 @@ public class TareasProgramadasService {
 
             boolean noAsistio = false;
 
-            // Caso 1: Es de HOY y pasaron más de 10 minutos desde hora_inicio
+            // Caso 1: Es de HOY y pasaron más de 15 minutos desde hora_inicio
             if (r.getFechaReserva().equals(hoy)) {
-                LocalTime limiteTolerancia = r.getHoraInicio().plusMinutes(MINUTOS_TOLERANCIA);
+                LocalTime limiteTolerancia = r.getHoraInicio().plusMinutes(15); // 👈 Tolerancia de 15 min
                 if (ahora.isAfter(limiteTolerancia)) {
                     noAsistio = true;
                 }
@@ -63,9 +58,7 @@ public class TareasProgramadasService {
                 r.setEstado("NO_ASISTIO");
                 reservaRepository.save(r);
                 canceladas++;
-                System.out.println("   ❌ " + r.getIdReserva() + 
-                        " cancelada por NO ASISTIR (fecha: " + r.getFechaReserva() + 
-                        ", hora_inicio: " + r.getHoraInicio() + ")");
+                System.out.println("❌ " + r.getIdReserva() + " cancelada por NO ASISTIR.");
             }
         }
 
