@@ -336,3 +336,25 @@
 }
 
 .btn-gris-cancelar:hover { background-color: #e2e8f0; }
+
+/* Botón Cancelar Reserva (Rojo suave) */
+.btn-cancelar-reserva {
+    background-color: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-cancelar-reserva:hover {
+    background-color: #fecaca;
+    color: #dc2626;
+}
+
+.btn-cancelar-reserva:active {
+    transform: scale(0.98);
+}

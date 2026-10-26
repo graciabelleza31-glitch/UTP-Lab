@@ -42,14 +42,14 @@ public class TareasProgramadasService {
 
             boolean noAsistio = false;
 
-            // Caso 1: Es de HOY y pasaron más de 15 minutos desde hora_inicio
+            // Si es de hoy, y pasaron más de 15 minutos
             if (r.getFechaReserva().equals(hoy)) {
-                LocalTime limiteTolerancia = r.getHoraInicio().plusMinutes(15); // 👈 Tolerancia de 15 min
+                LocalTime limiteTolerancia = r.getHoraInicio().plusMinutes(15);
                 if (ahora.isAfter(limiteTolerancia)) {
                     noAsistio = true;
                 }
             }
-            // Caso 2: Es de un día ANTERIOR (nunca hizo check-in)
+            // Si es de días anteriores
             else if (r.getFechaReserva().isBefore(hoy)) {
                 noAsistio = true;
             }
@@ -60,10 +60,6 @@ public class TareasProgramadasService {
                 canceladas++;
                 System.out.println("❌ " + r.getIdReserva() + " cancelada por NO ASISTIR.");
             }
-        }
-
-        if (canceladas > 0) {
-            System.out.println("[" + LocalDateTime.now(ZONA_PERU) + "] Total canceladas: " + canceladas);
         }
     }
 

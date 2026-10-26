@@ -574,14 +574,15 @@
             </div>
             
             <div class="pie-modal-recibo" style="justify-content: space-between;">
-                <form id="formCancelarReserva" action="" method="post" style="margin: 0;">
-                    <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
-                            onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
-                        Cancelar Reserva
-                    </button>
-                </form>
-                <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
-            </div>
+    <!-- Formulario para cancelar con acción dinámica -->
+    <form id="formCancelarReserva" action="" method="post" style="margin: 0;">
+        <button type="submit" class="btn-cancelar-reserva" 
+                onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
+            Cancelar Reserva
+        </button>
+    </form>
+    <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
+</div>
         </div>
     </div>
 
