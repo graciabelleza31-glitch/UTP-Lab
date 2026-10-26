@@ -52,7 +52,7 @@
             <span class="subtitulo-rol">Estudiante</span>
         </div>
         <div class="circulo-avatar avatar-azul" 
-             th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>
+     th:text="${#strings.isEmpty(alumno.nombre) ? '?' : #strings.substring(alumno.nombre,0,1)} + ${#strings.isEmpty(alumno.apellido) ? '' : #strings.substring(alumno.apellido,0,1)}">MB</div>
         <a th:href="@{/logout}" class="enlace-salir">
             <i data-lucide="log-out"></i>
             <span>Salir</span>
