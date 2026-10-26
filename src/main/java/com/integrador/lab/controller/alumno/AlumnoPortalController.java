@@ -111,7 +111,7 @@ public class AlumnoPortalController {
             }
         }
 
-        // 4. Contar reservas del día
+        // 4. Contar reservas del día (SOLO ACTIVAS)
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         LocalDate hoy = LocalDate.now();
         List<String> idsReservasHoy = new ArrayList<>();
@@ -121,10 +121,12 @@ public class AlumnoPortalController {
             if (r == null || r.getFechaReserva() == null || !hoy.equals(r.getFechaReserva())) continue;
 
             String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) continue;
-
-            if (!idsReservasHoy.contains(r.getIdReserva())) {
-                idsReservasHoy.add(r.getIdReserva());
+            
+            // ⭐ SOLO CONTAMOS SI ESTÁ CONFIRMADA O EN USO
+            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO")) {
+                if (!idsReservasHoy.contains(r.getIdReserva())) {
+                    idsReservasHoy.add(r.getIdReserva());
+                }
             }
         }
 
@@ -279,7 +281,7 @@ public class AlumnoPortalController {
             return "redirect:/alumno/laboratorios";
         }
 
-        // 1. LÍMITE DE DOS RESERVAS DIARIAS
+        // 1. LÍMITE DE DOS RESERVAS DIARIAS (SOLO ACTIVAS)
         List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
         List<String> idsReservasDelDia = new ArrayList<>();
 
@@ -288,10 +290,12 @@ public class AlumnoPortalController {
             if (reservaExistente == null || reservaExistente.getFechaReserva() == null || !fecha.equals(reservaExistente.getFechaReserva())) continue;
             
             String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
-            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) continue;
-
-            if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
-                idsReservasDelDia.add(reservaExistente.getIdReserva());
+            
+            // ⭐ SOLO CONTAMOS SI ESTÁ CONFIRMADA O EN USO
+            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO")) {
+                if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+                    idsReservasDelDia.add(reservaExistente.getIdReserva());
+                }
             }
         }
 
@@ -315,10 +319,10 @@ public class AlumnoPortalController {
                     if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
 
                     String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-                    if (est.equals("CANCELADA") || est.equals("CANCELADO")) continue;
-
-                    if (!idsReservasIntegrante.contains(r.getIdReserva())) {
-                        idsReservasIntegrante.add(r.getIdReserva());
+                    if (est.equals("CONFIRMADA") || est.equals("EN_USO")) {
+                        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
+                            idsReservasIntegrante.add(r.getIdReserva());
+                        }
                     }
                 }
 
@@ -463,7 +467,7 @@ public class AlumnoPortalController {
     // =========================================================================
     // 5. VISTA: MI CUENTA (DASHBOARD DEL ESTUDIANTE)
     // =========================================================================
-        @GetMapping("/cuenta")
+    @GetMapping("/cuenta")
     @Transactional(readOnly = true)
     public String verCuenta(
             @RequestParam(required = false) String mes,
@@ -480,20 +484,19 @@ public class AlumnoPortalController {
             return "redirect:/login";
         }
 
-        // ============ FECHA DE CONSULTA (mes seleccionado) ============
-        // Forzamos a que sea estrictamente java.time.LocalDate
-        java.time.LocalDate fechaConsulta;
+        // FECHA DE CONSULTA
+        LocalDate fechaConsulta;
         try {
             fechaConsulta = (mes != null && !mes.isEmpty()) 
-                    ? java.time.LocalDate.parse(mes + "-01") 
-                    : java.time.LocalDate.now();
+                    ? LocalDate.parse(mes + "-01") 
+                    : LocalDate.now();
         } catch (Exception e) {
-            fechaConsulta = java.time.LocalDate.now();
+            fechaConsulta = LocalDate.now();
         }
         
-        java.time.LocalDate hoy = java.time.LocalDate.now();
-        java.time.LocalDate mesAnterior = fechaConsulta.minusMonths(1);
-        java.time.LocalDate mesSiguiente = fechaConsulta.plusMonths(1);
+        LocalDate hoy = LocalDate.now();
+        LocalDate mesAnterior = fechaConsulta.minusMonths(1);
+        LocalDate mesSiguiente = fechaConsulta.plusMonths(1);
         
         java.util.Locale espLocale = new java.util.Locale("es", "PE");
         String nombreMes = fechaConsulta.getMonth().getDisplayName(java.time.format.TextStyle.FULL, espLocale);
@@ -502,7 +505,7 @@ public class AlumnoPortalController {
         
         String mesInput = String.format("%04d-%02d", fechaConsulta.getYear(), fechaConsulta.getMonthValue());
 
-        // ============ SANCIONES ============
+        // SANCIONES
         List<Sancion> sancionesPendientes = sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE");
         long incidenciasPendientes = sancionesPendientes.size();
 
@@ -510,7 +513,7 @@ public class AlumnoPortalController {
         boolean estaBloqueado = incidenciasPendientes > 0
                 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
 
-        // ============ HISTORIAL Y ESTADÍSTICAS ============
+        // HISTORIAL Y ESTADÍSTICAS
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         List<HistorialReservaDto> historial = new ArrayList<>();
         
@@ -532,7 +535,6 @@ public class AlumnoPortalController {
                 horario = r.getHoraInicio() + "–" + r.getHoraFin();
             }
 
-            // Comparamos usando getMonthValue() para evitar errores de tipos
             boolean esDelMes = r.getFechaReserva().getMonthValue() == fechaConsulta.getMonthValue() 
                             && r.getFechaReserva().getYear() == fechaConsulta.getYear();
 
@@ -572,10 +574,9 @@ public class AlumnoPortalController {
         modelo.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
         modelo.addAttribute("esMesActual", fechaConsulta.getMonthValue() == hoy.getMonthValue() && fechaConsulta.getYear() == hoy.getYear());
 
-                // ⭐ FILTRADO DE INCIDENCIAS POR MES (Sin usar fechaConsulta directamente)
+        // ⭐ FILTRADO DE INCIDENCIAS POR MES
         List<Sancion> todasLasIncidencias = sancionRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         
-        // Extraemos el mes y año a variables primitivas (int) para evitar conflictos
         int mesConsulta = fechaConsulta.getMonthValue();
         int anioConsulta = fechaConsulta.getYear();
 
@@ -676,11 +677,11 @@ public class AlumnoPortalController {
         Alumno alumno = (Alumno) usuario;
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         
-        java.time.LocalDate fechaConsulta;
+        LocalDate fechaConsulta;
         try {
-            fechaConsulta = (mes != null && !mes.isEmpty()) ? java.time.LocalDate.parse(mes + "-01") : java.time.LocalDate.now();
+            fechaConsulta = (mes != null && !mes.isEmpty()) ? LocalDate.parse(mes + "-01") : LocalDate.now();
         } catch (Exception e) {
-            fechaConsulta = java.time.LocalDate.now();
+            fechaConsulta = LocalDate.now();
         }
         
         int diasEnMes = fechaConsulta.lengthOfMonth();
@@ -698,7 +699,7 @@ public class AlumnoPortalController {
             Reserva r = ri.getReserva();
             if (r == null || r.getFechaReserva() == null) continue;
             
-            if (r.getFechaReserva().getMonth() == fechaConsulta.getMonth() && 
+            if (r.getFechaReserva().getMonthValue() == fechaConsulta.getMonthValue() && 
                 r.getFechaReserva().getYear() == fechaConsulta.getYear()) {
                 
                 int dia = r.getFechaReserva().getDayOfMonth();
@@ -775,7 +776,7 @@ public class AlumnoPortalController {
         return resp;
     }
 
-        // =========================================================================
+    // =========================================================================
     // 7. CANCELAR RESERVA
     // =========================================================================
     @PostMapping("/reservas/{idReserva}/cancelar")
