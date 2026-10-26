@@ -366,37 +366,44 @@ function irABoleta() {
 let totalIntegrantes = 1;
 const codigosAgregados = new Set();
 
-document.getElementById('inputCodigoBuscar').addEventListener('input', function () {
-  const codigo = this.value.trim().toUpperCase();
-  const msgError = document.getElementById('msgErrorBusqueda');
-  const inputNombre = document.getElementById('inputNombreAutocompletado');
-  if (codigo.length >= 6) {
-    fetch('/api/alumnos/buscar/' + encodeURIComponent(codigo))
-      .then(res => res.json())
-      .then(data => {
-        if (data.encontrado) {
-          if (!data.habilitado) {
-            msgError.innerText = 'El alumno tiene sanciones o no está habilitado.';
-            msgError.style.display = 'block';
-            inputNombre.value = '';
-          } else {
-            inputNombre.value = data.nombreCompleto;
-            inputNombre.setAttribute('data-codigo-real', data.codigo);
-            msgError.style.display = 'none';
-          }
-        } else {
-          inputNombre.value = '';
-          msgError.innerText = 'Código o DNI no encontrado en el sistema.';
-          msgError.style.display = 'block';
-        }
-      })
-      .catch(() => { inputNombre.value = ''; });
-  } else {
-    inputNombre.value = '';
-    msgError.style.display = 'none';
-  }
-});
+    document.getElementById('inputCodigoBuscar').addEventListener('input', function () {
+      const codigo = this.value.trim().toUpperCase();
+      const msgError = document.getElementById('msgErrorBusqueda');
+      const inputNombre = document.getElementById('inputNombreAutocompletado');
 
+      if (codigo.length >= 6) {
+        fetch('/api/alumnos/buscar/' + encodeURIComponent(codigo))
+          .then(res => res.json())
+          .then(data => {
+            if (data.encontrado) {
+              if (!data.habilitado) {
+                // Usamos el motivo si viene, si no, el mensaje por defecto
+                msgError.innerText = data.motivo || 'El alumno no está habilitado para reservar.';
+                msgError.style.display = 'block';
+                inputNombre.value = '';
+                inputNombre.removeAttribute('data-codigo-real');
+              } else {
+                inputNombre.value = data.nombreCompleto;
+                inputNombre.setAttribute('data-codigo-real', data.codigo);
+                msgError.style.display = 'none';
+              }
+            } else {
+              inputNombre.value = '';
+              msgError.innerText = 'Código o DNI no encontrado en el sistema.';
+              msgError.style.display = 'block';
+            }
+          })
+          .catch(() => { 
+            inputNombre.value = ''; 
+            msgError.innerText = 'Error al buscar el alumno.';
+            msgError.style.display = 'block';
+          });
+      } else {
+        inputNombre.value = '';
+        msgError.style.display = 'none';
+      }
+    });
+    
 function agregarIntegrantePorCodigo() {
   if (totalIntegrantes >= 5) { alert('Límite alcanzado: Máximo 5 integrantes por reserva.'); return; }
   const inputNombre = document.getElementById('inputNombreAutocompletado');

@@ -63,36 +63,55 @@ public class InspeccionController {
     private AlumnoRepository alumnoRepositorio;
 
     // 1. SOLO SE LISTAN LAS RESERVAS EN ESTADO 'DEVUELTA' (PROVENIENTES DEL CHECK-OUT)
-    @GetMapping
+        @GetMapping
     @Transactional(readOnly = true)
     public String verInspeccion(HttpSession sesion, Model modelo) {
-        // Traemos las DEVUELTAS y las NO_INSPECCIONADAS (para que el admin sepa qué pasó)
+        // Traemos las reservas EN_USO (esperando checkout) y DEVUELTA (esperando inspección)
+        List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
         List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
-        List<Reserva> noInspeccionadas = reservaRepositorio.findByEstado("NO_INSPECCIONADO");
+        
+        List<Reserva> todasLasPendientes = new ArrayList<>();
+        if (enUso != null) todasLasPendientes.addAll(enUso);
+        if (devueltas != null) todasLasPendientes.addAll(devueltas);
 
         List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
 
-        // Procesamos las DEVUELTAS
-        if (devueltas != null) {
-            for (Reserva r : devueltas) {
-                listaInspeccion.add(convertirADto(r));
+        for (Reserva r : todasLasPendientes) {
+            List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
+            List<String> nombresIntegrantes = new ArrayList<>();
+            for (ReservaIntegrante ri : integrantes) {
+                if (ri.getAlumno() != null) {
+                    nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                }
             }
+
+            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+            String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                    ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                    ? r.getLaboratorio().getTipo() : "General";
+
+            String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                    ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+
+            listaInspeccion.add(new InspeccionCardDto(
+                    r.getIdReserva(),
+                    labNombre,
+                    tipoLab,
+                    cubiculo,
+                    (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
+                    horario,
+                    r.getEstado(), // Aquí va "EN_USO" o "DEVUELTA"
+                    nombresIntegrantes
+            ));
         }
 
-        // Procesamos las NO_INSPECCIONADAS (solo para que se vean, no se pueden inspeccionar)
-        if (noInspeccionadas != null) {
-            for (Reserva r : noInspeccionadas) {
-                listaInspeccion.add(convertirADto(r));
-            }
-        }
-
-        // Contamos las incidencias para el sidebar
         long cantIncidencias = sancionRepositorio.count();
 
         modelo.addAttribute("inspecciones", listaInspeccion);
         modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
 
-        return "admin-inspeccion";
+        return "admin/inspeccion";
     }
 
     // Método auxiliar para no repetir código

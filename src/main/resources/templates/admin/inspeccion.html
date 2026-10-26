@@ -55,7 +55,6 @@
             <div class="accion-derecha-checkin">
               <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
               
-              <!-- CASO 1: Si está EN_USO, el admin debe registrar la salida (Check-out) -->
               <button th:if="${ins.estado == 'EN_USO'}"
                       type="button" 
                       class="btn-verde-iniciar" 
@@ -65,14 +64,14 @@
                 <i data-lucide="corner-down-left"></i> Registrar Salida
               </button>
 
-              <!-- CASO 2: Si está DEVUELTA, el admin ya puede inspeccionar -->
+              <!-- CASO 2: Si está DEVUELTA, el admin puede Inspeccionar -->
               <button th:if="${ins.estado == 'DEVUELTA'}"
                       type="button" 
                       class="btn-verde-iniciar" 
                       style="background:#2563eb;"
                       th:data-id="${ins.idReserva}"
                       onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
-                <i data-lucide="clipboard-check"></i> Inspeccionar Material
+                <i data-lucide="clipboard-check"></i> Inspeccionar
               </button>
 
               <!-- CASO 3: Si expiró el tiempo -->

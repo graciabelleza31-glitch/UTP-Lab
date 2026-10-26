@@ -417,13 +417,29 @@ for (Reserva reservaExistente : reservasDelLaboratorio) {
         ReservaIntegrante responsable = new ReservaIntegrante(nuevaReserva, alumnoLogueado, false);
         reservaIntegranteRepositorio.save(responsable);
 
-        // C. Guardar Integrantes adicionales
+                // C. Guardar Integrantes adicionales
         if (codigosIntegrantes != null) {
             for (String cod : codigosIntegrantes) {
                 if (!cod.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) {
-                    alumnoRepositorio.findById(cod.trim()).ifPresent(al -> {
-                        reservaIntegranteRepositorio.save(new ReservaIntegrante(nuevaReserva, al, false));
-                    });
+                    
+                    // ⭐ VALIDACIÓN DE SEGURIDAD: Verificar que el integrante tenga permiso de carrera
+                    Alumno integrante = alumnoRepositorio.findById(cod.trim()).orElse(null);
+                    
+                    if (integrante != null && integrante.getCarrera() != null) {
+                        List<Laboratorio> labsPermitidosIntegrante = laboratorioRepositorio
+                            .findLaboratoriosPermitidosPorCarrera(integrante.getCarrera().getIdCarrera());
+                        
+                        if (labsPermitidosIntegrante.isEmpty()) {
+                            redirectAttributes.addFlashAttribute("errorReserva", 
+                                "El alumno con código " + cod + " pertenece a una carrera que no tiene acceso a laboratorios.");
+                            return "redirect:/alumno/laboratorios";
+                        }
+                    }
+
+                    // Si todo está bien, lo guardamos
+                    if (integrante != null) {
+                        reservaIntegranteRepositorio.save(new ReservaIntegrante(nuevaReserva, integrante, false));
+                    }
                 }
             }
         }
