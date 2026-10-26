@@ -35,97 +35,275 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* ... (Aquí pegas .modal-horarios-ancho, .cabecera-modal-azul, .btn-hora-slot, etc.) ... */
+.modal-horarios-ancho {
+    max-width: 480px !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.cabecera-modal-azul {
+    background-color: #1a1d3b;
+    color: #ffffff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icono-cabecera-lab {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cabecera-modal-azul h3 { font-size: 1.1rem; font-weight: 700; }
+.cabecera-modal-azul p { color: #94a3b8; font-size: 0.78rem; }
+
+.cuerpo-modal-horarios { padding: 1.5rem; }
+.fila-selector-fecha { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.txt-horarios-disp { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
+
+.input-fecha-box {
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+.matriz-horas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+.btn-hora-slot { text-align: center; padding: 0.65rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; }
+
+.btn-hora-slot.disponible {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.btn-hora-slot.ocupado {
+    background-color: #f8fafc;
+    color: #cbd5e1;
+    text-decoration: line-through;
+    border: 1px solid #f1f5f9;
+}
+
+.leyenda-horarios { display: flex; gap: 1.5rem; font-size: 0.78rem; color: #64748b; margin-bottom: 1.5rem; }
+.item-leyenda { display: flex; align-items: center; gap: 0.4rem; }
+.bolita { width: 10px; height: 10px; border-radius: 50%; }
+.bolita.disp { background-color: #93c5fd; }
+.bolita.ocup { background-color: #e2e8f0; }
+
+.acciones-modal-horarios { display: flex; gap: 0.75rem; }
+.btn-gris-cerrar { flex: 1; background-color: #f1f5f9; color: #475569; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn-azul-reservar { flex: 1; background-color: #2563eb; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
 /* ==========================================================================
    WIZARD NUEVA RESERVA
    ========================================================================== */
-.modal-wizard-ancho {
-    max-width: 580px !important;
-    padding: 1.75rem 2rem !important;
-}
+.modal-wizard-ancho { max-width: 580px !important; padding: 1.75rem 2rem !important; }
+.cabecera-wizard { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+.titulo-wizard { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; }
+.indicadores-pasos { display: flex; align-items: center; gap: 0.5rem; }
 
-.cabecera-wizard {
+.paso-circulo {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ... (Aquí pegas los indicadores de pasos, seleccionadores de labs, etc.) ... */
+.paso-circulo.activo { background-color: #2563eb; color: #ffffff; }
+.paso-circulo.completado { background-color: #10b981; color: #ffffff; }
+.linea-paso { width: 16px; height: 2px; background-color: #e2e8f0; }
+.txt-paso-contador { font-size: 0.8rem; color: #94a3b8; margin-left: 0.5rem; }
 
-/* ==========================================================================
-   MODAL DE PAGO Y BOLETA
-   ========================================================================== */
-.modal-pago-ancho {
-    max-width: 440px !important;
-    padding: 1.75rem !important;
+.etiqueta-form-wizard { display: block; font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 1rem 0 0.5rem 0; }
+
+.input-fecha-wizard {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.88rem;
 }
 
-.rejilla-metodos-pago {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
+.rejilla-labs-wizard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; max-height: 220px; overflow-y: auto; padding-right: 4px; }
 
-.opcion-metodo-pago {
-    flex: 1;
+.item-lab-radio {
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 1rem 0.5rem;
-    text-align: center;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
     transition: all 0.15s;
 }
 
-.opcion-metodo-pago.seleccionado {
-    border-color: #2563eb;
-    background-color: #eff6ff;
-    color: #2563eb;
+.item-lab-radio.seleccionado { border-color: #2563eb; background-color: #eff6ff; }
+.info-lab-mini strong { display: block; font-size: 0.85rem; color: #0f172a; }
+.info-lab-mini span { font-size: 0.75rem; color: #64748b; }
+.icono-cuadro-lab.mini { width: 34px; height: 34px; }
+
+.fila-cabecera-bloques { display: flex; justify-content: space-between; align-items: center; }
+.alerta-max-horas { background-color: #fef3c7; color: #b45309; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+.rejilla-horas-seleccion { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-top: 0.5rem; }
+
+.btn-slot-select {
+    text-align: center;
+    padding: 0.65rem 0.5rem;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #334155;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
 }
+
+.btn-slot-select.seleccionado { background-color: #2563eb; color: #ffffff; border-color: #2563eb; }
+.btn-slot-select.bloqueado { background-color: #f1f5f9 !important; color: #cbd5e1 !important; text-decoration: line-through !important; cursor: not-allowed !important; border-color: #e2e8f0 !important; }
+
+.pie-wizard-paso { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
+.btn-azul-continuar { flex: 1; background-color: #2563eb; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-azul-continuar:hover { background-color: #1d4ed8; }
+
+/* PASO 2: INTEGRANTES */
+.cabecera-integrantes-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.titulo-integrantes-txt { font-size: 0.95rem; color: #0f172a; }
+.sub-integrantes-txt { font-size: 0.78rem; color: #64748b; }
+.contador-badge-integrantes { font-size: 0.8rem; font-weight: 700; color: #64748b; }
+.lista-integrantes-box { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+
+.tarjeta-integrante-fila { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.85rem; }
+.avatar-circulo-estudiante { width: 36px; height: 36px; border-radius: 50%; background-color: #1e1b4b; color: #ffffff; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+.info-estud-fila { flex: 1; }
+.nombre-estud-txt { display: block; font-size: 0.88rem; color: #0f172a; }
+.codigo-estud-txt { font-size: 0.75rem; color: #64748b; }
+.btn-eliminar-integrante { background: none; border: none; color: #94a3b8; font-size: 1rem; cursor: pointer; }
+.btn-eliminar-integrante:hover { color: #ef4444; }
+
+.buscador-integrante-grupo { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+.input-nombre-solo-lectura { flex: 2; background-color: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.85rem; color: #475569; }
+.input-codigo-ingreso { flex: 1.2; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.85rem; }
+.btn-mas-azul { width: 40px; background-color: #2563eb; color: #ffffff; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: 700; cursor: pointer; }
+.mensaje-error-busqueda { color: #ef4444; font-size: 0.78rem; margin-bottom: 1rem; }
+
+.caja-checkbox-insumos { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1.25rem; }
+.label-checkbox-custom { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+.txt-checkbox-titulo { font-size: 0.88rem; font-weight: 700; color: #0f172a; }
+.sub-checkbox-txt { font-size: 0.78rem; color: #64748b; margin-left: 1.6rem; margin-top: 0.15rem; }
+
+/* PASO 3: INSUMOS */
+.input-buscar-insumo { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; margin-bottom: 0.75rem; }
+.lista-checkbox-insumos { display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+.item-insumo-check { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 1rem; transition: all 0.15s; }
+.item-insumo-check:hover { background-color: #f8fafc; }
+.label-insumo { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+.nombre-insumo-label { display: block; font-size: 0.88rem; color: #0f172a; }
+.sub-categoria-label { font-size: 0.75rem; color: #64748b; }
+
+/* PASO 4: EPPs */
+.rejilla-epps-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem; }
+.card-epp-select { border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem 1rem; background-color: #ffffff; cursor: pointer; transition: all 0.15s; }
+.card-epp-select.seleccionado { border-color: #2563eb; background-color: #eff6ff; }
+.card-epp-select.incluido { background-color: #f8fafc; }
+.label-epp-box { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+.icono-epp-emoji { font-size: 1.35rem; }
+.info-epp-txt strong { display: block; font-size: 0.85rem; color: #0f172a; }
+.info-epp-txt .gratis { font-size: 0.75rem; color: #64748b; }
+.info-epp-txt .costo { font-size: 0.75rem; font-weight: 700; color: #d97706; }
+
+/* PASO 5: BOLETA */
+.recuadro-boleta-reserva { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
+.cabecera-boleta-azul { background-color: #1a1d3b; color: #ffffff; padding: 0.85rem 1.25rem; display: flex; flex-direction: column; }
+.cabecera-boleta-azul span { font-size: 0.7rem; color: #94a3b8; letter-spacing: 0.5px; }
+.cabecera-boleta-azul strong { font-size: 1.05rem; }
+.cuerpo-boleta-detalle { padding: 1.25rem; background-color: #ffffff; }
+.fila-meta-boleta { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 0.75rem; }
+.txt-lbl-boleta { display: block; font-size: 0.72rem; color: #64748b; margin-bottom: 0.2rem; }
+.seccion-lista-boleta { border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; margin-bottom: 0.75rem; }
+.lista-items-bullet { padding-left: 1.25rem; font-size: 0.82rem; color: #334155; }
+.tabla-totales-boleta { display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.5rem; }
+.fila-cobro { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; }
+.fila-cobro.total { border-top: 1px solid #e2e8f0; padding-top: 0.5rem; color: #0f172a; font-size: 0.95rem; }
+.caja-checkbox-terminos { background-color: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; }
+.txt-terminos-peq { font-size: 0.8rem; color: #334155; }
+.enlace-protocolos { color: #2563eb; text-decoration: underline; font-weight: 600; }
+.enlace-protocolos:hover { color: #1d4ed8; }
+
+/* ==========================================================================
+   MODAL DE PAGO
+   ========================================================================== */
+.modal-pago-ancho { max-width: 440px !important; padding: 1.75rem !important; }
+.cabecera-pago-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+.titulo-pago-txt { font-size: 1.2rem; font-weight: 800; color: #0f172a; }
+.sub-pago-txt { font-size: 0.8rem; color: #64748b; }
+.tarjeta-monto-azul { background-color: #1a1d3b; border-radius: 12px; padding: 1.25rem; color: #ffffff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.lbl-total-pagar { display: block; font-size: 0.72rem; color: #94a3b8; letter-spacing: 0.5px; }
+.monto-total-num { font-size: 1.6rem; font-weight: 800; }
+.icono-tarjeta-chip { font-size: 1.5rem; }
+.rejilla-metodos-pago { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.opcion-metodo-pago { flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: #475569; transition: all 0.15s; }
+.opcion-metodo-pago.seleccionado { border-color: #2563eb; background-color: #eff6ff; color: #2563eb; }
+.icono-metodo { font-size: 1.4rem; margin-bottom: 0.4rem; }
+.btn-confirmar-pago-final { width: 100%; background-color: #2563eb; color: #ffffff; border: none; padding: 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
+.btn-confirmar-pago-final:hover { background-color: #1d4ed8; }
 
 /* ==========================================================================
    MODAL DE RECIBO / RESUMEN
    ========================================================================== */
-.modal-recibo-contenedor {
-    background: #ffffff;
-    border-radius: 18px;
-    width: 90%;
-    max-width: 520px;
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-}
-
-.cabecera-azul-recibo {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-    border-radius: 12px;
-    padding: 1.25rem;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-/* ... (Aquí pegas el resto de estilos de recibo: metadatos, listas de integrantes, totales) ... */
+.modal-recibo-contenedor { background: #ffffff; border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+.cabecera-modal-recibo { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; }
+.titulo-modal-recibo { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; }
+.subtitulo-modal-recibo { font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0; }
+.btn-cerrar-recibo { background: transparent; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.btn-cerrar-recibo:hover { background: #f1f5f9; color: #475569; }
+.cuerpo-modal-recibo { padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+.cabecera-azul-recibo { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 1.25rem; color: #ffffff; display: flex; flex-direction: column; gap: 0.25rem; }
+.lbl-recibo { font-size: 0.7rem; color: #a5b4fc; letter-spacing: 0.5px; font-weight: 600; }
+.nombre-lab-recibo { font-size: 1.2rem; font-weight: 800; }
+.cubiculo-recibo { font-size: 0.85rem; color: #c7d2fe; }
+.fila-meta-recibo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.85rem; background: #f8fafc; border-radius: 10px; }
+.col-meta-recibo { display: flex; flex-direction: column; gap: 0.25rem; }
+.lbl-meta-recibo { font-size: 0.7rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.3px; }
+.col-meta-recibo strong { font-size: 0.85rem; color: #0f172a; font-weight: 700; }
+.badge-estado-recibo { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block; width: fit-content; }
+.badge-estado-recibo.confirmada { background: #dbeafe; color: #1d4ed8; }
+.badge-estado-recibo.enuso { background: #dcfce7; color: #15803d; }
+.badge-estado-recibo.devuelta { background: #f3e8ff; color: #7e22ce; }
+.badge-estado-recibo.cancelada { background: #fee2e2; color: #dc2626; }
+.seccion-recibo { display: flex; flex-direction: column; gap: 0.6rem; }
+.titulo-seccion-recibo { font-size: 0.78rem; font-weight: 800; color: #475569; letter-spacing: 0.5px; text-transform: uppercase; }
+.lista-integrantes-recibo { display: flex; flex-direction: column; gap: 0.5rem; }
+.item-integrante-recibo { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.85rem; background: #f8fafc; border-radius: 8px; }
+.avatar-mini-recibo { width: 32px; height: 32px; border-radius: 50%; background: #1e1b4b; color: #ffffff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.item-integrante-recibo strong { display: block; font-size: 0.85rem; color: #0f172a; }
+.item-integrante-recibo span { font-size: 0.75rem; color: #64748b; }
+.lista-items-recibo { display: flex; flex-direction: column; gap: 0.4rem; }
+.item-recibo { display: flex; justify-content: space-between; padding: 0.55rem 0.85rem; background: #f8fafc; border-radius: 8px; font-size: 0.85rem; }
+.nombre-item-recibo { color: #334155; font-weight: 500; }
+.cantidad-item-recibo { color: #0f172a; font-weight: 700; }
+.fila-total-recibo { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 10px; border: 1px solid #fcd34d; }
+.lbl-total-recibo { display: block; font-size: 0.7rem; color: #92400e; letter-spacing: 0.5px; font-weight: 700; }
+.metodo-pago-recibo { font-size: 0.85rem; color: #78350f; font-weight: 600; }
+.monto-total-recibo { font-size: 1.4rem; font-weight: 800; color: #78350f; }
+.pie-modal-recibo { padding: 1rem 1.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; }
+.btn-cerrar-modal-recibo { background: #0f172a; color: #ffffff; border: none; padding: 0.7rem 1.75rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.btn-cerrar-modal-recibo:hover { background: #1e293b; }
 
 /* ==========================================================================
    MODAL DE INVENTARIO (ADMIN)
    ========================================================================== */
-.modal-inventario-contenedor {
-    background-color: #ffffff;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 540px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-/* ... (Aquí pegas los inputs estilizados y botones del formulario de inventario) ... */
+.modal-inventario-contenedor { background-color: #ffffff; border-radius: 16px; width: 90%; max-width: 540px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column; }

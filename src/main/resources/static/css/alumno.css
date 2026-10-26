@@ -165,7 +165,7 @@
 }
 
 /* ==========================================================================
-   CUADRÍCULA DE LABORATORIOS Y CATÁLOGOS
+   CUADRÍCULA DE LABORATORIOS
    ========================================================================== */
 .barra-filtros {
     display: flex;
@@ -245,20 +245,9 @@
     height: 1.3rem;
 }
 
-.bg-quimica {
-    background-color: #172554;
-    color: #60a5fa;
-}
-
-.bg-engranaje {
-    background-color: #1e1b4b;
-    color: #a78bfa;
-}
-
-.bg-rayo {
-    background-color: #18181b;
-    color: #fbbf24;
-}
+.bg-quimica { background-color: #172554; color: #60a5fa; }
+.bg-engranaje { background-color: #1e1b4b; color: #a78bfa; }
+.bg-rayo { background-color: #18181b; color: #fbbf24; }
 
 .info-tarjeta-lab {
     display: flex;
@@ -286,4 +275,99 @@
     width: fit-content;
 }
 
-/* ... (Aquí pegas el resto de tu alumno.css original: catálogos, protocolos, cuenta, historial) ... */
+/* ==========================================================================
+   CATÁLOGO Y PERFIL (Cuenta)
+   ========================================================================== */
+.tarjeta-perfil-alumno {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.avatar-grande-alumno {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-perfil-alumno { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+.nombre-completo-perfil { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0; }
+.carrera-perfil { font-size: 1rem; color: #64748b; margin: 0; }
+.fila-badges-perfil { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+
+.badge-codigo-perfil {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.badge-estado-perfil { font-size: 0.85rem; font-weight: 700; padding: 4px 12px; border-radius: 8px; }
+.badge-estado-perfil.activo { background: #dcfce7; color: #15803d; }
+.badge-estado-perfil.bloqueado { background: #fee2e2; color: #dc2626; }
+
+.grid-tres-estadisticas-alumno { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+.card-estadistica-alumno {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card-estadistica-alumno:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+.num-estadistica { font-size: 2.5rem; font-weight: 800; line-height: 1; margin-bottom: 0.25rem; }
+.num-estadistica.azul { color: #2563eb; }
+.num-estadistica.morado { color: #8b5cf6; }
+.num-estadistica.naranja { color: #f59e0b; }
+.label-estadistica { font-size: 0.9rem; color: #475569; font-weight: 500; }
+.link-estadistica { font-size: 0.78rem; color: #64748b; text-decoration: none; font-weight: 600; margin-top: 0.25rem; }
+.link-estadistica:hover { color: #2563eb; text-decoration: underline; }
+
+.lista-historial-reservas { display: flex; flex-direction: column; gap: 0.75rem; }
+.fila-historial-reserva {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.15s;
+}
+
+.fila-historial-reserva:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
+.info-historial { display: flex; flex-direction: column; gap: 0.25rem; }
+.nombre-lab-historial { font-size: 1rem; font-weight: 700; color: #0f172a; }
+.detalle-historial { font-size: 0.85rem; color: #64748b; }
+.accion-historial { display: flex; align-items: center; gap: 1rem; }
+.codigo-historial { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
+
+.badge-estado-historial { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 9999px; white-space: nowrap; }
+.badge-estado-historial.confirmada { background: #dbeafe; color: #1d4ed8; }
+.badge-estado-historial.enuso { background: #dcfce7; color: #15803d; }
+.badge-estado-historial.devuelta { background: #f3e8ff; color: #7e22ce; }
+.badge-estado-historial.cancelada { background: #fee2e2; color: #dc2626; }
