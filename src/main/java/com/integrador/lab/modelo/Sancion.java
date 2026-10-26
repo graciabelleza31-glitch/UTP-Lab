@@ -42,7 +42,7 @@ public class Sancion {
     private String estado; // "PENDIENTE", "NOTIFICADO", "RESUELTO"
 
     // @Transient le dice a JPA que NO busque esta columna en PostgreSQL
-    @Transient
+   @Column 
     private LocalDateTime fechaSancion = LocalDateTime.now();
 
     public Sancion() {

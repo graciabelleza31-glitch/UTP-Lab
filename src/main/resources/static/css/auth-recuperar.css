@@ -228,3 +228,17 @@ body {
 .btn-enviar-azul:hover {
   background: #1d4ed8;
 }
+
+.link-volver {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    text-decoration: none;
+    margin-top: 1.25rem;
+}
+
+.link-volver:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}

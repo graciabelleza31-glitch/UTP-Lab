@@ -1,6 +1,7 @@
 package com.integrador.lab.controller.admin;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -272,6 +273,7 @@ public class InspeccionController {
                         costoSancion,
                         "PENDIENTE"
                 );
+                sancion.setFechaSancion(LocalDateTime.now());
                 sancionRepositorio.save(sancion);
             }
         }
