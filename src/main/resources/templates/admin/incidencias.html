@@ -22,25 +22,26 @@
           </div>
         </div>
 
-        <!-- SELECTOR DE FECHA -->
+        <!-- SELECTOR DE FECHA PARA INCIDENCIAS -->
 <div class="fila-dashboard-header" style="margin-bottom: 1rem;">
     <div>
-        <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1> <!-- Cambia el título según la vista -->
-        <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
+        <!-- TÍTULO CORRECTO -->
+        <h1 class="titulo-seccion-catalogo">Módulo de Incidencias</h1>
+        <p class="subtitulo-seccion-catalogo">Daños, costos y notificaciones por correo</p>
     </div>
     
     <div class="selector-fecha-dashboard">
-        <a th:href="@{/admin/checkin(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+        <!-- URL CORRECTA: /admin/incidencias -->
+        <a th:href="@{/admin/incidencias(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
             <i data-lucide="chevron-left"></i>
         </a>
         
-        <!-- El input actualiza la URL al cambiar de fecha -->
         <input type="date" 
                th:value="${fechaConsulta}"
-               onchange="window.location.href='/admin/checkin?fecha=' + this.value"
+               onchange="window.location.href='/admin/incidencias?fecha=' + this.value"
                class="input-fecha-dashboard">
                
-        <a th:href="@{/admin/checkin(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+        <a th:href="@{/admin/incidencias(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
             <i data-lucide="chevron-right"></i>
         </a>
     </div>

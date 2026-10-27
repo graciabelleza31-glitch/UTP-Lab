@@ -1,6 +1,7 @@
 package com.integrador.lab.controller.admin;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.integrador.lab.modelo.Alumno;
@@ -64,56 +66,53 @@ public class InspeccionController {
     private AlumnoRepository alumnoRepositorio;
 
     // 1. SOLO SE LISTAN LAS RESERVAS EN ESTADO 'DEVUELTA' (PROVENIENTES DEL CHECK-OUT)
-        @GetMapping
-    @Transactional(readOnly = true)
-    public String verInspeccion(HttpSession sesion, Model modelo) {
-        // Traemos las reservas EN_USO (esperando checkout) y DEVUELTA (esperando inspección)
-        List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
-        List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
-        
-        List<Reserva> todasLasPendientes = new ArrayList<>();
-        if (enUso != null) todasLasPendientes.addAll(enUso);
-        if (devueltas != null) todasLasPendientes.addAll(devueltas);
+    @GetMapping
+@Transactional(readOnly = true)
+public String verInspeccion(
+        @RequestParam(required = false) String fecha, // 👈 Recibimos la fecha
+        HttpSession sesion, 
+        Model modelo) {
 
-        List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
-
-        for (Reserva r : todasLasPendientes) {
-            List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
-            List<String> nombresIntegrantes = new ArrayList<>();
-            for (ReservaIntegrante ri : integrantes) {
-                if (ri.getAlumno() != null) {
-                    nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
-                }
-            }
-
-            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-            String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
-                    ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
-                    ? r.getLaboratorio().getTipo() : "General";
-
-            String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
-                    ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
-
-            listaInspeccion.add(new InspeccionCardDto(
-                    r.getIdReserva(),
-                    labNombre,
-                    tipoLab,
-                    cubiculo,
-                    (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                    horario,
-                    r.getEstado(), // Aquí va "EN_USO" o "DEVUELTA"
-                    nombresIntegrantes
-            ));
+    // 1. Calcular la fecha de consulta
+    LocalDate fechaConsulta = LocalDate.now();
+    if (fecha != null && !fecha.isEmpty()) {
+        try {
+            fechaConsulta = LocalDate.parse(fecha);
+        } catch (Exception e) {
+            fechaConsulta = LocalDate.now();
         }
-
-        long cantIncidencias = sancionRepositorio.count();
-
-        modelo.addAttribute("inspecciones", listaInspeccion);
-        modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
-
-        return "admin/inspeccion";
     }
+
+    // 2. Traer reservas EN_USO y DEVUELTA, pero SOLO de la fecha seleccionada
+    List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
+    List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
+    
+    List<Reserva> todasLasPendientes = new ArrayList<>();
+    if (enUso != null) todasLasPendientes.addAll(enUso);
+    if (devueltas != null) todasLasPendientes.addAll(devueltas);
+
+    // 👇 AQUÍ APLICAMOS EL FILTRO POR FECHA
+    List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
+    for (Reserva r : todasLasPendientes) {
+        // Si la reserva no es de la fecha consultada, la saltamos
+        if (r.getFechaReserva() == null || !r.getFechaReserva().equals(fechaConsulta)) {
+            continue; 
+        }
+        listaInspeccion.add(convertirADto(r));
+    }
+
+    long cantIncidencias = sancionRepositorio.count();
+
+    // 3. Pasar datos al modelo (incluyendo las fechas para el selector)
+    modelo.addAttribute("inspecciones", listaInspeccion);
+    modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
+    
+    modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
+    modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+    modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+
+    return "admin/inspeccion";
+}
 
     // Método auxiliar para no repetir código
     private InspeccionCardDto convertirADto(Reserva r) {
