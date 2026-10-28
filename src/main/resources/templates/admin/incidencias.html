@@ -99,6 +99,16 @@
               <div class="accion-derecha-inc">
                 <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
                 
+                 <!-- CASO 1: Si ya está RESUELTA -> Botón Gris "Ver Resumen" -->
+  <button th:if="${inc.resuelta}" 
+          type="button" 
+          class="btn-verde-iniciar" 
+          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 0.86rem; padding: 0.55rem 1.15rem;"
+          th:data-id="${inc.idReserva}"
+          onclick="abrirResumenIncidencia(this.getAttribute('data-id'))">
+    <i data-lucide="file-text"></i> Ver Resumen
+  </button>
+
                 <!-- Botón Resolver (si ya está notificada) -->
                 <button th:if="${inc.notificada}" 
                         type="button" 

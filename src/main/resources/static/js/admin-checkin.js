@@ -188,3 +188,59 @@ function enviarConfirmacionCheckin() {
     btn.disabled = false;
   });
 }
+
+function abrirResumenCheckin(idReserva) {
+    // Hacemos la petición al backend para obtener los datos de la reserva
+    // Usamos el mismo endpoint que usa el modal de checkin
+    fetch(`/admin/checkin/api/${idReserva}`)
+        .then(res => res.json())
+        .then(data => {
+            // Construimos un resumen sencillo en HTML
+            let resumenHtml = `<strong>Laboratorio:</strong> ${data.laboratorio}<br>`;
+            resumenHtml += `<strong>Horario:</strong> ${data.horario}<br><br>`;
+            
+            resumenHtml += `<strong>Integrantes:</strong><br>`;
+            data.integrantes.forEach(i => {
+                resumenHtml += `- ${i.nombre} (${i.codigo})<br>`;
+            });
+            
+            resumenHtml += `<br><strong>Insumos Prestados:</strong><br>`;
+            if (data.insumos && data.insumos.length > 0) {
+                data.insumos.forEach(ins => {
+                    resumenHtml += `- ${ins.nombre} (${ins.unidad})<br>`;
+                });
+            } else {
+                resumenHtml += `Ninguno.<br>`;
+            }
+
+            resumenHtml += `<br><strong>EPPs Entregados:</strong><br>`;
+            data.epps.forEach(epp => {
+                resumenHtml += `- ${epp.emoji} ${epp.nombre}<br>`;
+            });
+
+            // Inyectamos un modal flotante con el resumen
+            let modalResumenHTML = `
+                <div id="modalResumenCheckinFlotante" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+                    <div style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 80vh; overflow-y: auto;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">Resumen de Check-in</h3>
+                            <button type="button" onclick="document.getElementById('modalResumenCheckinFlotante').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">✕</button>
+                        </div>
+
+                        <div style="background: #f8fafc; border-radius: 10px; padding: 1.25rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                            ${resumenHtml}
+                        </div>
+
+                        <button type="button" onclick="document.getElementById('modalResumenCheckinFlotante').remove()" style="width: 100%; background: #0f172a; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1.5rem;">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalResumenHTML);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        })
+        .catch(() => alert("Error al cargar el resumen."));
+}

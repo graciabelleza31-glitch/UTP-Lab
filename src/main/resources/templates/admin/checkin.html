@@ -196,14 +196,27 @@
             </div>
 
             <div class="accion-derecha-checkin">
-              <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
-              <button type="button" 
-                      class="btn-verde-iniciar" 
-                      th:data-id="${r.idReserva}"
-                      onclick="abrirModalCheckin(this.getAttribute('data-id'))">
-                <i data-lucide="check-square"></i> Iniciar
-              </button>
-            </div>
+  <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
+  
+  <!-- CASO 1: SI YA ESTÁ EN USO, MOSTRAMOS UN BOTÓN PARA VER EL RESUMEN -->
+  <button th:if="${r.estado == 'EN_USO'}"
+          type="button" 
+          class="btn-verde-iniciar" 
+          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;"
+          th:data-id="${r.idReserva}"
+          onclick="abrirResumenCheckin(this.getAttribute('data-id'))">
+    <i data-lucide="file-text"></i> Ver Resumen
+  </button>
+
+  <!-- CASO 2: SI ESTÁ CONFIRMADA O PENDIENTE, MOSTRAMOS INICIAR -->
+  <button th:if="${r.estado == 'CONFIRMADA' or r.estado == 'PENDIENTE'}"
+          type="button" 
+          class="btn-verde-iniciar" 
+          th:data-id="${r.idReserva}"
+          onclick="abrirModalCheckin(this.getAttribute('data-id'))">
+    <i data-lucide="check-square"></i> Iniciar
+  </button>
+</div>
 
           </div>
         </div>

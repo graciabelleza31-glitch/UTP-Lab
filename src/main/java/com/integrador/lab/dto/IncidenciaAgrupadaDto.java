@@ -13,6 +13,8 @@ public class IncidenciaAgrupadaDto {
         private List<String> alumnos;
         private List<String> correos;
         private LocalDateTime fechaNotificacion;
+        
+        
         public String getIdReserva() {
             return idReserva;
         }

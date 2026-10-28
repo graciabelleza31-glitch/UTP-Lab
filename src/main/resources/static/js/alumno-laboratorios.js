@@ -662,9 +662,89 @@ function abrirModalResumen(tarjeta) {
                     `);
                 });
             }
+            // 👇 ACTUALIZAR LA TARJETA EN VIVO
+            actualizarEstadoReservaEnVivo(idReserva, data.estado);
         });
 }
 
 function cerrarModalResumen() {
     document.getElementById('modalResumenReserva').style.display = 'none';
 }
+
+// ============================================================================
+// FUNCIÓN PARA ACTUALIZAR LA TARJETA DEL ALUMNO EN TIEMPO REAL
+// ============================================================================
+function actualizarEstadoReservaEnVivo(idReserva, nuevoEstado) {
+    // 1. Buscar la tarjeta de la reserva en el DOM
+    const tarjeta = document.querySelector(`.tarjeta-reserva-activa[data-id-reserva="${idReserva}"]`);
+    
+    if (!tarjeta) return;
+
+    // 2. Actualizar el Badge de estado
+    const badge = tarjeta.querySelector('.badge-estado-historial');
+    if (badge) {
+        // Limpiamos clases viejas
+        badge.className = 'badge-estado-historial'; 
+        
+        // Aplicamos la nueva clase según el estado
+        if (nuevoEstado === 'EN_USO') {
+            badge.classList.add('enuso');
+            badge.innerText = 'En Uso';
+        } else if (nuevoEstado === 'DEVUELTA') {
+            badge.classList.add('devuelta');
+            badge.innerText = 'Devuelta';
+        } else if (nuevoEstado === 'INSPECCIONADA') {
+            badge.classList.add('inspeccionada');
+            badge.innerText = 'Inspeccionada';
+        }
+    }
+
+    // 3. Si el estado pasa a EN_USO, actualizamos el contador visual
+    if (nuevoEstado === 'EN_USO') {
+        const contador = document.querySelector('.alert-info');
+        if (contador) {
+            // Buscamos el número actual en el texto
+            const text = contador.innerText;
+            const match = text.match(/Hoy llevas (\d+) de 2/);
+            if (match) {
+                const reservasHoy = parseInt(match[1]) + 1;
+                const restantes = Math.max(0, 2 - reservasHoy);
+                contador.innerHTML = `Hoy llevas <strong>${reservasHoy}</strong> de 2 reservas permitidas. Te quedan <strong>${restantes}</strong>.`;
+                
+                // Si ya llegó a 2, ocultar el botón de nueva reserva
+                if (reservasHoy >= 2) {
+                    const btnNuevaReserva = document.querySelector('.btn-nueva-reserva');
+                    if (btnNuevaReserva) {
+                        btnNuevaReserva.style.display = 'none';
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// PASO C: VIGILANTE AUTOMÁTICO (Se ejecuta cada 30 segundos)
+// ============================================================================
+setInterval(() => {
+    // Buscamos todas las tarjetas de reservas activas en la pantalla
+    const tarjetas = document.querySelectorAll('.tarjeta-reserva-activa');
+    
+    tarjetas.forEach(tarjeta => {
+        const idReserva = tarjeta.getAttribute('data-id-reserva');
+        if (!idReserva) return;
+
+        // Consultamos el estado actual al backend
+        fetch(`/alumno/api/recibo/${idReserva}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.encontrado) {
+                    // Actualizamos la tarjeta con el estado real
+                    actualizarEstadoReservaEnVivo(idReserva, data.estado);
+                }
+            })
+            .catch(() => {
+                // Si falla la consulta (ej. sin internet), lo ignoramos silenciosamente
+            });
+    });
+}, 30000); // 30000 milisegundos = 30 segundos

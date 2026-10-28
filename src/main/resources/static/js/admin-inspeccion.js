@@ -1,51 +1,66 @@
 let idReservaInspActual = null;
 let listaItemsParaInspeccionar = [];
 
-function abrirModalInspeccion(idReserva) {
-  idReservaInspActual = idReserva;
-  listaItemsParaInspeccionar = [];
+function abrirModalCheckout(idReserva) {
+    // 1. Primero, hacemos un fetch para obtener los datos reales de la reserva
+    fetch(`/admin/checkin/api/${idReserva}`) // Usamos el mismo endpoint que usa el check-in
+        .then(res => res.json())
+        .then(data => {
+            // 2. Extraemos el nombre del primer integrante (el responsable)
+            let nombreResponsable = "Estudiante"; // Valor por defecto
+            if (data.integrantes && data.integrantes.length > 0) {
+                nombreResponsable = data.integrantes[0].nombre;
+            }
 
-  const contInsumos = document.getElementById('listaInspInsumos');
-  const contEpps = document.getElementById('listaInspEpps');
+            // 3. Calculamos el total de ítems (insumos + epps)
+            let totalItems = 0;
+            if (data.insumos) totalItems += data.insumos.length;
+            if (data.epps) totalItems += data.epps.length;
 
-  contInsumos.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Cargando...</span>';
-  contEpps.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Cargando...</span>';
+            // 4. Construimos el modal morado con los datos reales
+            let modalCheckoutHTML = `
+                <div id="modalCheckoutFlotante" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+                    <div style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+                        
+                        <h3 style="margin: 0 0 0.2rem 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">Confirmar devolución</h3>
+                        <p style="margin: 0 0 1.5rem 0; font-size: 0.85rem; color: #64748b;">${data.laboratorio} · ${idReserva}</p>
 
-  document.getElementById('modalInspeccion').style.display = 'flex';
+                        <div style="background: #f8fafc; border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span style="color: #64748b;">Responsable</span>
+                                <strong style="color: #0f172a;">${nombreResponsable}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span style="color: #64748b;">Horario</span>
+                                <strong style="color: #0f172a;">${data.horario}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span style="color: #64748b;">Ítems a recibir</span>
+                                <strong style="color: #0f172a;">${totalItems}</strong>
+                            </div>
+                        </div>
 
-  fetch(`/admin/inspeccion/api/${idReserva}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('modalInspLabTitulo').innerText = data.laboratorio;
-      document.getElementById('modalInspSubtitulo').innerText = `${data.idReserva} · ${data.horario}`;
+                        <div style="background: #f5f3ff; border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 0.6rem; color: #7c3aed; font-size: 0.82rem; font-weight: 500; margin-bottom: 1.5rem;">
+                            <i data-lucide="search" style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;"></i>
+                            <span>Tras confirmar, los materiales pasan a inspección.</span>
+                        </div>
 
-      // 1. Insumos
-      contInsumos.innerHTML = '';
-      if (data.insumos.length === 0) {
-        contInsumos.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">No se prestaron materiales de inventario adicionales.</span>';
-      } else {
-        data.insumos.forEach(item => {
-          listaItemsParaInspeccionar.push({ ...item, estado: 'conforme', motivo: '' });
-          contInsumos.insertAdjacentHTML('beforeend', generarHtmlItem(item));
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button type="button" onclick="cerrarModalCheckoutFlotante()" style="flex: 1; background: #f1f5f9; color: #475569; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancelar</button>
+                            <button type="button" id="btnConfirmarCheckout" onclick="procesarCheckout('${idReserva}')" style="flex: 1; background: #7c3aed; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 5. Inyectamos el modal en el body
+            document.body.insertAdjacentHTML('beforeend', modalCheckoutHTML);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        })
+        .catch(() => {
+            alert("No se pudieron cargar los datos de la reserva para el checkout.");
         });
-      }
-
-      // 2. EPPs Retornables
-      contEpps.innerHTML = '';
-      data.epps.forEach(epp => {
-        listaItemsParaInspeccionar.push({ ...epp, estado: 'conforme', motivo: '' });
-        contEpps.insertAdjacentHTML('beforeend', generarHtmlItem(epp));
-      });
-
-      evaluarEstadoGeneral();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    })
-    .catch(() => {
-      mostrarModalResultado(false, "Error al cargar los datos de la reserva.");
-      cerrarModalInspeccion();
-    });
 }
-
 function generarHtmlItem(item) {
   return `
     <div class="tarjeta-item-inspeccionar" id="row-item-${item.id}">
@@ -298,4 +313,36 @@ function procesarCheckout(idReserva) {
         btn.innerText = "Confirmar";
         btn.disabled = false;
     });
+}
+
+function abrirResumenInspeccion(idReserva) {
+    fetch(`/admin/checkin/api/${idReserva}`)
+        .then(res => res.json())
+        .then(data => {
+            let resumenHtml = `<strong>Laboratorio:</strong> ${data.laboratorio}<br>`;
+            resumenHtml += `<strong>Horario:</strong> ${data.horario}<br><br>`;
+            
+            resumenHtml += `<strong>Integrantes:</strong><br>`;
+            data.integrantes.forEach(i => { resumenHtml += `- ${i.nombre}<br>`; });
+            
+            resumenHtml += `<br><strong>Insumos y EPPs:</strong><br>`;
+            data.insumos.forEach(i => { resumenHtml += `- ${i.nombre}<br>`; });
+            data.epps.forEach(e => { resumenHtml += `- ${e.nombre}<br>`; });
+
+            let html = `
+                <div id="modalResumenInspeccion" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+                    <div style="background: #fff; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; max-height: 80vh; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800;">Resumen de Inspección</h3>
+                            <button onclick="document.getElementById('modalResumenInspeccion').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+                        </div>
+                        <div style="background: #f8fafc; border-radius: 10px; padding: 1.25rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                            ${resumenHtml}
+                        </div>
+                        <button onclick="document.getElementById('modalResumenInspeccion').remove()" style="width: 100%; background: #0f172a; color: #fff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1.5rem;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+        });
 }

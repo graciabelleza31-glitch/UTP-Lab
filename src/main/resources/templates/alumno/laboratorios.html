@@ -30,29 +30,7 @@
         ></header>
 
         <section class="seccion-checkout">
-          <!-- Botón de pago -->
-          <div
-            th:if="${numIncidencias > 0}"
-            class="banner-incidencias-bloqueo"
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              cursor: pointer;
-            "
-            onclick="window.location.href = '/alumno/incidencias'"
-          >
-            <div class="texto-bloqueo-contenido">
-              <strong>⚠️ Tienes incidencias pendientes de pago</strong>
-              <p>Haz clic aquí para regularizar tu situación.</p>
-            </div>
-            <span
-              class="btn-nueva-reserva"
-              style="background-color: #ef4444; text-decoration: none"
-            >
-              Pagar ahora
-            </span>
-          </div>
+         
 
           <!-- BIENVENIDA -->
           <div class="fila-bienvenida">
@@ -116,6 +94,9 @@
                 tus incidencias en la sección "Incidencias".
               </p>
             </div>
+            <a th:href="@{/alumno/incidencias}" class="btn-nueva-reserva" style="background-color: #ef4444; text-decoration: none; padding: 0.6rem 1.2rem; font-size: 0.85rem; color: white; border-radius: 8px; font-weight: 700;">
+        Pagar ahora
+    </a>
           </div>
 
           <!-- Banner informativo si la carrera no tiene laboratorios -->
@@ -190,9 +171,11 @@
                     <span th:text="${r.horario}">09:00–11:00</span>
                   </div>
                 </div>
-                <span class="badge-confirmada" th:text="${r.estado}"
-                  >Confirmada</span
-                >
+                <span class="badge-estado-historial" 
+      th:classappend="${r.estado == 'CONFIRMADA' ? 'confirmada' : (r.estado == 'EN_USO' ? 'enuso' : (r.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
+      th:text="${r.estado == 'EN_USO' ? 'En Uso' : (r.estado == 'DEVUELTA' ? 'Devuelta' : r.estado)}">
+  Confirmada
+</span>
                 <span class="codigo-reserva-gris" th:text="${r.idReserva}"
                   >R-001</span
                 >
@@ -1135,6 +1118,8 @@
     </div>
 
     <div th:replace="~{fragments/scripts}"></div>
+      <div th:replace="~{fragments/topbar-alumno :: scripts}"></div>
+
 
     <!-- JS específico de Laboratorios -->
     <script th:src="@{/js/alumno-laboratorios.js}"></script>

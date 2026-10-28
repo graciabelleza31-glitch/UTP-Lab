@@ -85,11 +85,13 @@ public String verInspeccion(
 
     // 2. Traer reservas EN_USO y DEVUELTA, pero SOLO de la fecha seleccionada
     List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
-    List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
-    
-    List<Reserva> todasLasPendientes = new ArrayList<>();
-    if (enUso != null) todasLasPendientes.addAll(enUso);
-    if (devueltas != null) todasLasPendientes.addAll(devueltas);
+List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
+List<Reserva> inspeccionadas = reservaRepositorio.findByEstado("INSPECCIONADA");
+
+List<Reserva> todasLasPendientes = new ArrayList<>();
+if (enUso != null) todasLasPendientes.addAll(enUso);
+if (devueltas != null) todasLasPendientes.addAll(devueltas);
+if (inspeccionadas != null) todasLasPendientes.addAll(inspeccionadas);
 
     // 👇 AQUÍ APLICAMOS EL FILTRO POR FECHA
     List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
@@ -145,7 +147,7 @@ public String verInspeccion(
         );
     }
 
-    // 2. MODAL: SOLO MATERIALES PRESTADOS Y EPPS SIN COSTO OBLIGATORIOS
+        // 2. MODAL: SOLO MATERIALES PRESTADOS Y EPPS SIN COSTO OBLIGATORIOS
     @GetMapping("/api/{idReserva}")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -170,18 +172,25 @@ public String verInspeccion(
                 String cat = (p.getCategoria() != null) ? p.getCategoria().trim().toUpperCase() : "";
                 BigDecimal reposicion = (p.getCostoReposicion() != null) ? p.getCostoReposicion() : BigDecimal.ZERO;
 
-                // Si es EPP: solo se inspeccionan los que NO tienen costo de venta (los adquiridos son del alumno)
                 if (cat.contains("EPP")) {
                     String nombreMin = p.getNombre().toLowerCase();
-                    if (nombreMin.contains("bata")) tieneBata = true;
-                    if (nombreMin.contains("gafa") || nombreMin.contains("lente")) tieneGafas = true;
+                    
+                    // 👇 FILTRO CLAVE: Verificamos si el producto es de venta
+                    // Si tiene precio de venta > 0, significa que el alumno lo compró, no se devuelve.
+                    boolean esDeVenta = (p.getPrecioVenta() != null && p.getPrecioVenta().compareTo(BigDecimal.ZERO) > 0);
 
-                    listaEppsSinCosto.add(new ItemInspeccionDto(
-                            p.getIdProducto(),
-                            p.getNombre(),
-                            reposicion,
-                            nombreMin.contains("bata") ? "🥼" : "🥽"
-                    ));
+                    // Solo lo agregamos a la inspección si NO es de venta
+                    if (!esDeVenta) {
+                        if (nombreMin.contains("bata")) tieneBata = true;
+                        if (nombreMin.contains("gafa") || nombreMin.contains("lente")) tieneGafas = true;
+
+                        listaEppsSinCosto.add(new ItemInspeccionDto(
+                                p.getIdProducto(),
+                                p.getNombre(),
+                                reposicion,
+                                nombreMin.contains("bata") ? "🥼" : "🥽"
+                        ));
+                    }
                 } else {
                     // Cristalería, instrumentos, equipos
                     listaInsumosPrestados.add(new ItemInspeccionDto(

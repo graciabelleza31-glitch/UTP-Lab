@@ -130,12 +130,12 @@ public class AlumnoPortalController {
 
             String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
             
-                        // ⭐ CAMBIO: Ahora NO_ASISTIO también cuenta.
-            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO") || estado.equals("NO_ASISTIO")) {
-                if (!idsReservasHoy.contains(r.getIdReserva())) {
-                    idsReservasHoy.add(r.getIdReserva());
-                }
-            }
+            // 👇 CONTAMOS TODAS MENOS LAS CANCELADAS
+    if (!estado.equals("CANCELADA")) {
+        if (!idsReservasHoy.contains(r.getIdReserva())) {
+            idsReservasHoy.add(r.getIdReserva());
+        }
+    }
         }
 
         int reservasHoy = idsReservasHoy.size();
@@ -299,12 +299,12 @@ public class AlumnoPortalController {
             
             String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
             
-            // ⭐ SOLO CONTAMOS SI ESTÁ CONFIRMADA O EN USO
-            if (estado.equals("CONFIRMADA") || estado.equals("EN_USO")) {
-                if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
-                    idsReservasDelDia.add(reservaExistente.getIdReserva());
-                }
-            }
+            // 👇 CONTAMOS TODAS MENOS LAS CANCELADAS
+    if (!estado.equals("CANCELADA")) {
+        if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+            idsReservasDelDia.add(reservaExistente.getIdReserva());
+        }
+    }
         }
 
         if (idsReservasDelDia.size() >= 2) {
@@ -327,11 +327,12 @@ public class AlumnoPortalController {
                     if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
 
                     String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-                    if (est.equals("CONFIRMADA") || est.equals("EN_USO")) {
-                        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
-                            idsReservasIntegrante.add(r.getIdReserva());
-                        }
-                    }
+                    // 👇 CONTAMOS TODAS MENOS CANCELADAS
+    if (!est.equals("CANCELADA")) {
+        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
+            idsReservasIntegrante.add(r.getIdReserva());
+        }
+    }
                 }
 
                 if (idsReservasIntegrante.size() >= 2) {

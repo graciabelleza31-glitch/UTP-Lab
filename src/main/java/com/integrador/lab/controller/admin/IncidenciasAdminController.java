@@ -48,116 +48,131 @@ public class IncidenciasAdminController {
     @Autowired 
     private ReservaRepository reservaRepositorio;
 
-   @GetMapping
-@Transactional(readOnly = true)
-public String verIncidencias(
-        @RequestParam(required = false) String fecha,
-        HttpSession sesion, 
-        Model modelo) {
+        @GetMapping
+    @Transactional(readOnly = true)
+    public String verIncidencias(
+            @RequestParam(required = false) String fecha,
+            HttpSession sesion, 
+            Model modelo) {
 
-    // 1. Usamos String en lugar de LocalDate para evitar el error rojo
-    String fechaConsultaStr = (fecha != null && !fecha.isEmpty()) ? fecha : java.time.LocalDate.now().toString();
-
-    // 2. Traer todas las sanciones y filtrar por fecha usando String
-    List<Sancion> todas = sancionRepositorio.findAll();
-    
-    List<Sancion> sancionesDelDia = todas.stream()
-            .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().toString().equals(fechaConsultaStr))
-            .collect(Collectors.toList());
-
-    long cantAbiertas = 0;
-    long cantNotificadas = 0;
-    long cantResueltas = 0;
-    BigDecimal totalMontoPendiente = BigDecimal.ZERO;
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-    // 3. Agrupar por reserva
-    Map<String, List<Sancion>> sancionesPorReserva = sancionesDelDia.stream()
-            .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
-
-    List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
-
-    for (Map.Entry<String, List<Sancion>> entry : sancionesPorReserva.entrySet()) {
-        List<Sancion> sancionesDelGrupo = entry.getValue();
-        Sancion primera = sancionesDelGrupo.get(0);
-
-        boolean todasResueltas = sancionesDelGrupo.stream()
-                .allMatch(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || "RESUELTO".equalsIgnoreCase(s.getEstado()) || "PAGADO".equalsIgnoreCase(s.getEstado()));
-
-        if (todasResueltas) {
-            cantResueltas += sancionesDelGrupo.size();
-            continue;
+        // 1. Calcular fecha de consulta SIN usar variables de tipo LocalDate
+        String fechaConsultaStr = fecha;
+        if (fechaConsultaStr == null || fechaConsultaStr.isEmpty()) {
+            fechaConsultaStr = java.time.LocalDate.now().toString();
         }
 
-        BigDecimal montoGrupo = sancionesDelGrupo.stream()
-                .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADO".equalsIgnoreCase(s.getEstado()))
-                .map(Sancion::getMontoDeuda)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        totalMontoPendiente = totalMontoPendiente.add(montoGrupo);
-
-        List<String> nombresAlumnos = sancionesDelGrupo.stream()
-                .filter(s -> s.getAlumno() != null)
-                .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
-                .distinct()
-                .collect(Collectors.toList());
-        
-        List<String> correos = sancionesDelGrupo.stream()
-                .filter(s -> s.getAlumno() != null)
-                .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
-                .distinct()
-                .collect(Collectors.toList());
-
-        String alumnosStr = String.join(", ", nombresAlumnos);
-        String correosStr = String.join(", ", correos);
-
-        boolean isNotif = sancionesDelGrupo.stream()
-                .anyMatch(s -> "NOTIFICADA".equalsIgnoreCase(s.getEstado()) || "NOTIFICADO".equalsIgnoreCase(s.getEstado()));
-
-        if (isNotif) {
-            cantNotificadas += sancionesDelGrupo.size();
-        } else {
-            cantAbiertas += sancionesDelGrupo.size();
+        // Validar que la fecha sea parseable
+        java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
+        try {
+            fechaConsulta = java.time.LocalDate.parse(fechaConsultaStr);
+        } catch (Exception e) {
+            fechaConsulta = java.time.LocalDate.now();
+            fechaConsultaStr = fechaConsulta.toString();
         }
 
-        String labNombre = (primera.getReserva() != null && primera.getReserva().getLaboratorio() != null) 
-                ? primera.getReserva().getLaboratorio().getNombre() : "Lab. General";
+        // 2. Traer todas las sanciones y filtrar por la fecha
+        List<Sancion> todas = sancionRepositorio.findAll();
         
-        String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
-        String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
-        String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(dtf) : LocalDateTime.now().format(dtf);
+        // Usamos la variable fechaConsulta ya parseada
+        final java.time.LocalDate fechaFinal = fechaConsulta;
+        
+        List<Sancion> sancionesDelDia = todas.stream()
+                .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal))
+                .collect(Collectors.toList());
 
-        listaIncidencias.add(new IncidenciaCardDto(
-                entry.getKey(),
-                itemNombre,
-                motivo,
-                labNombre,
-                alumnosStr,
-                correosStr,
-                "S/ " + montoGrupo.setScale(2).toString(),
-                isNotif ? "Notificada" : "Pendiente",
-                isNotif,
-                strFechaNotif
-        ));
+        long cantAbiertas = 0;
+        long cantNotificadas = 0;
+        long cantResueltas = 0;
+        BigDecimal totalMontoPendiente = BigDecimal.ZERO;
+
+        // 3. Agrupar por reserva
+        Map<String, List<Sancion>> sancionesPorReserva = sancionesDelDia.stream()
+                .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
+
+        List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
+
+        for (Map.Entry<String, List<Sancion>> entry : sancionesPorReserva.entrySet()) {
+            List<Sancion> sancionesDelGrupo = entry.getValue();
+            Sancion primera = sancionesDelGrupo.get(0);
+
+            boolean todasResueltas = sancionesDelGrupo.stream()
+                    .allMatch(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || 
+                                   "RESUELTO".equalsIgnoreCase(s.getEstado()) || 
+                                   "PAGADO".equalsIgnoreCase(s.getEstado()));
+
+            BigDecimal montoGrupo = sancionesDelGrupo.stream()
+                    .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADO".equalsIgnoreCase(s.getEstado()))
+                    .map(Sancion::getMontoDeuda)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            if (!todasResueltas) {
+                totalMontoPendiente = totalMontoPendiente.add(montoGrupo);
+            }
+
+            List<String> nombresAlumnos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
+                    .distinct()
+                    .collect(Collectors.toList());
+            
+            List<String> correos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            boolean isNotif = sancionesDelGrupo.stream()
+                    .anyMatch(s -> "NOTIFICADA".equalsIgnoreCase(s.getEstado()) || 
+                                   "NOTIFICADO".equalsIgnoreCase(s.getEstado()));
+
+            if (todasResueltas) {
+                cantResueltas += sancionesDelGrupo.size();
+            } else if (isNotif) {
+                cantNotificadas += sancionesDelGrupo.size();
+            } else {
+                cantAbiertas += sancionesDelGrupo.size();
+            }
+
+            String labNombre = (primera.getReserva() != null && primera.getReserva().getLaboratorio() != null) 
+                    ? primera.getReserva().getLaboratorio().getNombre() : "Lab. General";
+            
+            String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
+            String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
+            
+            // Usamos nombre completo para evitar conflictos
+            String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+
+            listaIncidencias.add(new IncidenciaCardDto(
+                    entry.getKey(),
+                    itemNombre,
+                    motivo,
+                    labNombre,
+                    String.join(", ", nombresAlumnos),
+                    String.join(", ", correos),
+                    "S/ " + montoGrupo.setScale(2).toString(),
+                    todasResueltas ? "RESUELTA" : (isNotif ? "NOTIFICADA" : "PENDIENTE"),
+                    isNotif,
+                    strFechaNotif,
+                    todasResueltas
+            ));
+        }
+
+        // 4. Pasar datos al modelo
+        modelo.addAttribute("incidencias", listaIncidencias);
+        modelo.addAttribute("cantAbiertas", cantAbiertas);
+        modelo.addAttribute("cantNotificadas", cantNotificadas);
+        modelo.addAttribute("cantResueltas", cantResueltas);
+        modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
+        modelo.addAttribute("totalIncidencias", cantAbiertas + cantNotificadas);
+
+        // Usamos el String para el modelo
+        modelo.addAttribute("fechaConsulta", fechaConsultaStr);
+        modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+        modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+
+        return "admin/incidencias";
     }
-
-    // 4. Pasar todo al modelo
-    modelo.addAttribute("incidencias", listaIncidencias);
-    modelo.addAttribute("cantAbiertas", cantAbiertas);
-    modelo.addAttribute("cantNotificadas", cantNotificadas);
-    modelo.addAttribute("cantResueltas", cantResueltas);
-    modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
-    modelo.addAttribute("totalIncidencias", cantAbiertas + cantNotificadas);
-
-    // 5. Pasar fechas al modelo calculando con el nombre completo de la clase
-    modelo.addAttribute("fechaConsulta", fechaConsultaStr);
-    modelo.addAttribute("fechaAnterior", java.time.LocalDate.parse(fechaConsultaStr).minusDays(1).toString());
-    modelo.addAttribute("fechaSiguiente", java.time.LocalDate.parse(fechaConsultaStr).plusDays(1).toString());
-
-    return "admin/incidencias";
-}
-
-       // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO (PASA A ESTADO 'NOTIFICADA' Y ENVÍA CORREO)
+    // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO
     @PostMapping("/notificar/{idReserva}")
     @ResponseBody
     @Transactional
@@ -176,12 +191,9 @@ public String verIncidencias(
                     al.setEstadoCuenta("BLOQUEADO_POR_DEUDA");
                     alumnoRepositorio.save(al);
 
-                    // 📧 ENVÍO DE CORREO AL ESTUDIANTE CON BREVO
                     try {
                         String correoDestino = al.getIdEstud().toLowerCase() + "@utp.edu.pe";
                         String nombreCompleto = al.getNombre() + " " + al.getApellido();
-                        
-                        // Llamamos al nuevo método de tu EmailService
                         emailService.enviarCorreoIncidencia(
                             correoDestino, 
                             nombreCompleto, 
@@ -189,9 +201,8 @@ public String verIncidencias(
                             s.getMontoDeuda().toString(), 
                             idReserva
                         );
-                        
                     } catch (Exception e) {
-                        System.out.println("❌ Error enviando correo a " + al.getIdEstud() + ": " + e.getMessage());
+                        System.out.println("❌ Error enviando correo: " + e.getMessage());
                     }
                 }
             }
@@ -233,8 +244,9 @@ public String verIncidencias(
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
+    // DTO actualizado con el campo 'resuelta'
     public static class IncidenciaCardDto {
-        private String idSancion; // En este caso guardará el ID de la Reserva
+        private String idSancion;
         private String item;
         private String motivo;
         private String laboratorio;
@@ -244,8 +256,9 @@ public String verIncidencias(
         private String estado;
         private boolean notificada;
         private String fechaNotificado;
+        private boolean resuelta; // 👈 NUEVO CAMPO
 
-        public IncidenciaCardDto(String idSancion, String item, String motivo, String laboratorio, String estudiante, String correo, String costo, String estado, boolean notificada, String fechaNotificado) {
+        public IncidenciaCardDto(String idSancion, String item, String motivo, String laboratorio, String estudiante, String correo, String costo, String estado, boolean notificada, String fechaNotificado, boolean resuelta) {
             this.idSancion = idSancion;
             this.item = item;
             this.motivo = motivo;
@@ -256,6 +269,7 @@ public String verIncidencias(
             this.estado = estado;
             this.notificada = notificada;
             this.fechaNotificado = fechaNotificado;
+            this.resuelta = resuelta;
         }
 
         public String getIdSancion() { return idSancion; }
@@ -268,6 +282,6 @@ public String verIncidencias(
         public String getEstado() { return estado; }
         public boolean isNotificada() { return notificada; }
         public String getFechaNotificado() { return fechaNotificado; }
+        public boolean isResuelta() { return resuelta; }
     }
-
 }
