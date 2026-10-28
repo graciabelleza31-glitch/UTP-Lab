@@ -569,7 +569,12 @@ function procesarBotonFinalBoleta() {
     alert('Debes aceptar los términos y condiciones para continuar.');
     return;
   }
+  
   if (costoEppsTotal > 0) {
+    // 1. Ocultamos el modal del Wizard (la reserva)
+    document.getElementById('modalWizard').style.display = 'none';
+    
+    // 2. Mostramos el modal de Pago
     document.getElementById('modalPagoReserva').style.display = 'flex';
   } else {
     document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
@@ -582,7 +587,11 @@ function enviarFormularioFinal() {
 }
 
 function cerrarModalPago() {
+  // 1. Ocultamos el modal de Pago
   document.getElementById('modalPagoReserva').style.display = 'none';
+  
+  // 2. Volvemos a mostrar el Wizard (por si el usuario se arrepiente y quiere volver atrás)
+  document.getElementById('modalWizard').style.display = 'flex';
 }
 
 function seleccionarMetodo(opc, met) {

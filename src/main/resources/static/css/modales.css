@@ -771,3 +771,19 @@
     z-index: 10051 !important;
     position: relative;
 }
+
+/* ==========================================================================
+   FORZAR MODAL DE PAGO POR ENCIMA DE LA RESERVA
+   ========================================================================== */
+#modalPagoReserva {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important; /* Por encima de todo */
+}
+
+#modalWizard {
+    z-index: 1000 !important; /* El de reserva se queda abajo */
+}
