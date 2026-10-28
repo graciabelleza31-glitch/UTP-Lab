@@ -10,10 +10,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- CSS GLOBAL -->
+    <!-- 1. CSS GLOBAL (Base) -->
     <link rel="stylesheet" th:href="@{/css/base.css}" />
 
-    <!-- CSS DINÁMICO -->
+    <!-- 2. CSS DINÁMICO (Solo uno se carga según la URL) -->
     <th:block th:if="${#strings.contains(requestURI, 'alumno')}">
         <link rel="stylesheet" th:href="@{/css/alumno.css}" />
     </th:block>
@@ -26,6 +26,6 @@
         <link rel="stylesheet" th:href="@{/css/login.css}" />
     </th:block>
 
-    <!-- MODALES AL FINAL (Para que sobrescriban si hay conflictos) -->
+    <!-- 3. MODALES AL FINAL (Siempre se carga, y siempre sobrescribe a los anteriores) -->
     <link rel="stylesheet" th:href="@{/css/modales.css}" />
 </head>
