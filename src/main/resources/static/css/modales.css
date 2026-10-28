@@ -795,17 +795,85 @@
 }
 
 /* ==========================================================================
-   8. MODAL DE CHECK-IN (VERIFICACIÓN DE IDENTIDAD E INSUMOS)
+   MODAL DE CHECK-IN (VERIFICACIÓN) - BLOQUE DEFINITIVO
    ========================================================================== */
 
-/* Lista de items a verificar */
+/* 1. Estructura General del Modal */
+.modal-checkin-ancho {
+    background-color: #ffffff;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 540px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+/* 2. Cabecera Oscura */
+.cabecera-modal-checkin {
+    background-color: #1e1b4b;
+    color: #ffffff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+}
+
+.cabecera-modal-checkin h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.cabecera-modal-checkin p {
+    font-size: 0.82rem;
+    color: #a5b4fc;
+    margin: 0.2rem 0 0 0;
+}
+
+/* Botón de cerrar (la X) */
+.btn-cerrar-blanco {
+    background: transparent;
+    border: none;
+    color: #a5b4fc;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+.btn-cerrar-blanco:hover { color: #ffffff; }
+
+/* 3. Cuerpo con Scroll */
+.cuerpo-modal-checkin {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.subtitulo-seccion-modal {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #475569;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+    display: block;
+    text-transform: uppercase;
+}
+
+/* 4. Lista de Items */
 .lista-verif-items {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-/* Tarjeta individual de cada checkbox */
+/* Ocultar el checkbox nativo de HTML */
+.check-oculto { display: none !important; }
+
+/* Tarjeta individual de cada item */
 .tarjeta-check-item {
     background-color: #f8fafc;
     border: 1.5px solid #e2e8f0;
@@ -819,16 +887,9 @@
     user-select: none;
 }
 
-.tarjeta-check-item:hover {
-    background-color: #f1f5f9;
-}
+.tarjeta-check-item:hover { background-color: #f1f5f9; }
 
-/* Ocultar el checkbox nativo de HTML */
-.check-oculto {
-    display: none;
-}
-
-/* Cuadro de verificación falso (el que se pinta verde) */
+/* Cuadro de verificación falso */
 .caja-checkbox-cuadro {
     width: 18px;
     height: 18px;
@@ -839,15 +900,7 @@
     position: relative;
 }
 
-/* Icono de check (oculto por defecto) */
-.icono-check-verde {
-    color: #10b981;
-    font-weight: 900;
-    font-size: 1.05rem;
-    display: none;
-}
-
-/* Avatar del estudiante */
+/* 5. Contenido Interno de las Tarjetas */
 .avatar-circulo-verif {
     width: 32px;
     height: 32px;
@@ -862,13 +915,11 @@
     flex-shrink: 0;
 }
 
-/* Emoji del EPP */
 .emoji-epp-icon {
     font-size: 1.3rem;
     flex-shrink: 0;
 }
 
-/* Textos internos */
 .info-texto-verif {
     display: flex;
     flex-direction: column;
@@ -886,7 +937,14 @@
     color: #64748b;
 }
 
-/* === ESTADO MARCADO (CUANDO SE HACE CLIC) === */
+.icono-check-verde {
+    color: #10b981;
+    font-weight: 900;
+    font-size: 1.05rem;
+    display: none;
+}
+
+/* 6. ESTADOS DE MARCADO (Cuando se hace clic) */
 .tarjeta-check-item.marcado {
     border-color: #10b981;
     background-color: #ffffff;
@@ -910,7 +968,17 @@
     display: block;
 }
 
-/* Contador de verificados y botón final */
+/* 7. Pie del Modal */
+.pie-modal-checkin {
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    flex-shrink: 0;
+}
+
 .contador-verificados-txt {
     font-size: 0.85rem;
     color: #64748b;
