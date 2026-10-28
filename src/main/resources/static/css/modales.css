@@ -775,15 +775,21 @@
 /* ==========================================================================
    FORZAR MODAL DE PAGO POR ENCIMA DE LA RESERVA
    ========================================================================== */
+
 #modalPagoReserva {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Por encima de todo */
+    background-color: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 999999 !important; 
+    display: none; /* El JS lo pondrá en flex */
 }
 
-#modalWizard {
-    z-index: 1000 !important; /* El de reserva se queda abajo */
+#modalPagoReserva[style*="display: flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }

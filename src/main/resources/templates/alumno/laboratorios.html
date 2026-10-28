@@ -974,71 +974,6 @@
         </div>
       </div>
 
-      <!-- MODAL 3: PAGO -->
-      <div
-        id="modalPagoReserva"
-        class="fondo-modal"
-        style="display: none; z-index: 1100"
-      >
-        <div class="tarjeta-modal modal-pago-ancho">
-          <div class="cabecera-pago-flex">
-            <div>
-              <h3 class="titulo-pago-txt">Pago de Reserva</h3>
-              <p class="sub-pago-txt">Selecciona cómo pagar tus EPPs</p>
-            </div>
-            <button
-              type="button"
-              class="btn-cerrar-x"
-              onclick="cerrarModalPago()"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div class="tarjeta-monto-azul">
-            <div class="info-monto-izq">
-              <span class="lbl-total-pagar">TOTAL A PAGAR</span>
-              <strong class="monto-total-num" id="pasarelaTotalMonto"
-                >S/ 0.00</strong
-              >
-            </div>
-            <div class="icono-tarjeta-chip">💳</div>
-          </div>
-
-          <div class="rejilla-metodos-pago">
-            <div
-              class="opcion-metodo-pago seleccionado"
-              onclick="seleccionarMetodo(this, 'YAPE')"
-            >
-              <div class="icono-metodo">📱</div>
-              <span>Yape</span>
-            </div>
-            <div
-              class="opcion-metodo-pago"
-              onclick="seleccionarMetodo(this, 'PLIN')"
-            >
-              <div class="icono-metodo">💚</div>
-              <span>Plin</span>
-            </div>
-            <div
-              class="opcion-metodo-pago"
-              onclick="seleccionarMetodo(this, 'TRANSFERENCIA')"
-            >
-              <div class="icono-metodo">🏛️</div>
-              <span>Cuenta Interbancaria</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="btn-confirmar-pago-final"
-            onclick="enviarFormularioFinal()"
-          >
-            Confirmar y Pagar
-          </button>
-        </div>
-      </div>
-
       <!-- MODAL RESUMEN DE RESERVA Y CANCELACIÓN -->
       <div
         id="modalResumenReserva"
@@ -1129,6 +1064,73 @@
             </button>
           </div>
         </div>
+      </div>
+    </div> <!-- FIN DEL CONTENEDOR-APP -->
+
+    <!-- ======================================================= -->
+    <!-- MODAL 3: PAGO (MOVIDO FUERA DEL CONTENEDOR PRINCIPAL)   -->
+    <!-- ======================================================= -->
+    <div
+      id="modalPagoReserva"
+      class="fondo-modal"
+      style="display: none; z-index: 999999; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;"
+    >
+      <div class="tarjeta-modal modal-pago-ancho">
+        <div class="cabecera-pago-flex">
+          <div>
+            <h3 class="titulo-pago-txt">Pago de Reserva</h3>
+            <p class="sub-pago-txt">Selecciona cómo pagar tus EPPs</p>
+          </div>
+          <button
+            type="button"
+            class="btn-cerrar-x"
+            onclick="cerrarModalPago()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="tarjeta-monto-azul">
+          <div class="info-monto-izq">
+            <span class="lbl-total-pagar">TOTAL A PAGAR</span>
+            <strong class="monto-total-num" id="pasarelaTotalMonto"
+              >S/ 0.00</strong
+            >
+          </div>
+          <div class="icono-tarjeta-chip">💳</div>
+        </div>
+
+        <div class="rejilla-metodos-pago">
+          <div
+            class="opcion-metodo-pago seleccionado"
+            onclick="seleccionarMetodo(this, 'YAPE')"
+          >
+            <div class="icono-metodo">📱</div>
+            <span>Yape</span>
+          </div>
+          <div
+            class="opcion-metodo-pago"
+            onclick="seleccionarMetodo(this, 'PLIN')"
+          >
+            <div class="icono-metodo">💚</div>
+            <span>Plin</span>
+          </div>
+          <div
+            class="opcion-metodo-pago"
+            onclick="seleccionarMetodo(this, 'TRANSFERENCIA')"
+          >
+            <div class="icono-metodo">🏛️</div>
+            <span>Cuenta Interbancaria</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-confirmar-pago-final"
+          onclick="enviarFormularioFinal()"
+        >
+          Confirmar y Pagar
+        </button>
       </div>
     </div>
 

@@ -571,10 +571,10 @@ function procesarBotonFinalBoleta() {
   }
   
   if (costoEppsTotal > 0) {
-    // 1. Ocultamos el modal del Wizard (la reserva)
+    // 1. Ocultamos el wizard de reserva
     document.getElementById('modalWizard').style.display = 'none';
     
-    // 2. Mostramos el modal de Pago
+    // 2. Mostramos el pago
     document.getElementById('modalPagoReserva').style.display = 'flex';
   } else {
     document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
@@ -587,10 +587,10 @@ function enviarFormularioFinal() {
 }
 
 function cerrarModalPago() {
-  // 1. Ocultamos el modal de Pago
+  // 1. Ocultamos el pago
   document.getElementById('modalPagoReserva').style.display = 'none';
   
-  // 2. Volvemos a mostrar el Wizard (por si el usuario se arrepiente y quiere volver atrás)
+  // 2. Volvemos a mostrar el wizard de reserva
   document.getElementById('modalWizard').style.display = 'flex';
 }
 
