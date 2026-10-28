@@ -1,7 +1,80 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('UTP +Lab - Check-in Presencial')}">
-  
+  <style>
+    /* Forzar la ocultación de los checkboxes nativos */
+    .check-oculto { 
+        display: none !important; 
+    }
+
+    /* Forzar el diseño de las tarjetas de verificación */
+    .tarjeta-check-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 12px 16px !important;
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        margin-bottom: 8px !important;
+        cursor: pointer !important;
+    }
+
+    .tarjeta-check-item.marcado {
+        border-color: #10b981 !important;
+        background-color: #ffffff !important;
+    }
+
+    /* Forzar el cuadro de verificación falso */
+    .caja-checkbox-cuadro {
+        width: 18px !important;
+        height: 18px !important;
+        border: 2px solid #94a3b8 !important;
+        border-radius: 4px !important;
+        background: #ffffff !important;
+        flex-shrink: 0 !important;
+        display: block !important;
+    }
+
+    .tarjeta-check-item.marcado .caja-checkbox-cuadro {
+        background: #10b981 !important;
+        border-color: #10b981 !important;
+    }
+
+    /* Textos */
+    .info-texto-verif {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .nombre-persona-verif, .nombre-item-verif {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #0f172a !important;
+    }
+    .sub-codigo-verif, .sub-unidad-verif {
+        font-size: 12px !important;
+        color: #64748b !important;
+    }
+
+    /* Contenedor del modal */
+    .cuerpo-modal-checkin {
+        padding: 20px !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .subtitulo-seccion-modal {
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        color: #475569 !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+        text-transform: uppercase !important;
+    }
+</style>
 </head>
 <body>
   <div class="contenedor-app">
