@@ -1,80 +1,134 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('UTP +Lab - Check-in Presencial')}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UTP +Lab - Check-in Presencial</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- CSS GLOBAL -->
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/css/modales.css}" />
+
+  <!-- 🚨 ESTILOS FORZADOS PARA EL MODAL DE CHECK-IN 🚨 -->
   <style>
-    /* Forzar la ocultación de los checkboxes nativos */
-    .check-oculto { 
-        display: none !important; 
-    }
-
-    /* Forzar el diseño de las tarjetas de verificación */
-    .tarjeta-check-item {
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        padding: 12px 16px !important;
-        background-color: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 10px !important;
-        margin-bottom: 8px !important;
-        cursor: pointer !important;
-    }
-
-    .tarjeta-check-item.marcado {
-        border-color: #10b981 !important;
-        background-color: #ffffff !important;
-    }
-
-    /* Forzar el cuadro de verificación falso */
-    .caja-checkbox-cuadro {
-        width: 18px !important;
-        height: 18px !important;
-        border: 2px solid #94a3b8 !important;
-        border-radius: 4px !important;
-        background: #ffffff !important;
-        flex-shrink: 0 !important;
-        display: block !important;
-    }
-
-    .tarjeta-check-item.marcado .caja-checkbox-cuadro {
-        background: #10b981 !important;
-        border-color: #10b981 !important;
-    }
-
-    /* Textos */
-    .info-texto-verif {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    .nombre-persona-verif, .nombre-item-verif {
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #0f172a !important;
-    }
-    .sub-codigo-verif, .sub-unidad-verif {
-        font-size: 12px !important;
-        color: #64748b !important;
-    }
-
-    /* Contenedor del modal */
-    .cuerpo-modal-checkin {
-        padding: 20px !important;
-        max-height: 60vh !important;
-        overflow-y: auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 16px !important;
-    }
-
-    .subtitulo-seccion-modal {
-        font-size: 12px !important;
-        font-weight: 800 !important;
-        color: #475569 !important;
-        margin-bottom: 8px !important;
-        display: block !important;
-        text-transform: uppercase !important;
-    }
-</style>
+      .check-oculto { display: none !important; }
+      .tarjeta-check-item {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 12px 16px !important;
+          background-color: #f8fafc !important;
+          border: 1.5px solid #e2e8f0 !important;
+          border-radius: 10px !important;
+          margin-bottom: 8px !important;
+          cursor: pointer !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+      }
+      .tarjeta-check-item.marcado {
+          border-color: #10b981 !important;
+          background-color: #ffffff !important;
+      }
+      .caja-checkbox-cuadro {
+          width: 18px !important;
+          height: 18px !important;
+          min-width: 18px !important;
+          border: 2px solid #94a3b8 !important;
+          border-radius: 4px !important;
+          background: #ffffff !important;
+          flex-shrink: 0 !important;
+          position: relative !important;
+      }
+      .tarjeta-check-item.marcado .caja-checkbox-cuadro {
+          background-color: #10b981 !important;
+          border-color: #10b981 !important;
+      }
+      .tarjeta-check-item.marcado .caja-checkbox-cuadro::after {
+          content: '✓' !important;
+          color: white !important;
+          font-size: 12px !important;
+          position: absolute !important;
+          top: 50% !important; left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+      }
+      .info-texto-verif {
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 !important;
+          gap: 2px !important;
+      }
+      .nombre-persona-verif, .nombre-item-verif {
+          font-size: 14px !important;
+          font-weight: 600 !important;
+          color: #0f172a !important;
+          margin: 0 !important;
+      }
+      .sub-codigo-verif, .sub-unidad-verif {
+          font-size: 12px !important;
+          color: #64748b !important;
+          margin: 0 !important;
+      }
+      .avatar-circulo-verif {
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          background-color: #0f172a !important;
+          color: #fff !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          font-size: 11px !important;
+          font-weight: 800 !important;
+          flex-shrink: 0 !important;
+      }
+      .emoji-epp-icon {
+          font-size: 20px !important;
+          flex-shrink: 0 !important;
+          width: 32px !important;
+          text-align: center !important;
+      }
+      .cuerpo-modal-checkin {
+          padding: 20px !important;
+          max-height: 60vh !important;
+          overflow-y: auto !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 16px !important;
+      }
+      .subtitulo-seccion-modal {
+          font-size: 12px !important;
+          font-weight: 800 !important;
+          color: #475569 !important;
+          margin-bottom: 8px !important;
+          display: block !important;
+          text-transform: uppercase !important;
+      }
+      .pie-modal-checkin {
+          border-top: 1px solid #f1f5f9 !important;
+          padding: 16px 20px !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          background-color: #ffffff !important;
+      }
+      .btn-confirmar-checkin-verde {
+          background-color: #0d9488 !important;
+          color: #ffffff !important;
+          border: none !important;
+          border-radius: 10px !important;
+          padding: 10px 20px !important;
+          font-size: 14px !important;
+          font-weight: 700 !important;
+          cursor: pointer !important;
+      }
+  </style>
 </head>
 <body>
   <div class="contenedor-app">
@@ -86,31 +140,25 @@
 
       <section class="seccion-checkout">
         
-
-       <!-- SELECTOR DE FECHA PARA CHECK-IN -->
-<div class="fila-dashboard-header" style="margin-bottom: 1rem;">
-    <div>
-        <!-- TÍTULO CORRECTO -->
-        <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1>
-        <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
-    </div>
-    
-    <div class="selector-fecha-dashboard">
-        <!-- URL CORRECTA: /admin/checkin -->
-        <a th:href="@{/admin/checkin(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
-            <i data-lucide="chevron-left"></i>
-        </a>
-        
-        <input type="date" 
-               th:value="${fechaConsulta}"
-               onchange="window.location.href='/admin/checkin?fecha=' + this.value"
-               class="input-fecha-dashboard">
-               
-        <a th:href="@{/admin/checkin(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
-            <i data-lucide="chevron-right"></i>
-        </a>
-    </div>
-</div>
+        <div class="fila-dashboard-header" style="margin-bottom: 1rem;">
+            <div>
+                <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1>
+                <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
+            </div>
+            
+            <div class="selector-fecha-dashboard">
+                <a th:href="@{/admin/checkin(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+                    <i data-lucide="chevron-left"></i>
+                </a>
+                <input type="date" 
+                       th:value="${fechaConsulta}"
+                       onchange="window.location.href='/admin/checkin?fecha=' + this.value"
+                       class="input-fecha-dashboard">
+                <a th:href="@{/admin/checkin(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+                    <i data-lucide="chevron-right"></i>
+                </a>
+            </div>
+        </div>
 
         <!-- 1. LISTADO DE RESERVAS POR VALIDAR -->
         <div id="contenedorListaCheckin" 
@@ -215,7 +263,6 @@
   </div>
 
   <div th:replace="~{fragments/scripts}"></div>    
-  <!-- Carga tu JS separado -->
   <script th:src="@{/js/admin-checkin.js}"></script>
 </body>
 </html>

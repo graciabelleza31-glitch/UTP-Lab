@@ -24,14 +24,14 @@ function abrirModalCheckin(idReserva) {
       totalItemsVerificar = 0;
       itemsVerificados = 0;
 
-      // Estilos en línea para forzar el diseño
-      const estiloTarjeta = "display: flex; align-items: center; gap: 10px; padding: 12px 16px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 8px; cursor: pointer;";
-      const estiloCheckboxFalso = "width: 18px; height: 18px; border: 2px solid #94a3b8; border-radius: 4px; background: #fff; flex-shrink: 0; display: block;";
-      const estiloInfo = "display: flex; flex-direction: column;";
-      const estiloNombre = "font-size: 14px; font-weight: 600; color: #0f172a;";
-      const estiloSub = "font-size: 12px; color: #64748b;";
-      const estiloAvatar = "width: 32px; height: 32px; background-color: #0f172a; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;";
-      const estiloEmoji = "font-size: 20px; flex-shrink: 0;";
+      // ESTILOS FORZADOS CON !IMPORTANT
+      const estiloTarjeta = "display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; margin-bottom: 8px !important; cursor: pointer !important; box-sizing: border-box !important; width: 100% !important;";
+      const estiloCheckboxFalso = "width: 18px !important; height: 18px !important; min-width: 18px !important; border: 2px solid #94a3b8 !important; border-radius: 4px !important; background: #fff !important; display: block !important; flex-shrink: 0 !important; margin: 0 !important;";
+      const estiloInfo = "display: flex !important; flex-direction: column !important; flex: 1 !important; gap: 2px !important;";
+      const estiloNombre = "font-size: 14px !important; font-weight: 600 !important; color: #0f172a !important; margin: 0 !important; padding: 0 !important; line-height: 1.2 !important;";
+      const estiloSub = "font-size: 12px !important; color: #64748b !important; margin: 0 !important; padding: 0 !important; line-height: 1.2 !important;";
+      const estiloAvatar = "width: 32px !important; height: 32px !important; min-width: 32px !important; background-color: #0f172a !important; color: #fff !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 11px !important; font-weight: 800 !important; flex-shrink: 0 !important; margin: 0 !important;";
+      const estiloEmoji = "font-size: 20px !important; flex-shrink: 0 !important; margin: 0 !important; width: 32px !important; text-align: center !important;";
 
       // 1. Integrantes
       contInteg.innerHTML = '';
@@ -108,9 +108,20 @@ function toggleVerificacion(tarjeta) {
   chk.checked = !chk.checked;
   tarjeta.classList.toggle('marcado', chk.checked);
 
+  const cuadro = tarjeta.querySelector('.caja-checkbox-cuadro');
+  const icono = tarjeta.querySelector('.icono-check-verde');
+  
   if (chk.checked) {
+    cuadro.style.backgroundColor = '#10b981';
+    cuadro.style.borderColor = '#10b981';
+    cuadro.innerHTML = '<span style="color:white; font-size:12px; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">✓</span>';
+    icono.style.display = 'block';
     itemsVerificados++;
   } else {
+    cuadro.style.backgroundColor = '#fff';
+    cuadro.style.borderColor = '#94a3b8';
+    cuadro.innerHTML = '';
+    icono.style.display = 'none';
     itemsVerificados--;
   }
   actualizarContador();
@@ -120,7 +131,6 @@ function actualizarContador() {
   document.getElementById('txtContadorVerificados').innerText = `${itemsVerificados}/${totalItemsVerificar} verificados`;
 }
 
-// CONFIRMACIÓN ASÍNCRONA (AJAX) - SIN REDIRECCIÓN
 function enviarConfirmacionCheckin() {
   if (!reservaActualId) return;
 
@@ -136,16 +146,10 @@ function enviarConfirmacionCheckin() {
     return res.json();
   })
   .then(() => {
-    // 1. Cerrar el modal
     cerrarModalCheckin();
-
-    // 2. Retirar la tarjeta del DOM de inmediato
     const tarjeta = document.getElementById(`tarjeta-reserva-${reservaActualId}`);
-    if (tarjeta) {
-      tarjeta.remove();
-    }
+    if (tarjeta) tarjeta.remove();
 
-    // 3. Evaluar si ya no quedan reservas pendientes
     const contenedor = document.getElementById('contenedorListaCheckin');
     const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
     
