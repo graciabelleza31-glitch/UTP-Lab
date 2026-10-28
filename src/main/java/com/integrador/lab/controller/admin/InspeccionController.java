@@ -298,6 +298,30 @@ public String verInspeccion(
         return ResponseEntity.ok(resp);
     }
 
+        // 4. ENDPOINT PARA REGISTRAR SALIDA (CHECK-OUT)
+    @PostMapping("/checkout/{idReserva}")
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> registrarCheckout(@PathVariable("idReserva") String idReserva) {
+        Optional<Reserva> resOpt = reservaRepositorio.findById(idReserva);
+        if (resOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Reserva no encontrada"));
+        }
+
+        Reserva r = resOpt.get();
+        
+        // Solo permitimos checkout si está EN_USO
+        if (!"EN_USO".equals(r.getEstado())) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "La reserva no está en uso"));
+        }
+
+        // CAMBIO CLAVE: Pasa a DEVUELTA para que aparezca en Inspección
+        r.setEstado("DEVUELTA"); 
+        reservaRepositorio.save(r);
+
+        return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
+    }
+
     // DTOs auxiliares
     public static class InspeccionCardDto {
         private String idReserva;

@@ -138,7 +138,10 @@ function enviarConfirmacionCheckin() {
   btn.innerText = "Procesando...";
   btn.disabled = true;
 
-  fetch(`/admin/checkin/confirmar/${reservaActualId}`, {
+  // Guardamos el ID antes de cerrar el modal (porque cerrarModalCheckin lo pone en null)
+  const idParaActualizar = reservaActualId;
+
+  fetch(`/admin/checkin/confirmar/${idParaActualizar}`, {
     method: 'POST'
   })
   .then(res => {
@@ -146,16 +149,35 @@ function enviarConfirmacionCheckin() {
     return res.json();
   })
   .then(() => {
+    // 1. Cerrar el modal
     cerrarModalCheckin();
-    const tarjeta = document.getElementById(`tarjeta-reserva-${reservaActualId}`);
-    if (tarjeta) tarjeta.remove();
 
-    const contenedor = document.getElementById('contenedorListaCheckin');
-    const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
+    // 2. Buscar la tarjeta en el DOM
+    const tarjeta = document.getElementById(`tarjeta-reserva-${idParaActualizar}`);
     
-    if (restantes === 0) {
-      if (contenedor) contenedor.style.display = 'none';
-      document.getElementById('tarjetaSinCheckins').style.display = 'flex';
+    if (tarjeta) {
+      // 3. Actualizar el Badge de estado
+      const badge = tarjeta.querySelector('.badge-estado-pill');
+      if (badge) {
+        badge.className = 'badge-estado-pill'; // Limpiamos clases viejas
+        badge.style.background = '#dcfce7'; // Verde claro
+        badge.style.color = '#15803d';      // Verde oscuro
+        badge.innerText = 'EN USO';
+      }
+
+      // 4. Ocultar el botón "Iniciar" y mostrar un texto de "Check-in Realizado"
+      const botonera = tarjeta.querySelector('.accion-derecha-checkin');
+      if (botonera) {
+        botonera.innerHTML = `
+          <span class="codigo-reserva-checkin">${idParaActualizar}</span>
+          <span style="font-size: 0.8rem; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="check-circle" style="width: 16px;"></i> Check-in Realizado
+          </span>
+        `;
+      }
+
+      // Refrescar iconos de Lucide para el nuevo check
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   })
   .catch(() => {

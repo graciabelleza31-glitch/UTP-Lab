@@ -64,7 +64,7 @@ public class CheckinController {
         // 2. Buscar reservas filtrando por el String de la fecha
         List<Reserva> todas = reservaRepositorio.findAll().stream()
                 .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().toString().equals(fechaConsultaStr))
-                .filter(r -> "CONFIRMADA".equals(r.getEstado()) || "PENDIENTE".equals(r.getEstado()))
+                .filter(r -> "CONFIRMADA".equals(r.getEstado()) || "PENDIENTE".equals(r.getEstado())||"EN_USO".equals(r.getEstado()))
                 .toList();
 
         // 3. Armar la lista de DTOs para la vista

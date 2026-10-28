@@ -226,75 +226,76 @@ function cerrarModalResultado() {
   document.getElementById('modalResultado').style.display = 'none';
 }
 
-// Función para registrar la salida (Check-out)
-function abrirModalCheckout(idReserva) {
-    if (!confirm('¿Registrar la salida del estudiante y liberar el laboratorio? El material pasará a estado DEVUELTO para su inspección.')) {
-        return;
-    }
+// ============================================================================
+// LÓGICA DE CHECK-OUT (SALIDA) Y APERTURA AUTOMÁTICA DE INSPECCIÓN
+// ============================================================================
 
-    // Hacemos la petición al endpoint de checkin que ya tenías
-    fetch(`/admin/checkin/confirmar/${idReserva}`, {
+function abrirModalCheckout(idReserva) {
+    // 1. Creamos el modal de confirmación morado (Imagen 3)
+    // Lo inyectamos dinámicamente para no modificar el HTML base
+    let modalCheckoutHTML = `
+        <div id="modalCheckoutFlotante" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+            <div style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+                
+                <h3 style="margin: 0 0 0.2rem 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">Confirmar devolución</h3>
+                <p style="margin: 0 0 1.5rem 0; font-size: 0.85rem; color: #64748b;">Lab. Física · ${idReserva}</p>
+
+                <div style="background: #f8fafc; border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span style="color: #64748b;">Responsable</span>
+                        <strong style="color: #0f172a;">Estudiante</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span style="color: #64748b;">Horario</span>
+                        <strong style="color: #0f172a;">08:00–10:00</strong>
+                    </div>
+                </div>
+
+                <div style="background: #f5f3ff; border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 0.6rem; color: #7c3aed; font-size: 0.82rem; font-weight: 500; margin-bottom: 1.5rem;">
+                    <i data-lucide="search" style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;"></i>
+                    <span>Tras confirmar, los materiales pasan a inspección.</span>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" onclick="cerrarModalCheckoutFlotante()" style="flex: 1; background: #f1f5f9; color: #475569; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancelar</button>
+                    <button type="button" id="btnConfirmarCheckout" onclick="procesarCheckout('${idReserva}')" style="flex: 1; background: #7c3aed; color: #ffffff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalCheckoutHTML);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function cerrarModalCheckoutFlotante() {
+    const modal = document.getElementById('modalCheckoutFlotante');
+    if (modal) modal.remove();
+}
+
+function procesarCheckout(idReserva) {
+    const btn = document.getElementById('btnConfirmarCheckout');
+    btn.innerText = "Procesando...";
+    btn.disabled = true;
+
+    // Llamada al backend para cambiar el estado a DEVUELTA
+    fetch(`/admin/inspeccion/checkout/${idReserva}`, {
         method: 'POST'
     })
     .then(res => {
-        if (!res.ok) throw new Error("Error al registrar checkout");
+        if (!res.ok) throw new Error("Error al procesar");
         return res.json();
     })
     .then(() => {
-        alert("✅ Salida registrada. Ahora puedes inspeccionar el material.");
-        window.location.reload(); // Recargamos para que el botón cambie a "Inspeccionar"
+        // 1. Cerramos el modal de confirmación
+        cerrarModalCheckoutFlotante();
+        
+        // 2. ¡Abrimos inmediatamente el modal de Inspección con esa misma reserva!
+        abrirModalInspeccion(idReserva); 
     })
-    .catch(() => alert("Ocurrió un error al registrar la salida."));
-}
-
-// Reemplaza TODO el bloque de abrirModalCheckout al final de admin-inspeccion.js por esto:
-
-function abrirModalCheckout(idReserva) {
-    // Mostramos un modal de confirmación (puedes usar el modalResultado o uno nuevo)
-    const modalConfirm = document.getElementById('modalResultado');
-    const icono = document.getElementById('iconoResultado');
-    const tit = document.getElementById('tituloResultado');
-    const desc = document.getElementById('mensajeResultado');
-    const btnEntendido = document.querySelector('.btn-entendido-modal');
-
-    // Cambiamos el aspecto para que parezca una confirmación
-    icono.className = 'icono-resultado-circulo';
-    icono.style.backgroundColor = '#fef3c7';
-    icono.style.color = '#d97706';
-    icono.innerText = '?';
-    
-    tit.innerText = 'Registrar Salida (Check-out)';
-    desc.innerHTML = '¿Confirmas que el estudiante está devolviendo los materiales y el laboratorio quedará libre?<br><br><small>El material pasará a estado <strong>DEVUELTO</strong> y deberás inspeccionarlo.</small>';
-    
-    // Cambiamos el botón para que ejecute la acción
-    btnEntendido.innerText = 'Confirmar Salida';
-    btnEntendido.style.backgroundColor = '#0d9488'; // Verde teal
-    
-    modalConfirm.style.display = 'flex';
-
-    // Asignamos la acción al botón de confirmar
-    btnEntendido.onclick = function() {
-        btnEntendido.innerText = 'Procesando...';
-        btnEntendido.disabled = true;
-
-        fetch(`/admin/checkin/confirmar/${idReserva}`, {
-            method: 'POST'
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al registrar checkout");
-            return res.json();
-        })
-        .then(() => {
-            // Cerramos el modal
-            document.getElementById('modalResultado').style.display = 'none';
-            
-            // Recargamos la página para que el botón cambie a "Inspeccionar"
-            window.location.reload();
-        })
-        .catch(() => {
-            alert("Ocurrió un error al registrar la salida.");
-            btnEntendido.innerText = 'Confirmar Salida';
-            btnEntendido.disabled = false;
-        });
-    };
+    .catch(() => {
+        alert("Ocurrió un error al registrar la salida.");
+        btn.innerText = "Confirmar";
+        btn.disabled = false;
+    });
 }

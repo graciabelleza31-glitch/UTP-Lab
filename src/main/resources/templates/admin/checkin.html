@@ -178,10 +178,10 @@
               <div class="fila-nombre-estado">
                 <strong class="nombre-lab-checkin" th:text="${r.laboratorio}">Lab. Química</strong>
                 <span class="badge-estado-pill" 
-                      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : 'estado-pendiente'}"
-                      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : 'Pendiente'}">
-                  Confirmada
-                </span>
+      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : (r.estado == 'EN_USO' ? 'estado-en-uso' : 'estado-pendiente')}"
+      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : (r.estado == 'EN_USO' ? 'EN USO' : 'Pendiente')}">
+  Confirmada
+</span>
               </div>
               
               <div class="metadatos-horario-checkin">
