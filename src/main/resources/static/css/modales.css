@@ -751,3 +751,23 @@
 .btn-cerrar-modal-aviso:hover {
     background-color: #1e293b;
 }
+
+/* ==========================================================================
+   FORZAR MODAL DE PAGO POR ENCIMA DEL MODAL DE RESERVA
+   ========================================================================== */
+
+/* Aseguramos que el modal de pago tenga un z-index superior */
+#modalPago {
+    z-index: 10050 !important; /* Más alto que el modal de reserva */
+}
+
+/* El modal de reserva debe tener un z-index normal */
+#modalReserva {
+    z-index: 10000 !important; 
+}
+
+/* Si el modal de pago tiene su propia clase de fondo, la aseguramos */
+.modal-pago-ancho {
+    z-index: 10051 !important;
+    position: relative;
+}
