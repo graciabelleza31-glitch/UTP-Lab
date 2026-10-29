@@ -11,35 +11,16 @@
 
       <section class="seccion-checkout">
         
-
-        <!-- SELECTOR DE FECHA PARA INCIDENCIAS -->
-<div class="fila-dashboard-header" style="margin-bottom: 1rem;">
-    <div>
-        <!-- TÍTULO CORRECTO -->
-        <h1 class="titulo-seccion-catalogo">Módulo de Incidencias</h1>
-        <p class="subtitulo-seccion-catalogo">Daños, costos y notificaciones por correo</p>
-    </div>
-    
-    <div class="selector-fecha-dashboard">
-        <!-- URL CORRECTA: /admin/incidencias -->
-        <a th:href="@{/admin/incidencias(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
-            <i data-lucide="chevron-left"></i>
-        </a>
-        
-        <input type="date" 
-               th:value="${fechaConsulta}"
-               onchange="window.location.href='/admin/incidencias?fecha=' + this.value"
-               class="input-fecha-dashboard">
-               
-        <a th:href="@{/admin/incidencias(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
-            <i data-lucide="chevron-right"></i>
-        </a>
-    </div>
-</div>
+        <!-- ENCABEZADO PRINCIPAL -->
+        <div class="fila-dashboard-header" style="margin-bottom: 1rem;">
+            <div>
+                <h1 class="titulo-seccion-catalogo">Módulo de Incidencias</h1>
+                <p class="subtitulo-seccion-catalogo">Daños, costos y notificaciones por correo</p>
+            </div>
+        </div>
 
         <!-- 3 TARJETAS RESUMEN DE ESTADO -->
         <div class="grid-tres-estados-incidencias">
-          <!-- Abiertas -->
           <div class="card-resumen-inc card-inc-abiertas">
             <div class="circulo-icono-estado icon-red-glow">🔴</div>
             <div class="datos-resumen-inc">
@@ -48,7 +29,6 @@
             </div>
           </div>
 
-          <!-- Notificadas -->
           <div class="card-resumen-inc card-inc-notificadas">
             <div class="circulo-icono-estado icon-yellow-glow">📧</div>
             <div class="datos-resumen-inc">
@@ -57,7 +37,6 @@
             </div>
           </div>
 
-          <!-- Resueltas -->
           <div class="card-resumen-inc card-inc-resueltas">
             <div class="circulo-icono-estado icon-green-glow">✅</div>
             <div class="datos-resumen-inc">
@@ -67,101 +46,182 @@
           </div>
         </div>
 
-        <!-- LISTA DE TARJETAS DE INCIDENCIAS -->
-        <div class="lista-tarjetas-incidencias-col">
-          <!-- Nota: idSancion ahora contiene el ID de la RESERVA (ej. RES005) -->
-          <div th:each="inc : ${incidencias}" 
-               class="tarjeta-incidencia-completa" 
-               th:id="'card-inc-' + ${inc.idSancion}">
-            
-            <div class="cuerpo-superior-inc">
-              <!-- Icono dinámico según estado -->
-              <div class="icono-tipo-incidencia" th:id="'icono-inc-' + ${inc.idSancion}">
-                <span th:if="${inc.notificada}">📧</span>
-                <span th:unless="${inc.notificada}">🔴</span>
-              </div>
+        <!-- ======================================================= -->
+        <!-- SECCIÓN 1: TODAS LAS INCIDENCIAS ACTIVAS (GLOBALES)     -->
+        <!-- ======================================================= -->
+        <div style="margin-bottom: 2.5rem;">
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem;">Incidencias Activas</h3>
+          
+          <div th:if="${#lists.isEmpty(incidenciasActivas)}" class="tarjeta-sin-checkins-vacia" style="padding: 3rem; text-align: center; background: #fff; border-radius: 12px; border: 1px dashed #e2e8f0;">
+            <span style="font-size: 2rem;">🎉</span>
+            <strong style="display: block; margin-top: 0.5rem; color: #0f172a;">No hay incidencias activas</strong>
+          </div>
 
-              <!-- Detalles del Item y Motivo -->
-              <div class="info-principal-inc">
-                <div class="fila-titulo-tag">
-                  <strong class="nombre-item-danado" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
-                  <span class="badge-estado-inc" 
-      th:id="'badge-inc-' + ${inc.idSancion}"
-      th:classappend="${inc.resuelta ? 'badge-resuelta' : (inc.notificada ? 'badge-notificada' : 'badge-pendiente')}"
-      th:style="${inc.resuelta ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;' : ''}"
-      th:text="${inc.estado}">
-  Notificada
-</span>
+          <div class="lista-tarjetas-incidencias-col" th:unless="${#lists.isEmpty(incidenciasActivas)}">
+            <div th:each="inc : ${incidenciasActivas}" 
+                 class="tarjeta-incidencia-completa" 
+                 th:id="'card-inc-' + ${inc.idSancion}">
+              
+              <div class="cuerpo-superior-inc">
+                <div class="icono-tipo-incidencia" th:id="'icono-inc-' + ${inc.idSancion}">
+                  <span th:if="${inc.notificada}">📧</span>
+                  <span th:unless="${inc.notificada}">🔴</span>
                 </div>
-                <p class="motivo-desc-txt" th:text="${inc.motivo}">Cristalería rota por caída durante la práctica.</p>
+
+                <div class="info-principal-inc">
+                  <div class="fila-titulo-tag">
+                    <strong class="nombre-item-danado" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
+                    <span class="badge-estado-inc" 
+                          th:id="'badge-inc-' + ${inc.idSancion}"
+                          th:classappend="${inc.notificada ? 'badge-notificada' : 'badge-pendiente'}"
+                          th:text="${inc.estado}">
+                      Notificada
+                    </span>
+                  </div>
+                  <p class="motivo-desc-txt" th:text="${inc.motivo}">Cristalería rota por caída durante la práctica.</p>
+                </div>
+
+                <div class="accion-derecha-inc">
+                  <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
+                  
+                  <!-- Botón Resolver (si ya está notificada) -->
+                  <button th:if="${inc.notificada}" 
+                          type="button" 
+                          class="btn-resolver-verde"
+                          th:data-id="${inc.idSancion}"
+                          th:data-estudiante="${inc.estudiante}"
+                          onclick="ejecutarResolverIncidencia(this)">
+                    <i data-lucide="check"></i> Resolver Todo
+                  </button>
+
+                  <!-- Botón Notificar (si está pendiente) -->
+                  <button th:unless="${inc.notificada}" 
+                          type="button" 
+                          class="btn-notificar-naranja"
+                          th:data-id="${inc.idSancion}"
+                          th:data-estudiante="${inc.estudiante}"
+                          th:data-correo="${inc.correo}"
+                          onclick="ejecutarNotificarIncidencia(this)">
+                    <i data-lucide="mail"></i> Notificar a Todos
+                  </button>
+                </div>
               </div>
 
-              <!-- Código y Botón Dinámico -->
-              <div class="accion-derecha-inc">
-  <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
-  
-  <!-- CASO 1: Si YA ESTÁ RESUELTA -> SOLO "Ver Resumen" -->
-  <button th:if="${inc.resuelta}" 
-          type="button" 
-          class="btn-verde-iniciar" 
-          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 0.86rem; padding: 0.55rem 1.15rem;"
-          th:data-id="${inc.idSancion}"
-          onclick="abrirResumenIncidencia(this.getAttribute('data-id'))">
-    <i data-lucide="file-text"></i> Ver Resumen
-  </button>
+              <div class="metadatos-grid-inc">
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Lab</span>
+                  <strong class="val-meta-txt" th:text="${inc.laboratorio}">Lab. Química</strong>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Estudiantes</span>
+                  <strong class="val-meta-txt" th:text="${inc.estudiante}">Felipe, Miguel</strong>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Correos</span>
+                  <span class="val-meta-txt" style="font-size: 0.8rem; word-break: break-all;" th:text="${inc.correo}">U23200745@utp.edu.pe</span>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Costo Total</span>
+                  <strong class="val-meta-costo" th:text="${inc.costo}">S/ 90.00</strong>
+                </div>
+              </div>
 
-  <!-- CASO 2: Si está NOTIFICADA pero NO resuelta -> "Resolver Todo" -->
-  <button th:if="${!inc.resuelta and inc.notificada}" 
-          type="button" 
-          class="btn-resolver-verde"
-          th:data-id="${inc.idSancion}"
-          onclick="ejecutarResolverIncidencia(this)">
-    <i data-lucide="check"></i> Resolver Todo
-  </button>
+              <div class="fila-footer-notif" 
+                   th:id="'footer-notif-' + ${inc.idSancion}"
+                   th:style="${inc.notificada} ? 'display:flex;' : 'display:none;'">
+                <span class="emoji-sobre-mini">📧</span>
+                <span class="txt-fecha-envio" th:text="'Notificado: ' + ${inc.fechaNotificado}">Notificado: 2026-08-20 09:45</span>
+              </div>
 
-  <!-- CASO 3: Si está PENDIENTE -> "Notificar a Todos" -->
-  <button th:if="${!inc.resuelta and !inc.notificada}" 
-          type="button" 
-          class="btn-notificar-naranja"
-          th:data-id="${inc.idSancion}"
-          th:data-estudiante="${inc.estudiante}"
-          onclick="ejecutarNotificarIncidencia(this)">
-    <i data-lucide="mail"></i> Notificar a Todos
-  </button>
-</div>
             </div>
+          </div>
+        </div>
 
-            <!-- Grilla inferior de metadatos -->
-            <div class="metadatos-grid-inc">
-              <div class="col-meta-inc">
-                <span class="label-meta-dim">Lab</span>
-                <strong class="val-meta-txt" th:text="${inc.laboratorio}">Lab. Química</strong>
-              </div>
-
-              <div class="col-meta-inc">
-                <span class="label-meta-dim">Estudiantes</span>
-                <strong class="val-meta-txt" th:text="${inc.estudiante}">Felipe, Miguel</strong>
-              </div>
-
-              <div class="col-meta-inc">
-                <span class="label-meta-dim">Correos</span>
-                <span class="val-meta-txt" style="font-size: 0.8rem; word-break: break-all;" th:text="${inc.correo}">U23200745@utp.edu.pe, U24207788@utp.edu.pe</span>
-              </div>
-
-              <div class="col-meta-inc">
-                <span class="label-meta-dim">Costo Total</span>
-                <strong class="val-meta-costo" th:text="${inc.costo}">S/ 90.00</strong>
-              </div>
+        <!-- ======================================================= -->
+        <!-- SECCIÓN 2: HISTORIAL DE RESUELTAS (FILTRADO POR FECHA)  -->
+        <!-- ======================================================= -->
+        <div style="border-top: 2px solid #e2e8f0; padding-top: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Historial de Incidencias Resueltas</h3>
+              <p style="font-size: 0.85rem; color: #64748b; margin: 0.2rem 0 0 0;">Consulta las incidencias que ya fueron pagadas o resueltas por fecha.</p>
             </div>
-
-            <!-- Fila de fecha de notificación -->
-            <div class="fila-footer-notif" 
-                 th:id="'footer-notif-' + ${inc.idSancion}"
-                 th:style="${inc.notificada} ? 'display:flex;' : 'display:none;'">
-              <span class="emoji-sobre-mini">📧</span>
-              <span class="txt-fecha-envio" th:text="'Notificado: ' + ${inc.fechaNotificado}">Notificado: 2026-08-20 09:45</span>
+            
+            <!-- SELECTOR DE FECHA (Ahora está aquí abajo) -->
+            <div class="selector-fecha-dashboard">
+                <a th:href="@{/admin/incidencias(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+                    <i data-lucide="chevron-left"></i>
+                </a>
+                <input type="date" 
+                       th:value="${fechaConsulta}"
+                       onchange="window.location.href='/admin/incidencias?fecha=' + this.value"
+                       class="input-fecha-dashboard">
+                <a th:href="@{/admin/incidencias(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+                    <i data-lucide="chevron-right"></i>
+                </a>
             </div>
+          </div>
 
+          <div th:if="${#lists.isEmpty(incidenciasHistorial)}" class="tarjeta-sin-checkins-vacia" style="padding: 3rem; text-align: center; background: #fff; border-radius: 12px; border: 1px dashed #e2e8f0;">
+            <span style="font-size: 2rem;">📂</span>
+            <strong style="display: block; margin-top: 0.5rem; color: #0f172a;">No hay incidencias resueltas en esta fecha</strong>
+          </div>
+
+          <div class="lista-tarjetas-incidencias-col" th:unless="${#lists.isEmpty(incidenciasHistorial)}">
+            <div th:each="inc : ${incidenciasHistorial}" 
+                 class="tarjeta-incidencia-completa" 
+                 th:id="'card-hist-' + ${inc.idSancion}">
+              
+              <div class="cuerpo-superior-inc">
+                <div class="icono-tipo-incidencia">
+                  <span>✅</span>
+                </div>
+
+                <div class="info-principal-inc">
+                  <div class="fila-titulo-tag">
+                    <strong class="nombre-item-danado" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
+                    <span class="badge-estado-inc" 
+                          style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"
+                          th:text="${inc.estado}">
+                      RESUELTA
+                    </span>
+                  </div>
+                  <p class="motivo-desc-txt" th:text="${inc.motivo}">Cristalería rota por caída durante la práctica.</p>
+                </div>
+
+                <div class="accion-derecha-inc">
+                  <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
+                  
+                  <button type="button" 
+                          class="btn-verde-iniciar" 
+                          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 0.86rem; padding: 0.55rem 1.15rem;"
+                          th:data-id="${inc.idSancion}"
+                          onclick="abrirResumenIncidencia(this.getAttribute('data-id'))">
+                    <i data-lucide="file-text"></i> Ver Resumen
+                  </button>
+                </div>
+              </div>
+
+              <div class="metadatos-grid-inc">
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Lab</span>
+                  <strong class="val-meta-txt" th:text="${inc.laboratorio}">Lab. Química</strong>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Estudiantes</span>
+                  <strong class="val-meta-txt" th:text="${inc.estudiante}">Felipe, Miguel</strong>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Correos</span>
+                  <span class="val-meta-txt" style="font-size: 0.8rem; word-break: break-all;" th:text="${inc.correo}">U23200745@utp.edu.pe</span>
+                </div>
+                <div class="col-meta-inc">
+                  <span class="label-meta-dim">Costo Total</span>
+                  <strong class="val-meta-costo" th:text="${inc.costo}">S/ 90.00</strong>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 

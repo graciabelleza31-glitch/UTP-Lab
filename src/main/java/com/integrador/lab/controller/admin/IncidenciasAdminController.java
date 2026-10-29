@@ -48,7 +48,7 @@ public class IncidenciasAdminController {
     @Autowired 
     private ReservaRepository reservaRepositorio;
 
-    @GetMapping
+        @GetMapping
     @Transactional(readOnly = true)
     public String verIncidencias(
             @RequestParam(required = false) String fecha,
@@ -66,113 +66,126 @@ public class IncidenciasAdminController {
         }
         final java.time.LocalDate fechaFinal = fechaConsulta;
 
-        // 2. Traer TODAS las sanciones (Aquí estaba el error, faltaba esta línea)
+        // 2. Traer TODAS las sanciones de la BD
         List<Sancion> todas = sancionRepositorio.findAll();
-
-        // 3. Filtrar según la lógica
-        List<Sancion> sancionesFiltradas;
-        if (fecha != null && !fecha.isEmpty()) {
-            sancionesFiltradas = todas.stream()
-                    .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal))
-                    .collect(Collectors.toList());
-        } else {
-            sancionesFiltradas = todas;
-        }
-
-        long cantAbiertas = 0;
-        long cantNotificadas = 0;
-        long cantResueltas = 0;
-        BigDecimal totalMontoPendiente = BigDecimal.ZERO;
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-        // 4. Agrupar por reserva
-        Map<String, List<Sancion>> sancionesPorReserva = sancionesFiltradas.stream()
+        // =====================================================================
+        // SECCIÓN 1: TODAS LAS ACTIVAS (Sin importar la fecha)
+        // =====================================================================
+        List<Sancion> activas = todas.stream()
+                .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADA".equalsIgnoreCase(s.getEstado()))
+                .collect(Collectors.toList());
+
+        Map<String, List<Sancion>> activasPorReserva = activas.stream()
                 .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
 
-        List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
+        List<IncidenciaCardDto> listaActivas = new ArrayList<>();
+        long cantAbiertas = 0;
+        long cantNotificadas = 0;
 
-        for (Map.Entry<String, List<Sancion>> entry : sancionesPorReserva.entrySet()) {
+        for (Map.Entry<String, List<Sancion>> entry : activasPorReserva.entrySet()) {
             List<Sancion> sancionesDelGrupo = entry.getValue();
             Sancion primera = sancionesDelGrupo.get(0);
 
-            boolean todasResueltas = sancionesDelGrupo.stream()
-                    .allMatch(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || 
-                                   "RESUELTO".equalsIgnoreCase(s.getEstado()) || 
-                                   "PAGADO".equalsIgnoreCase(s.getEstado()));
-
-            BigDecimal montoGrupo = sancionesDelGrupo.stream()
-                    .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADO".equalsIgnoreCase(s.getEstado()))
-                    .map(Sancion::getMontoDeuda)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            if (!todasResueltas) {
-                totalMontoPendiente = totalMontoPendiente.add(montoGrupo);
-            }
-
-            List<String> nombresAlumnos = sancionesDelGrupo.stream()
-                    .filter(s -> s.getAlumno() != null)
-                    .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
-                    .distinct()
-                    .collect(Collectors.toList());
-            
-            List<String> correos = sancionesDelGrupo.stream()
-                    .filter(s -> s.getAlumno() != null)
-                    .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
-                    .distinct()
-                    .collect(Collectors.toList());
-
+            // Contadores
             boolean isNotif = sancionesDelGrupo.stream()
-                    .anyMatch(s -> "NOTIFICADA".equalsIgnoreCase(s.getEstado()) || 
-                                   "NOTIFICADO".equalsIgnoreCase(s.getEstado()));
+                    .anyMatch(s -> "NOTIFICADA".equalsIgnoreCase(s.getEstado()) || "NOTIFICADO".equalsIgnoreCase(s.getEstado()));
 
-            if (todasResueltas) {
-                cantResueltas += sancionesDelGrupo.size();
-            } else if (isNotif) {
+            if (isNotif) {
                 cantNotificadas += sancionesDelGrupo.size();
             } else {
                 cantAbiertas += sancionesDelGrupo.size();
             }
 
+            // Datos
+            BigDecimal montoGrupo = sancionesDelGrupo.stream()
+                    .map(Sancion::getMontoDeuda)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            List<String> nombresAlumnos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
+                    .distinct().collect(Collectors.toList());
+            
+            List<String> correos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
+                    .distinct().collect(Collectors.toList());
+
             String labNombre = (primera.getReserva() != null && primera.getReserva().getLaboratorio() != null) 
                     ? primera.getReserva().getLaboratorio().getNombre() : "Lab. General";
-            
             String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
             String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
             String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(dtf) : "";
 
-            listaIncidencias.add(new IncidenciaCardDto(
-                    entry.getKey(),
-                    itemNombre,
-                    motivo,
-                    labNombre,
-                    String.join(", ", nombresAlumnos),
-                    String.join(", ", correos),
+            listaActivas.add(new IncidenciaCardDto(
+                    entry.getKey(), itemNombre, motivo, labNombre,
+                    String.join(", ", nombresAlumnos), String.join(", ", correos),
                     "S/ " + montoGrupo.setScale(2).toString(),
-                    todasResueltas ? "RESUELTA" : (isNotif ? "NOTIFICADA" : "PENDIENTE"),
-                    isNotif,
-                    strFechaNotif,
-                    todasResueltas
+                    isNotif ? "NOTIFICADA" : "PENDIENTE",
+                    isNotif, strFechaNotif, false
             ));
         }
 
-        // 5. ORDENAR: Primero las activas (no resueltas), luego las resueltas
-        listaIncidencias.sort((a, b) -> {
-            if (a.isResuelta() && !b.isResuelta()) return 1;
-            if (!a.isResuelta() && b.isResuelta()) return -1;
-            return 0;
-        });
+        // =====================================================================
+        // SECCIÓN 2: HISTORIAL (Solo RESUELTAS, filtradas por fecha)
+        // =====================================================================
+        List<Sancion> resueltas = todas.stream()
+                .filter(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || "PAGADA".equalsIgnoreCase(s.getEstado()))
+                .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal))
+                .collect(Collectors.toList());
 
-        // 6. Pasar datos al modelo
-        modelo.addAttribute("incidencias", listaIncidencias);
+        Map<String, List<Sancion>> resueltasPorReserva = resueltas.stream()
+                .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
+
+        List<IncidenciaCardDto> listaHistorial = new ArrayList<>();
+        long cantResueltas = 0;
+
+        for (Map.Entry<String, List<Sancion>> entry : resueltasPorReserva.entrySet()) {
+            List<Sancion> sancionesDelGrupo = entry.getValue();
+            Sancion primera = sancionesDelGrupo.get(0);
+            cantResueltas += sancionesDelGrupo.size();
+
+            BigDecimal montoGrupo = sancionesDelGrupo.stream()
+                    .map(Sancion::getMontoDeuda)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            List<String> nombresAlumnos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
+                    .distinct().collect(Collectors.toList());
+            
+            List<String> correos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
+                    .distinct().collect(Collectors.toList());
+
+            String labNombre = (primera.getReserva() != null && primera.getReserva().getLaboratorio() != null) 
+                    ? primera.getReserva().getLaboratorio().getNombre() : "Lab. General";
+            String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
+            String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
+            String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(dtf) : "";
+
+            listaHistorial.add(new IncidenciaCardDto(
+                    entry.getKey(), itemNombre, motivo, labNombre,
+                    String.join(", ", nombresAlumnos), String.join(", ", correos),
+                    "S/ " + montoGrupo.setScale(2).toString(),
+                    "RESUELTA",
+                    true, strFechaNotif, true
+            ));
+        }
+
+        // 3. Pasar datos al modelo
+        modelo.addAttribute("incidenciasActivas", listaActivas);
+        modelo.addAttribute("incidenciasHistorial", listaHistorial);
+        
         modelo.addAttribute("cantAbiertas", cantAbiertas);
         modelo.addAttribute("cantNotificadas", cantNotificadas);
         modelo.addAttribute("cantResueltas", cantResueltas);
-        modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
         
-        // El total de incidencias para el menú y campanita debe ser global
-        long totalGlobalActivas = sancionRepositorio.findAll().stream()
-                .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADA".equalsIgnoreCase(s.getEstado()))
-                .count();
+        // Total global para la campanita (todas las activas)
+        long totalGlobalActivas = activas.size();
         modelo.addAttribute("totalIncidencias", totalGlobalActivas);
 
         modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
