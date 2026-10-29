@@ -223,74 +223,50 @@
             </div>
           </div>
 
-          <!-- Mensaje si no hay incidencias en ese mes -->
-          <div
-            th:if="${#lists.isEmpty(historialIncidencias)}"
-            class="tarjeta-perfil-alumno"
-            style="text-align: center; padding: 2rem; margin-bottom: 2rem"
-          >
-            <p style="color: #64748b">
-              No tienes incidencias registradas en
-              <strong th:text="${mesFormateado}">este mes</strong>. ¡Sigue así!
-              🎉
-            </p>
-          </div>
+          <!-- Lista de incidencias (Historial) -->
+<div class="lista-historial-reservas" th:unless="${#lists.isEmpty(historialIncidencias)}">
+    <div class="fila-historial-reserva clickeable" style="cursor: pointer"
+         th:each="incidencia : ${historialIncidencias}"
+         th:attr="data-id-sancion=${incidencia.idSancion}"
+         onclick="abrirModalIncidencia(this)">
+        
+        <div class="info-historial">
+            <span class="nombre-lab-historial" style="text-transform: capitalize" th:text="${incidencia.motivo}">
+                Motivo de incidencia
+            </span>
 
-          <!-- Lista de incidencias -->
-          <div
-            class="lista-historial-reservas"
-            th:unless="${#lists.isEmpty(historialIncidencias)}"
-          >
-            <div
-              class="fila-historial-reserva clickeable"
-              style="cursor: pointer"
-              th:each="incidencia : ${historialIncidencias}"
-              th:attr="data-id-sancion=${incidencia.idSancion}"
-              onclick="abrirModalIncidencia(this)"
-            >
-              <div class="info-historial">
-                <span
-                  class="nombre-lab-historial"
-                  style="text-transform: capitalize"
-                  th:text="${incidencia.motivo}"
-                  >Motivo de incidencia</span
-                >
+            <span class="detalle-historial">
+                <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Monto pagado: ' : 'Monto a pagar: '}">Monto:</span>
+                S/ <span th:text="${incidencia.montoDeuda}">0.00</span>
+            </span>
+            <span class="detalle-historial">
+                <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}">Fecha:</span>
+                <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
+            </span>
+        </div>
 
-                <span class="detalle-historial">
-                  <span
-                    th:text="${incidencia.estado == 'PAGADA' ? 'Monto pagado: ' : 'Monto a pagar: '}"
-                    >Monto:</span
-                  >
-                  S/ <span th:text="${incidencia.monto}">0.00</span>
-                </span>
-                <span class="detalle-historial">
-                  <span
-                    th:text="${incidencia.estado == 'PAGADA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}"
-                    >Fecha:</span
-                  >
-                  <span
-                    th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}"
-                    >20 Oct 2026</span
-                  >
-                </span>
-              </div>
+        <div class="accion-historial">
+            <!-- BADGE DE ESTADO -->
+            <span class="badge-estado-historial confirmada" 
+                  th:if="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA'}" 
+                  th:text="'PAGADA'">PAGADA</span>
+            
+            <span class="badge-estado-historial cancelada" 
+                  th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}" 
+                  th:text="${incidencia.estado}">PENDIENTE</span>
 
-              <div class="accion-historial">
-                <span
-                  class="badge-estado-historial confirmada"
-                  th:if="${incidencia.estado == 'PAGADA'}"
-                  th:text="${incidencia.estado}"
-                  >PAGADA</span
-                >
-                <span
-                  class="badge-estado-historial cancelada"
-                  th:if="${incidencia.estado == 'PENDIENTE'}"
-                  th:text="${incidencia.estado}"
-                  >PENDIENTE</span
-                >
-              </div>
-            </div>
-          </div>
+            <!-- BOTÓN DE ACCIÓN -->
+            <!-- Si está pendiente, botón de pagar -->
+            <a th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}"
+               th:href="@{/alumno/incidencias/pagar/{id}(id=${incidencia.idSancion})}" 
+               class="btn-nueva-reserva" 
+               style="background-color: #ef4444; padding: 0.4rem 1rem; font-size: 0.8rem; text-decoration: none;"
+               onclick="event.stopPropagation();">
+               Pagar
+            </a>
+        </div>
+    </div>
+</div>
         </section>
       </main>
     </div>
@@ -401,7 +377,7 @@
     <div
       id="modalDetalleIncidencia"
       class="fondo-modal-oscuro"
-      style="display: none"
+      style="display: none;"
     >
       <div class="tarjeta-modal modal-recibo-contenedor">
         <div class="cabecera-modal-recibo">

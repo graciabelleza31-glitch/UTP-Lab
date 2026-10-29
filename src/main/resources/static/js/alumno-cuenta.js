@@ -106,7 +106,15 @@ function abrirModalIncidencia(fila) {
                 document.getElementById('filaMetodoPago').style.display = 'flex';
                 document.getElementById('filaFechaPago').style.display = 'flex';
                 document.getElementById('incMetodo').innerText = data.metodoPago ? data.metodoPago.replace('PAGO_', '') : 'YAPE';
-                document.getElementById('incFechaPago').innerText = data.fechaPago || '—';
+// Después (formateado):
+if (data.fechaPago) {
+    const fecha = new Date(data.fechaPago);
+    document.getElementById('incFechaPago').innerText = fecha.toLocaleDateString('es-PE', { 
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+    });
+} else {
+    document.getElementById('incFechaPago').innerText = '—';
+}
             } else {
                 document.getElementById('filaMetodoPago').style.display = 'none';
                 document.getElementById('filaFechaPago').style.display = 'none';

@@ -1000,3 +1000,43 @@
 .btn-confirmar-checkin-verde:hover {
     background-color: #0f766e;
 }
+
+/* ==========================================================================
+   FORZAR MODAL DE DETALLE DE INCIDENCIA (ALUMNO)
+   ========================================================================== */
+#modalDetalleIncidencia {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 999999 !important;
+    display: none; /* El JS lo pondrá en flex */
+}
+
+#modalDetalleIncidencia[style*="display: flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Forzar que la tarjeta del modal no se salga de la pantalla */
+#modalDetalleIncidencia .modal-recibo-contenedor {
+    background: #ffffff !important;
+    border-radius: 18px !important;
+    width: 90% !important;
+    max-width: 520px !important;
+    max-height: 90vh !important; /* Altura máxima */
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important; /* Corta el contenido que se sale */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Permitir scroll solo dentro del cuerpo */
+#modalDetalleIncidencia .cuerpo-modal-recibo {
+    overflow-y: auto !important;
+    flex: 1 !important;
+}

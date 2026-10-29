@@ -4,12 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.time.format.DateTimeParseException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.integrador.lab.modelo.Alumno;
 import com.integrador.lab.modelo.Boleta;
@@ -40,7 +41,6 @@ import com.integrador.lab.repository.ReservaRepository;
 import com.integrador.lab.repository.SancionRepository;
 import com.integrador.lab.service.EmailService;
 
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -92,8 +92,7 @@ public class AlumnoPortalController {
         long incidenciasPendientes = sancionesPendientes.size();
 
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
-        boolean estaBloqueado = incidenciasPendientes > 0
-                || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
+        boolean estaBloqueado = incidenciasPendientes > 0 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
 
         // 2. Obtener la carrera y validar si permite laboratorios
         String idCarrera = (alumno.getCarrera() != null) ? alumno.getCarrera().getIdCarrera() : null;
@@ -119,7 +118,7 @@ public class AlumnoPortalController {
             }
         }
 
-        // 4. Contar reservas del día (SOLO ACTIVAS)
+        // 4. Contar reservas del día (TODAS MENOS CANCELADAS)
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         LocalDate hoy = LocalDate.now();
         List<String> idsReservasHoy = new ArrayList<>();
@@ -130,12 +129,11 @@ public class AlumnoPortalController {
 
             String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
             
-            // 👇 CONTAMOS TODAS MENOS LAS CANCELADAS
-    if (!estado.equals("CANCELADA")) {
-        if (!idsReservasHoy.contains(r.getIdReserva())) {
-            idsReservasHoy.add(r.getIdReserva());
-        }
-    }
+            if (!estado.equals("CANCELADA")) {
+                if (!idsReservasHoy.contains(r.getIdReserva())) {
+                    idsReservasHoy.add(r.getIdReserva());
+                }
+            }
         }
 
         int reservasHoy = idsReservasHoy.size();
@@ -183,9 +181,7 @@ public class AlumnoPortalController {
     @Transactional(readOnly = true)
     public String verCatalogo(HttpSession sesion, Model modelo) {
         Object usuario = sesion.getAttribute("usuarioLogueado");
-        if (usuario == null) {
-            return "redirect:/login";
-        }
+        if (usuario == null) return "redirect:/login";
 
         Alumno alumno = null;
         if (usuario instanceof Alumno) {
@@ -198,9 +194,7 @@ public class AlumnoPortalController {
         long incidenciasPendientes = sancionesPendientes.size();
 
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
-        boolean estaBloqueado = incidenciasPendientes > 0
-                || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
-                || estadoCuenta.contains("BLOQUEADO_POR_DEUDA");
+        boolean estaBloqueado = incidenciasPendientes > 0 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta) || estadoCuenta.contains("BLOQUEADO_POR_DEUDA");
 
         List<Producto> todosLosProductos = productoRepositorio.findAll();
 
@@ -240,9 +234,7 @@ public class AlumnoPortalController {
             HttpSession sesion, RedirectAttributes redirectAttributes) {
 
         Object usuario = sesion.getAttribute("usuarioLogueado");
-        if (usuario == null) {
-            return "redirect:/login";
-        }
+        if (usuario == null) return "redirect:/login";
         Alumno alumnoLogueado = (Alumno) usuario;
 
         String idCarreraAlumno = (alumnoLogueado.getCarrera() != null) ? alumnoLogueado.getCarrera().getIdCarrera() : null;
@@ -259,14 +251,10 @@ public class AlumnoPortalController {
         String estadoCuentaAlumno = (alumnoLogueado.getEstadoCuenta() != null) ? alumnoLogueado.getEstadoCuenta().trim().toUpperCase() : "";
         boolean cuentaBloqueada = "BLOQUEADO_POR_DEUDA".equals(estadoCuentaAlumno) || estadoCuentaAlumno.contains("BLOQUEADO");
 
-        if (tieneSancion || cuentaBloqueada) {
-            return "redirect:/alumno/laboratorios";
-        }
+        if (tieneSancion || cuentaBloqueada) return "redirect:/alumno/laboratorios";
 
         Optional<Laboratorio> labOpt = laboratorioRepositorio.findById(idLab);
-        if (labOpt.isEmpty()) {
-            return "redirect:/alumno/laboratorios";
-        }
+        if (labOpt.isEmpty()) return "redirect:/alumno/laboratorios";
         Laboratorio lab = labOpt.get();
 
         LocalDate fecha;
@@ -281,15 +269,10 @@ public class AlumnoPortalController {
             return "redirect:/alumno/laboratorios";
         }
 
-        if (fecha.isBefore(LocalDate.now())) {
-            return "redirect:/alumno/laboratorios";
-        }
+        if (fecha.isBefore(LocalDate.now())) return "redirect:/alumno/laboratorios";
+        if (!horaFin.isAfter(horaInicio)) return "redirect:/alumno/laboratorios";
 
-        if (!horaFin.isAfter(horaInicio)) {
-            return "redirect:/alumno/laboratorios";
-        }
-
-        // 1. LÍMITE DE DOS RESERVAS DIARIAS (SOLO ACTIVAS)
+        // 1. LÍMITE DE DOS RESERVAS DIARIAS (TODAS MENOS CANCELADAS)
         List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
         List<String> idsReservasDelDia = new ArrayList<>();
 
@@ -299,12 +282,11 @@ public class AlumnoPortalController {
             
             String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
             
-            // 👇 CONTAMOS TODAS MENOS LAS CANCELADAS
-    if (!estado.equals("CANCELADA")) {
-        if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
-            idsReservasDelDia.add(reservaExistente.getIdReserva());
-        }
-    }
+            if (!estado.equals("CANCELADA")) {
+                if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+                    idsReservasDelDia.add(reservaExistente.getIdReserva());
+                }
+            }
         }
 
         if (idsReservasDelDia.size() >= 2) {
@@ -315,9 +297,7 @@ public class AlumnoPortalController {
         // B. Validar integrantes
         if (codigosIntegrantes != null) {
             for (String codIntegrante : codigosIntegrantes) {
-                if (codIntegrante.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) {
-                    continue;
-                }
+                if (codIntegrante.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) continue;
 
                 List<ReservaIntegrante> participacionesIntegrante = reservaIntegranteRepositorio.findByAlumno_IdEstud(codIntegrante.trim());
                 List<String> idsReservasIntegrante = new ArrayList<>();
@@ -327,12 +307,11 @@ public class AlumnoPortalController {
                     if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
 
                     String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-                    // 👇 CONTAMOS TODAS MENOS CANCELADAS
-    if (!est.equals("CANCELADA")) {
-        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
-            idsReservasIntegrante.add(r.getIdReserva());
-        }
-    }
+                    if (!est.equals("CANCELADA")) {
+                        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
+                            idsReservasIntegrante.add(r.getIdReserva());
+                        }
+                    }
                 }
 
                 if (idsReservasIntegrante.size() >= 2) {
@@ -349,12 +328,10 @@ public class AlumnoPortalController {
         for (Reserva reservaExistente : reservasDelLaboratorio) {
             String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
             boolean reservaActiva = estado.equals("CONFIRMADA") || estado.equals("EN_USO");
-
             if (!reservaActiva) continue;
 
             LocalTime inicioExistente = reservaExistente.getHoraInicio();
             LocalTime finExistente = reservaExistente.getHoraFin();
-
             if (inicioExistente == null || finExistente == null) continue;
 
             boolean haySuperposicion = horaInicio.isBefore(finExistente) && horaFin.isAfter(inicioExistente);
@@ -440,7 +417,8 @@ public class AlumnoPortalController {
                 "PAGO_" + metodoPago.toUpperCase()
         );
         boletaRepositorio.save(boleta);
-                // ⭐ ENVIAR CORREO DE CONFIRMACIÓN
+
+        // ⭐ ENVIAR CORREO DE CONFIRMACIÓN
         try {
             String correoDestino = alumnoLogueado.getIdEstud().toLowerCase() + "@utp.edu.pe";
             String asunto = "✅ Confirmación de Reserva - UTP +Lab";
@@ -534,8 +512,7 @@ public class AlumnoPortalController {
         long incidenciasPendientes = sancionesPendientes.size();
 
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
-        boolean estaBloqueado = incidenciasPendientes > 0
-                || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
+        boolean estaBloqueado = incidenciasPendientes > 0 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
 
         // HISTORIAL Y ESTADÍSTICAS
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
@@ -598,13 +575,14 @@ public class AlumnoPortalController {
         modelo.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
         modelo.addAttribute("esMesActual", fechaConsulta.getMonthValue() == hoy.getMonthValue() && fechaConsulta.getYear() == hoy.getYear());
 
-        // ⭐ FILTRADO DE INCIDENCIAS POR MES
-        List<Sancion> todasLasIncidencias = sancionRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
-        
+        // ⭐ FILTRADO DE INCIDENCIAS POR MES (INCLUYENDO PAGADAS)
+        List<Sancion> todasLasIncidencias = sancionRepositorio.findAll();
+
         int mesConsulta = fechaConsulta.getMonthValue();
         int anioConsulta = fechaConsulta.getYear();
 
         List<Sancion> incidenciasDelMes = todasLasIncidencias.stream()
+                .filter(s -> s.getAlumno() != null && s.getAlumno().getIdEstud().equals(alumno.getIdEstud()))
                 .filter(s -> s.getReserva() != null && s.getReserva().getFechaReserva() != null)
                 .filter(s -> {
                     int mesSancion = s.getReserva().getFechaReserva().getMonthValue();
@@ -619,13 +597,64 @@ public class AlumnoPortalController {
     }
 
     // =========================================================================
-    // 6. APIs
+    // 6. PAGAR INCIDENCIA (ALUMNO)
+    // =========================================================================
+    @GetMapping("/incidencias/pagar/{idSancion}")
+    @Transactional
+    public String pagarIncidencia(
+            @PathVariable("idSancion") String idSancion, 
+            HttpSession sesion, 
+            RedirectAttributes redirectAttributes) {
+        
+        Object usuario = sesion.getAttribute("usuarioLogueado");
+        if (usuario == null) return "redirect:/login";
+        Alumno alumno = (Alumno) usuario;
+
+        Optional<Sancion> opt = sancionRepositorio.findById(idSancion);
+        
+        if (opt.isPresent()) {
+            Sancion s = opt.get();
+            
+            // Verificar que la sanción pertenezca al alumno logueado
+            if (s.getAlumno() == null || !s.getAlumno().getIdEstud().equals(alumno.getIdEstud())) {
+                redirectAttributes.addFlashAttribute("mensajeCancelacion", "No tienes permiso para pagar esta incidencia.");
+                return "redirect:/alumno/cuenta";
+            }
+
+            // Cambiar estado a PAGADA
+            s.setEstado("PAGADA");
+            sancionRepositorio.save(s);
+
+            // Verificar si el alumno ya no tiene más deudas para desbloquearlo
+            long pendientes = sancionRepositorio.countByAlumno_IdEstudAndEstadoNotIn(
+                alumno.getIdEstud(), 
+                List.of("PAGADA", "RESUELTA")
+            );
+
+            if (pendientes == 0) {
+                Alumno al = alumnoRepositorio.findById(alumno.getIdEstud()).orElse(null);
+                if (al != null) {
+                    al.setEstadoCuenta("HABILITADO");
+                    alumnoRepositorio.save(al);
+                }
+            }
+            
+            redirectAttributes.addFlashAttribute("mensajeCancelacion", "✅ El pago de la incidencia " + idSancion + " se registró correctamente.");
+        } else {
+            redirectAttributes.addFlashAttribute("mensajeCancelacion", "No se encontró la incidencia.");
+        }
+        
+        return "redirect:/alumno/cuenta";
+    }
+
+    // =========================================================================
+    // 7. APIs
     // =========================================================================
     @GetMapping("/api/recibo/{idReserva}")
-    @org.springframework.web.bind.annotation.ResponseBody
+    @ResponseBody
     @Transactional(readOnly = true)
-    public java.util.Map<String, Object> obtenerRecibo(@PathVariable("idReserva") String idReserva) {
-        java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    public Map<String, Object> obtenerRecibo(@PathVariable("idReserva") String idReserva) {
+        Map<String, Object> resp = new HashMap<>();
         
         Optional<Reserva> reservaOpt = reservaRepositorio.findById(idReserva);
         if (reservaOpt.isEmpty()) {
@@ -645,10 +674,10 @@ public class AlumnoPortalController {
         resp.put("estado", r.getEstado());
         
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
-        List<java.util.Map<String, String>> listaIntegrantes = new ArrayList<>();
+        List<Map<String, String>> listaIntegrantes = new ArrayList<>();
         for (ReservaIntegrante ri : integrantes) {
             if (ri.getAlumno() != null) {
-                java.util.Map<String, String> m = new java.util.HashMap<>();
+                Map<String, String> m = new HashMap<>();
                 m.put("nombre", ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
                 m.put("codigo", ri.getAlumno().getIdEstud());
                 listaIntegrantes.add(m);
@@ -657,10 +686,10 @@ public class AlumnoPortalController {
         resp.put("integrantes", listaIntegrantes);
         
         List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
-        List<java.util.Map<String, String>> listaItems = new ArrayList<>();
+        List<Map<String, String>> listaItems = new ArrayList<>();
         for (ReservaItem item : items) {
             if (item.getProducto() != null) {
-                java.util.Map<String, String> m = new java.util.HashMap<>();
+                Map<String, String> m = new HashMap<>();
                 m.put("nombre", item.getProducto().getNombre());
                 m.put("categoria", item.getProducto().getCategoria() != null ? item.getProducto().getCategoria() : "");
                 m.put("cantidad", String.valueOf(item.getCantidad()));
@@ -690,10 +719,10 @@ public class AlumnoPortalController {
     }
 
     @GetMapping("/api/estadisticas")
-    @org.springframework.web.bind.annotation.ResponseBody
+    @ResponseBody
     @Transactional(readOnly = true)
-    public java.util.Map<String, Object> obtenerEstadisticas(@RequestParam(value = "mes", required = false) String mes, HttpSession sesion) {
-        java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    public Map<String, Object> obtenerEstadisticas(@RequestParam(value = "mes", required = false) String mes, HttpSession sesion) {
+        Map<String, Object> resp = new HashMap<>();
         
         Object usuario = sesion.getAttribute("usuarioLogueado");
         if (!(usuario instanceof Alumno)) return resp;
@@ -709,9 +738,9 @@ public class AlumnoPortalController {
         }
         
         int diasEnMes = fechaConsulta.lengthOfMonth();
-        java.util.Map<Integer, Integer> reservasPorDia = new java.util.LinkedHashMap<>();
-        java.util.Map<Integer, Integer> horasPorDia = new java.util.LinkedHashMap<>();
-        java.util.Map<Integer, Integer> materialesPorDia = new java.util.LinkedHashMap<>();
+        Map<Integer, Integer> reservasPorDia = new java.util.LinkedHashMap<>();
+        Map<Integer, Integer> horasPorDia = new java.util.LinkedHashMap<>();
+        Map<Integer, Integer> materialesPorDia = new java.util.LinkedHashMap<>();
         
         for (int i = 1; i <= diasEnMes; i++) {
             reservasPorDia.put(i, 0);
@@ -748,10 +777,10 @@ public class AlumnoPortalController {
     }
 
     @GetMapping("/api/incidencia/{idSancion}")
-    @org.springframework.web.bind.annotation.ResponseBody
+    @ResponseBody
     @Transactional(readOnly = true)
-    public java.util.Map<String, Object> obtenerDetalleIncidencia(@PathVariable("idSancion") String idSancion) {
-        java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    public Map<String, Object> obtenerDetalleIncidencia(@PathVariable("idSancion") String idSancion) {
+        Map<String, Object> resp = new HashMap<>();
         
         Optional<Sancion> opt = sancionRepositorio.findById(idSancion);
         if (opt.isEmpty()) {
@@ -774,10 +803,10 @@ public class AlumnoPortalController {
             resp.put("horario", s.getReserva().getHoraInicio() + " - " + s.getReserva().getHoraFin());
             
             List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(s.getReserva().getIdReserva());
-            List<java.util.Map<String, String>> listaIntegrantes = new ArrayList<>();
+            List<Map<String, String>> listaIntegrantes = new ArrayList<>();
             for (ReservaIntegrante ri : integrantes) {
                 if (ri.getAlumno() != null) {
-                    java.util.Map<String, String> m = new java.util.HashMap<>();
+                    Map<String, String> m = new HashMap<>();
                     m.put("nombre", ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
                     m.put("codigo", ri.getAlumno().getIdEstud());
                     listaIntegrantes.add(m);
@@ -801,7 +830,7 @@ public class AlumnoPortalController {
     }
 
     // =========================================================================
-    // 7. CANCELAR RESERVA
+    // 8. CANCELAR RESERVA
     // =========================================================================
     @PostMapping("/reservas/{idReserva}/cancelar")
     @Transactional
@@ -812,12 +841,9 @@ public class AlumnoPortalController {
 
         Object usuario = sesion.getAttribute("usuarioLogueado");
 
-        if (!(usuario instanceof Alumno)) {
-            return "redirect:/login";
-        }
+        if (!(usuario instanceof Alumno)) return "redirect:/login";
 
         Alumno alumno = (Alumno) usuario;
-
         Optional<Reserva> reservaOpt = reservaRepositorio.findById(idReserva);
 
         if (reservaOpt.isEmpty()) {
@@ -826,12 +852,10 @@ public class AlumnoPortalController {
         }
 
         Reserva reserva = reservaOpt.get();
-
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
 
         boolean participa = integrantes.stream()
-                .anyMatch(ri -> ri.getAlumno() != null
-                        && alumno.getIdEstud().equals(ri.getAlumno().getIdEstud()));
+                .anyMatch(ri -> ri.getAlumno() != null && alumno.getIdEstud().equals(ri.getAlumno().getIdEstud()));
 
         if (!participa) {
             redirectAttributes.addFlashAttribute("mensajeCancelacion", "No tienes permiso para cancelar esta reserva.");
@@ -847,14 +871,10 @@ public class AlumnoPortalController {
 
         // ⭐ ZONA HORARIA DE PERÚ
         java.time.ZoneId zonaPeru = java.time.ZoneId.of("America/Lima");
-        java.time.LocalDateTime ahoraPeru = java.time.LocalDateTime.now(zonaPeru);
+        LocalDateTime ahoraPeru = LocalDateTime.now(zonaPeru);
 
-        java.time.LocalDateTime inicioReserva = java.time.LocalDateTime.of(
-                reserva.getFechaReserva(),
-                reserva.getHoraInicio()
-        );
-        
-        java.time.LocalDateTime limiteCancelacion = ahoraPeru.plusMinutes(30);
+        LocalDateTime inicioReserva = LocalDateTime.of(reserva.getFechaReserva(), reserva.getHoraInicio());
+        LocalDateTime limiteCancelacion = ahoraPeru.plusMinutes(30);
 
         if (inicioReserva.isBefore(limiteCancelacion)) {
             redirectAttributes.addFlashAttribute("errorReserva", "No puedes cancelar la reserva porque faltan menos de 30 minutos para su inicio.");
@@ -868,39 +888,37 @@ public class AlumnoPortalController {
         return "redirect:/alumno/cuenta";
     }
 
-            @GetMapping("/api/notificaciones")
-    @org.springframework.web.bind.annotation.ResponseBody
+    @GetMapping("/api/notificaciones")
+    @ResponseBody
     @Transactional(readOnly = true)
-    public java.util.List<java.util.Map<String, String>> obtenerNotificaciones(HttpSession sesion) {
-        java.util.List<java.util.Map<String, String>> notificaciones = new java.util.ArrayList<>();
+    public List<Map<String, String>> obtenerNotificaciones(HttpSession sesion) {
+        List<Map<String, String>> notificaciones = new ArrayList<>();
         Object usuario = sesion.getAttribute("usuarioLogueado");
         
         if (!(usuario instanceof Alumno)) return notificaciones;
         Alumno alumno = (Alumno) usuario;
 
-        // 1. Notificación si tiene incidencias pendientes
         long incidencias = sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE").size();
         if (incidencias > 0) {
-            java.util.Map<String, String> notif = new java.util.HashMap<>();
+            Map<String, String> notif = new HashMap<>();
             notif.put("titulo", "Tienes incidencias pendientes");
             notif.put("mensaje", "Tienes " + incidencias + " incidencia(s) sin resolver. Ve a la sección Incidencias.");
             notif.put("url", "/alumno/incidencias");
             notificaciones.add(notif);
         }
 
-        // 2. Notificación si tiene una reserva próxima (menos de 1 hora)
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
-        java.time.LocalDateTime ahora = java.time.LocalDateTime.now(java.time.ZoneId.of("America/Lima"));
+        LocalDateTime ahora = LocalDateTime.now(java.time.ZoneId.of("America/Lima"));
 
         for (ReservaIntegrante ri : participaciones) {
             Reserva r = ri.getReserva();
             if (r == null || r.getFechaReserva() == null || !"CONFIRMADA".equals(r.getEstado())) continue;
 
-            java.time.LocalDateTime inicio = java.time.LocalDateTime.of(r.getFechaReserva(), r.getHoraInicio());
+            LocalDateTime inicio = LocalDateTime.of(r.getFechaReserva(), r.getHoraInicio());
             long minutosFaltantes = java.time.Duration.between(ahora, inicio).toMinutes();
 
             if (minutosFaltantes > 0 && minutosFaltantes <= 60) {
-                java.util.Map<String, String> notif = new java.util.HashMap<>();
+                Map<String, String> notif = new HashMap<>();
                 notif.put("titulo", "¡Reserva próxima!");
                 notif.put("mensaje", "Tu reserva en " + r.getLaboratorio().getNombre() + " empieza en " + minutosFaltantes + " minutos.");
                 notif.put("url", "/alumno/laboratorios");
@@ -910,6 +928,7 @@ public class AlumnoPortalController {
 
         return notificaciones;
     }
+
     // =========================================================================
     // DTOs AUXILIARES
     // =========================================================================
