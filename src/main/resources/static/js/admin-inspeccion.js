@@ -184,11 +184,16 @@ function enviarFinalizarInspeccion() {
       setTimeout(() => {
         tarjeta.remove();
         
+        // Verificamos si ya no quedan tarjetas para mostrar el mensaje vacío
         const contenedor = document.getElementById('contenedorInspeccion');
         const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
+        
         if (restantes === 0) {
           if (contenedor) contenedor.style.display = 'none';
-          document.getElementById('sinInspeccionesVacio').style.display = 'flex';
+          
+          // 👇 AQUÍ ESTÁ EL ID CORREGIDO 👇
+          const mensajeVacio = document.getElementById('tarjetaSinInspecciones');
+          if (mensajeVacio) mensajeVacio.style.display = 'flex';
         }
       }, 300);
     }

@@ -86,11 +86,12 @@
                 <div class="fila-titulo-tag">
                   <strong class="nombre-item-danado" th:text="${inc.item}">Vaso de precipitados 250mL</strong>
                   <span class="badge-estado-inc" 
-                        th:id="'badge-inc-' + ${inc.idSancion}"
-                        th:classappend="${inc.notificada ? 'badge-notificada' : 'badge-pendiente'}"
-                        th:text="${inc.estado}">
-                    Notificada
-                  </span>
+      th:id="'badge-inc-' + ${inc.idSancion}"
+      th:classappend="${inc.resuelta ? 'badge-resuelta' : (inc.notificada ? 'badge-notificada' : 'badge-pendiente')}"
+      th:style="${inc.resuelta ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;' : ''}"
+      th:text="${inc.estado}">
+  Notificada
+</span>
                 </div>
                 <p class="motivo-desc-txt" th:text="${inc.motivo}">Cristalería rota por caída durante la práctica.</p>
               </div>

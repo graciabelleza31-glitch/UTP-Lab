@@ -163,8 +163,6 @@ public class IncidenciasAdminController {
         modelo.addAttribute("cantNotificadas", cantNotificadas);
         modelo.addAttribute("cantResueltas", cantResueltas);
         modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
-        modelo.addAttribute("totalIncidencias", cantAbiertas + cantNotificadas);
-
         // Usamos el String para el modelo
         modelo.addAttribute("fechaConsulta", fechaConsultaStr);
         modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());

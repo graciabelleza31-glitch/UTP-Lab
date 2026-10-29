@@ -10,32 +10,29 @@
       <header th:replace="~{fragments/topbar-admin :: topbar}"></header>
 
       <section class="seccion-checkout">
-
-        <!-- SELECTOR DE FECHA PARA INSPECCIÓN -->
-<div class="fila-dashboard-header" style="margin-bottom: 1rem;">
-    <div>
-        <!-- TÍTULO CORRECTO -->
-        <h1 class="titulo-seccion-catalogo">Inspección de Materiales</h1>
-        <p class="subtitulo-seccion-catalogo">Revisión de materiales retornables y EPPs prestados al concluir la sesión</p>
-    </div>
-    
-    <div class="selector-fecha-dashboard">
-        <!-- URL CORRECTA: /admin/inspeccion -->
-        <a th:href="@{/admin/inspeccion(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
-            <i data-lucide="chevron-left"></i>
-        </a>
         
-        <input type="date" 
-               th:value="${fechaConsulta}"
-               onchange="window.location.href='/admin/inspeccion?fecha=' + this.value"
-               class="input-fecha-dashboard">
-               
-        <a th:href="@{/admin/inspeccion(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
-            <i data-lucide="chevron-right"></i>
-        </a>
-    </div>
-</div>
-        <!-- LISTA DE RESERVAS DEVUELTAS -->
+        <!-- ENCABEZADO Y SELECTOR DE FECHA -->
+        <div class="fila-dashboard-header" style="margin-bottom: 1.5rem;">
+          <div>
+            <h1 class="titulo-seccion-catalogo">Inspección de Materiales</h1>
+            <p class="subtitulo-seccion-catalogo">Revisión de materiales retornables y EPPs prestados al concluir la sesión</p>
+          </div>
+          
+          <div class="selector-fecha-dashboard">
+              <a th:href="@{/admin/inspeccion(fecha=${fechaAnterior})}" class="btn-fecha-nav" title="Día anterior">
+                  <i data-lucide="chevron-left"></i>
+              </a>
+              <input type="date" 
+                     th:value="${fechaConsulta}"
+                     onchange="window.location.href='/admin/inspeccion?fecha=' + this.value"
+                     class="input-fecha-dashboard">
+              <a th:href="@{/admin/inspeccion(fecha=${fechaSiguiente})}" class="btn-fecha-nav" title="Día siguiente">
+                  <i data-lucide="chevron-right"></i>
+              </a>
+          </div>
+        </div>
+
+        <!-- LISTA DE INSPECCIONES (Solo se muestra si hay datos) -->
         <div id="contenedorInspeccion" 
              class="lista-tarjetas-checkin" 
              th:style="${#lists.isEmpty(inspecciones)} ? 'display:none;' : 'display:flex;'">
@@ -44,18 +41,19 @@
                class="tarjeta-reserva-checkin-fila" 
                th:id="'tarjeta-inspeccion-' + ${ins.idReserva}">
             
-            <div class="icono-cuadro-checkin" 
-                 th:classappend="${ins.estado == 'NO_INSPECCIONADO' ? 'bg-rayo' : 'bg-quimica'}">
-              <span th:text="${ins.estado == 'NO_INSPECCIONADO' ? '⛔' : '🔬'}">🔬</span>
+            <!-- Icono dinámico según especialidad -->
+            <div class="icono-cuadro-checkin" th:classappend="${#strings.containsIgnoreCase(ins.laboratorio, 'Física') ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:if="${#strings.containsIgnoreCase(ins.laboratorio, 'Física')}">⚡</span>
+              <span th:unless="${#strings.containsIgnoreCase(ins.laboratorio, 'Física')}">⚗️</span>
             </div>
 
+            <!-- Detalles centrales -->
             <div class="info-central-checkin">
               <div class="fila-nombre-estado">
                 <strong class="nombre-lab-checkin" th:text="${ins.laboratorio}">Lab. Química</strong>
-                
                 <span class="badge-estado-pill" 
-                      th:style="${ins.estado == 'NO_INSPECCIONADO' ? 'background:#fee2e2; color:#dc2626;' : 'background:#f3e8ff; color:#7e22ce;'}"
-                      th:text="${ins.estado == 'NO_INSPECCIONADO' ? 'No Inspeccionado' : 'Devuelta'}">
+                      th:classappend="${ins.estado == 'INSPECCIONADA' ? 'estado-inspeccionada' : 'estado-devuelta'}"
+                      th:text="${ins.estado == 'INSPECCIONADA' ? 'Inspeccionada' : 'Devuelta'}">
                   Devuelta
                 </span>
               </div>
@@ -64,64 +62,64 @@
                 <span th:text="${ins.cubiculo + ' · ' + ins.fecha + ' · ' + ins.horario}">A-101 · 2026-08-21 · 09:00–11:00</span>
               </div>
               
+              <!-- Pastillas de integrantes -->
               <div class="pills-integrantes-flex">
                 <span th:each="integ : ${ins.integrantes}" class="pill-integrante-nombre" th:text="${integ}">
-                  Estudiante
+                  Mariafernanda Bruno Santos
                 </span>
               </div>
             </div>
 
+            <!-- Acción lateral derecha -->
             <div class="accion-derecha-checkin">
-  <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
-  
-  <!-- CASO 1: Si ya está INSPECCIONADA -> Botón Gris "Ver Resumen" -->
-  <button th:if="${ins.estado == 'INSPECCIONADA'}"
-          type="button" 
-          class="btn-verde-iniciar" 
-          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; cursor: pointer;"
-          th:data-id="${ins.idReserva}"
-          onclick="abrirResumenInspeccion(this.getAttribute('data-id'))">
-    <i data-lucide="file-text"></i> Ver Resumen
-  </button>
+              <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
+              
+              <!-- CASO 1: Si ya está INSPECCIONADA -> Botón Gris "Ver Resumen" -->
+              <button th:if="${ins.estado == 'INSPECCIONADA'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; cursor: pointer;"
+                      th:data-id="${ins.idReserva}"
+                      onclick="abrirResumenInspeccion(this.getAttribute('data-id'))">
+                <i data-lucide="file-text"></i> Ver Resumen
+              </button>
 
-  <!-- CASO 2: Si está EN_USO -> Botón Verde "Registrar Salida" -->
-  <button th:if="${ins.estado == 'EN_USO'}"
-          type="button" 
-          class="btn-verde-iniciar" 
-          style="background:#0f766e;" 
-          th:data-id="${ins.idReserva}"
-          onclick="abrirModalCheckout(this.getAttribute('data-id'))">
-    <i data-lucide="corner-down-left"></i> Registrar Salida
-  </button>
+              <!-- CASO 2: Si está EN_USO -> Botón Verde "Registrar Salida" -->
+              <button th:if="${ins.estado == 'EN_USO'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background:#0f766e;" 
+                      th:data-id="${ins.idReserva}"
+                      onclick="abrirModalCheckout(this.getAttribute('data-id'))">
+                <i data-lucide="corner-down-left"></i> Registrar Salida
+              </button>
 
-  <!-- CASO 3: Si está DEVUELTA -> Botón Azul "Inspeccionar" -->
-  <button th:if="${ins.estado == 'DEVUELTA'}"
-          type="button" 
-          class="btn-verde-iniciar" 
-          style="background:#2563eb;"
-          th:data-id="${ins.idReserva}"
-          onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
-    <i data-lucide="clipboard-check"></i> Inspeccionar
-  </button>
-</div>
-            
+              <!-- CASO 3: Si está DEVUELTA -> Botón Azul "Inspeccionar" -->
+              <button th:if="${ins.estado == 'DEVUELTA'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background:#2563eb;"
+                      th:data-id="${ins.idReserva}"
+                      onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
+                <i data-lucide="clipboard-check"></i> Inspeccionar
+              </button>
             </div>
 
           </div>
         </div>
 
-        <!-- ESTADO VACÍO -->
-        <div id="sinInspeccionesVacio" 
+        <!-- ESTADO VACÍO (Solo se muestra si la lista ESTÁ vacía) -->
+        <div id="tarjetaSinInspecciones" 
              class="tarjeta-sin-checkins-vacia" 
              th:style="${#lists.isEmpty(inspecciones)} ? 'display:flex;' : 'display:none;'">
-          <span class="icono-fiesta-confeti">✅</span>
-          <strong>No hay laboratorios pendientes de inspección</strong>
+          <span class="icono-fiesta-confeti">🎉</span>
+          <strong>Sin inspecciones pendientes</strong>
         </div>
 
       </section>
     </main>
 
-    <!-- 1. MODAL DE INSPECCIÓN INTERACTIVO -->
+    <!-- MODAL DE INSPECCIÓN -->
     <div id="modalInspeccion" class="fondo-modal-oscuro" style="display: none;">
       <div class="tarjeta-modal modal-checkin-ancho">
         
@@ -165,7 +163,7 @@
       </div>
     </div>
 
-    <!-- 2. MODAL DE CONFIRMACIÓN / RESULTADO -->
+    <!-- MODAL DE CONFIRMACIÓN / RESULTADO -->
     <div id="modalResultado" class="fondo-modal-oscuro" style="display: none;">
       <div class="modal-resultado-card">
         <div id="iconoResultado" class="icono-resultado-circulo res-exito">

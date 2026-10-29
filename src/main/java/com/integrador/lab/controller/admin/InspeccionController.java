@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class InspeccionController {
     @Autowired
     private AlumnoRepository alumnoRepositorio;
 
-    // 1. SOLO SE LISTAN LAS RESERVAS EN ESTADO 'DEVUELTA' (PROVENIENTES DEL CHECK-OUT)
+    // 1. VISTA PRINCIPAL: LISTA DE RESERVAS PARA INSPECCIONAR
     @GetMapping
     @Transactional(readOnly = true)
     public String verInspeccion(
@@ -93,21 +94,27 @@ public class InspeccionController {
         if (devueltas != null) todasLasPendientes.addAll(devueltas);
         if (inspeccionadas != null) todasLasPendientes.addAll(inspeccionadas);
 
-        // 👇 CREAMOS LA VARIABLE FINAL PARA EVITAR EL ERROR DE LAMBDA 👇
         final java.time.LocalDate fechaFinal = fechaConsulta;
 
         List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
         for (Reserva r : todasLasPendientes) {
-            // Si la reserva no es de la fecha consultada, la saltamos
             if (r.getFechaReserva() == null || !r.getFechaReserva().equals(fechaFinal)) {
                 continue; 
             }
             listaInspeccion.add(convertirADto(r));
         }
 
+        // 👇 ORDENAR: Primero las que están DEVUELTA (pendientes), luego las INSPECCIONADA (historial)
+        listaInspeccion.sort((a, b) -> {
+            boolean aEsPendiente = "DEVUELTA".equals(a.getEstado());
+            boolean bEsPendiente = "DEVUELTA".equals(b.getEstado());
+            if (aEsPendiente && !bEsPendiente) return -1;
+            if (!aEsPendiente && bEsPendiente) return 1;
+            return 0;
+        });
+
         long cantIncidencias = sancionRepositorio.count();
 
-        // 3. Pasar datos al modelo
         modelo.addAttribute("inspecciones", listaInspeccion);
         modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
         
@@ -118,7 +125,7 @@ public class InspeccionController {
         return "admin/inspeccion";
     }
 
-    // Método auxiliar para no repetir código
+    // Método auxiliar para convertir Reserva a DTO
     private InspeccionCardDto convertirADto(Reserva r) {
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
         List<String> nombresIntegrantes = new ArrayList<>();
@@ -149,7 +156,7 @@ public class InspeccionController {
         );
     }
 
-        // 2. MODAL: SOLO MATERIALES PRESTADOS Y EPPS SIN COSTO OBLIGATORIOS
+    // 2. MODAL: DETALLE DE INSPECCIÓN
     @GetMapping("/api/{idReserva}")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -176,12 +183,8 @@ public class InspeccionController {
 
                 if (cat.contains("EPP")) {
                     String nombreMin = p.getNombre().toLowerCase();
-                    
-                    // 👇 FILTRO CLAVE: Verificamos si el producto es de venta
-                    // Si tiene precio de venta > 0, significa que el alumno lo compró, no se devuelve.
                     boolean esDeVenta = (p.getPrecioVenta() != null && p.getPrecioVenta().compareTo(BigDecimal.ZERO) > 0);
 
-                    // Solo lo agregamos a la inspección si NO es de venta
                     if (!esDeVenta) {
                         if (nombreMin.contains("bata")) tieneBata = true;
                         if (nombreMin.contains("gafa") || nombreMin.contains("lente")) tieneGafas = true;
@@ -194,7 +197,6 @@ public class InspeccionController {
                         ));
                     }
                 } else {
-                    // Cristalería, instrumentos, equipos
                     listaInsumosPrestados.add(new ItemInspeccionDto(
                             p.getIdProducto(),
                             p.getNombre(),
@@ -205,7 +207,6 @@ public class InspeccionController {
             }
         }
 
-        // Siempre se valida la devolución de los dos EPPs obligatorios prestados por el lab
         if (!tieneBata) {
             listaEppsSinCosto.add(new ItemInspeccionDto("EPP-OBL-BATA", "Bata de laboratorio", new BigDecimal("50.00"), "🥼"));
         }
@@ -227,9 +228,7 @@ public class InspeccionController {
         return ResponseEntity.ok(respuesta);
     }
 
-    // 3. FINALIZAR INSPECCIÓN:
-    //    - SIN DAÑOS -> ESTADO 'INSPECCIONADA' Y QUEDA EN HISTORIAL
-    //    - CON DAÑOS -> CREA LA SANCIÓN PENDIENTE Y PASA A INCIDENCIAS
+    // 3. FINALIZAR INSPECCIÓN
     @PostMapping("/finalizar/{idReserva}")
     @ResponseBody
     @Transactional
@@ -247,57 +246,50 @@ public class InspeccionController {
         boolean huboDanios = (req.getDanados() != null && !req.getDanados().isEmpty());
 
         if (huboDanios) {
-    // 1. Recorrer los integrantes de la reserva y bloquearlos a todos
-    for (ReservaIntegrante ri : integrantes) {
-        Alumno alumno = ri.getAlumno();
-        if (alumno != null) {
-            // A. Cambiar estado del alumno a BLOQUEADO
-            alumno.setEstadoCuenta("BLOQUEADO_POR_DEUDA"); // o setHabilitado(false) según tu modelo
-            alumnoRepositorio.save(alumno);
+            for (ReservaIntegrante ri : integrantes) {
+                Alumno alumno = ri.getAlumno();
+                if (alumno != null) {
+                    alumno.setEstadoCuenta("BLOQUEADO_POR_DEUDA");
+                    alumnoRepositorio.save(alumno);
 
-            // B. Registrar la sanción individual con el ID de 4 caracteres
-            for (DanioItemDto d : req.getDanados()) {
-                Producto prodDanado = null;
-                if (d.getIdProducto() != null && !d.getIdProducto().startsWith("EPP-OBL")) {
-                    prodDanado = productoRepositorio.findById(d.getIdProducto()).orElse(null);
+                    for (DanioItemDto d : req.getDanados()) {
+                        Producto prodDanado = null;
+                        if (d.getIdProducto() != null && !d.getIdProducto().startsWith("EPP-OBL")) {
+                            prodDanado = productoRepositorio.findById(d.getIdProducto()).orElse(null);
+                        }
+
+                        BigDecimal costoSancion = (d.getCostoReposicion() != null && d.getCostoReposicion().compareTo(BigDecimal.ZERO) > 0)
+                                ? d.getCostoReposicion()
+                                : (prodDanado != null && prodDanado.getCostoReposicion() != null ? prodDanado.getCostoReposicion() : new BigDecimal("50.00"));
+
+                        String motivo = (d.getMotivo() != null && !d.getMotivo().isBlank())
+                                ? d.getMotivo()
+                                : "Daño en " + d.getNombre() + " en inspección";
+
+                        int randomTresDigitos = (int) (Math.random() * 900) + 100;
+                        String idSancion = "S" + randomTresDigitos;
+
+                        Sancion sancion = new Sancion(
+                                idSancion,
+                                r,
+                                alumno,
+                                prodDanado,
+                                motivo,
+                                costoSancion,
+                                "PENDIENTE"
+                        );
+                        sancion.setFechaSancion(LocalDateTime.now());
+                        sancionRepositorio.save(sancion);
+                    }
                 }
-
-                BigDecimal costoSancion = (d.getCostoReposicion() != null && d.getCostoReposicion().compareTo(BigDecimal.ZERO) > 0)
-                        ? d.getCostoReposicion()
-                        : (prodDanado != null && prodDanado.getCostoReposicion() != null ? prodDanado.getCostoReposicion() : new BigDecimal("50.00"));
-
-                String motivo = (d.getMotivo() != null && !d.getMotivo().isBlank())
-                        ? d.getMotivo()
-                        : "Daño en " + d.getNombre() + " en inspección";
-
-                // ID de 4 caracteres exactos (ej. S123)
-                int randomTresDigitos = (int) (Math.random() * 900) + 100;
-                String idSancion = "S" + randomTresDigitos;
-
-                Sancion sancion = new Sancion(
-                        idSancion,
-                        r,
-                        alumno,
-                        prodDanado,
-                        motivo,
-                        costoSancion,
-                        "PENDIENTE"
-                );
-                sancion.setFechaSancion(LocalDateTime.now());
-                sancionRepositorio.save(sancion);
             }
-        }
-    }
-
-    r.setEstado("CON_INCIDENCIA");
+            r.setEstado("CON_INCIDENCIA");
         } else {
-            // Sin daños: finaliza limpiamente
             r.setEstado("INSPECCIONADA");
         }
 
         reservaRepositorio.save(r);
 
-        // Dejar el laboratorio liberado
         Laboratorio lab = r.getLaboratorio();
         if (lab != null) {
             laboratorioRepositorio.save(lab);
@@ -309,7 +301,7 @@ public class InspeccionController {
         return ResponseEntity.ok(resp);
     }
 
-        // 4. ENDPOINT PARA REGISTRAR SALIDA (CHECK-OUT)
+    // 4. REGISTRAR SALIDA (CHECK-OUT)
     @PostMapping("/checkout/{idReserva}")
     @ResponseBody
     @Transactional
@@ -320,20 +312,17 @@ public class InspeccionController {
         }
 
         Reserva r = resOpt.get();
-        
-        // Solo permitimos checkout si está EN_USO
         if (!"EN_USO".equals(r.getEstado())) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "La reserva no está en uso"));
         }
 
-        // CAMBIO CLAVE: Pasa a DEVUELTA para que aparezca en Inspección
         r.setEstado("DEVUELTA"); 
         reservaRepositorio.save(r);
 
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
-    // DTOs auxiliares
+    // DTOs
     public static class InspeccionCardDto {
         private String idReserva;
         private String laboratorio;

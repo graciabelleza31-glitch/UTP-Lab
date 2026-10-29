@@ -180,14 +180,20 @@
                 <span class="badge-estado-pill" 
       th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : 
                       (r.estado == 'EN_USO' ? 'estado-en-uso' : 
-                      (r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA' ? 'estado-devuelta' : 
-                      (r.estado == 'CON_INCIDENCIA' ? 'estado-incidencia' : 'estado-pendiente')))}"
+                      (r.estado == 'DEVUELTA' ? 'estado-devuelta' : 
+                      (r.estado == 'INSPECCIONADA' ? 'estado-inspeccionada' : 
+                      (r.estado == 'CON_INCIDENCIA' ? 'estado-incidencia' : 
+                      (r.estado == 'NO_ASISTIO' ? 'estado-no-asistio' : 
+                      (r.estado == 'NO_INSPECCIONADO' ? 'estado-no-inspeccionado' : 'estado-pendiente'))))))}"
       th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : 
                (r.estado == 'EN_USO' ? 'EN USO' : 
                (r.estado == 'DEVUELTA' ? 'Devuelta' : 
                (r.estado == 'INSPECCIONADA' ? 'Inspeccionada' : 
-               (r.estado == 'CON_INCIDENCIA' ? 'Con Incidencia' : 'Pendiente'))))}">
+               (r.estado == 'CON_INCIDENCIA' ? 'Con Incidencia' : 
+               (r.estado == 'NO_ASISTIO' ? 'No Asistió' : 
+               (r.estado == 'NO_INSPECCIONADO' ? 'No Inspeccionado' : 'Pendiente'))))))}">
   Confirmada
+</span>ada
 </span>
               </div>
               
@@ -205,8 +211,8 @@
            <div class="accion-derecha-checkin">
   <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
   
-  <!-- CASO 1: Estados ya usados -> "Ver Resumen" -->
-  <button th:if="${r.estado == 'EN_USO' or r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA' or r.estado == 'CON_INCIDENCIA'}"
+  <!-- CASO 1: Estados ya procesados -> "Ver Resumen" -->
+  <button th:if="${r.estado == 'EN_USO' or r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA' or r.estado == 'CON_INCIDENCIA' or r.estado == 'NO_ASISTIO' or r.estado == 'NO_INSPECCIONADO'}"
           type="button" 
           class="btn-verde-iniciar" 
           style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;"

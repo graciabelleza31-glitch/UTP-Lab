@@ -94,7 +94,11 @@ public class AdminDashboardController {
                 .filter(s -> "PENDIENTE".equalsIgnoreCase(s.getEstado()) || "NOTIFICADA".equalsIgnoreCase(s.getEstado()))
                 .toList();
         
-        long cantIncidentesAbiertos = sancionesPendientes.size();
+        // En AdminDashboardController.java, dentro de verDashboard:
+long cantIncidentesAbiertos = sancionRepositorio.findAll().stream()
+        .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) 
+                  && !"PAGADA".equalsIgnoreCase(s.getEstado()))
+        .count();
 
         // ============ 3. Alertas de stock (NO dependen de la fecha) ============
         List<Producto> todosProductos = productoRepositorio.findAll();

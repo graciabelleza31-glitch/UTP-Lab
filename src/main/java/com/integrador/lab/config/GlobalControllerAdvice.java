@@ -1,6 +1,5 @@
 package com.integrador.lab.config;
 
-
 import com.integrador.lab.repository.SancionRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,13 +15,17 @@ public class GlobalControllerAdvice {
     private SancionRepository sancionRepositorio;
 
     /**
-     * Agrega el contador de incidencias abiertas a TODOS los modelos.
+     * Agrega el contador de incidencias ACTIVAS (no resueltas) a TODOS los modelos.
      * Disponible en cualquier template como ${totalIncidencias}.
      */
     @ModelAttribute("totalIncidencias")
     public long getTotalIncidencias() {
         try {
-            return sancionRepositorio.count();
+            // Contamos solo las que no están resueltas ni pagadas
+            return sancionRepositorio.findAll().stream()
+                    .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) 
+                              && !"PAGADA".equalsIgnoreCase(s.getEstado()))
+                    .count();
         } catch (Exception e) {
             return 0;
         }
