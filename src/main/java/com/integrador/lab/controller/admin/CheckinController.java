@@ -50,70 +50,78 @@ public class CheckinController {
     private SancionRepository sancionRepositorio;
 
     // 1. VISTA PRINCIPAL DE CHECK-IN (CON FILTRO POR FECHA)
-        @GetMapping
-    @Transactional(readOnly = true)
-    public String verCheckin(
-            @RequestParam(required = false) String fecha,
-            HttpSession sesion, 
-            Model modelo) {
-
-        // 1. Calcular fecha de consulta (si no viene, usa hoy)
-         // 1. Obtener la fecha como String directamente
-        String fechaConsultaStr = (fecha != null && !fecha.isEmpty()) ? fecha : LocalDate.now().toString();
-
-        // 2. Buscar reservas filtrando por el String de la fecha
-        List<Reserva> todas = reservaRepositorio.findAll().stream()
-                .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().toString().equals(fechaConsultaStr))
-                .filter(r -> "CONFIRMADA".equals(r.getEstado()) || "PENDIENTE".equals(r.getEstado())||"EN_USO".equals(r.getEstado()))
-                .toList();
-
-        // 3. Armar la lista de DTOs para la vista
-        List<CheckinReservaDto> listaCheckin = new ArrayList<>();
-
-        for (Reserva r : todas) {
-            List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
-            List<String> nombresIntegrantes = new ArrayList<>();
-            for (ReservaIntegrante ri : integrantes) {
-                if (ri.getAlumno() != null) {
-                    nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
-                }
+    @GetMapping
+@Transactional(readOnly = true)
+public String verCheckin(
+        @RequestParam(required = false) String fecha,
+        HttpSession sesion, 
+        Model modelo) {
+        // 1. Calcular fecha de consulta usando String para evitar conflictos
+        String fechaConsultaStr = (fecha != null && !fecha.isEmpty()) ? fecha : java.time.LocalDate.now().toString();
+        
+                // Declaramos e inicializamos la variable de una vez
+        java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
+        
+        try {
+            if (fecha != null && !fecha.isEmpty()) {
+                fechaConsulta = java.time.LocalDate.parse(fecha);
             }
-
-            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-            String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
-                    ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
-                    ? r.getLaboratorio().getTipo() : "Química";
-
-            String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
-                    ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
-
-            listaCheckin.add(new CheckinReservaDto(
-                    r.getIdReserva(),
-                    labNombre,
-                    tipoLab,
-                    cubiculo,
-                    (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                    horario,
-                    r.getEstado(),
-                    nombresIntegrantes
-            ));
+        } catch (Exception e) {
+            // Si falla el parseo, se queda con el valor de hoy que ya asignamos arriba
+            fechaConsulta = java.time.LocalDate.now(); 
         }
 
-        long incidenciasAbiertas = sancionRepositorio.count();
+    // 2. Traer TODAS las reservas de esa fecha (historial completo)
+    List<Reserva> todas = reservaRepositorio.findAll().stream()
+            .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().equals(fechaConsulta))
+            .filter(r -> !"CANCELADA".equalsIgnoreCase(r.getEstado())) // No mostrar las canceladas
+            .sorted((a, b) -> b.getIdReserva().compareTo(a.getIdReserva())) // Ordenar por ID descendente
+            .toList();
 
-        // 4. Pasar datos al modelo
-        modelo.addAttribute("reservas", listaCheckin);
-        modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
- String ayer = LocalDate.parse(fechaConsultaStr).minusDays(1).toString();
-        String manana = LocalDate.parse(fechaConsultaStr).plusDays(1).toString();
-        // 5. Pasar fechas para el selector de la vista
-        modelo.addAttribute("fechaConsulta", fechaConsultaStr);
-        modelo.addAttribute("fechaAnterior", ayer);
-        modelo.addAttribute("fechaSiguiente", manana);
+    // 3. Armar la lista de DTOs
+    List<CheckinReservaDto> listaCheckin = new ArrayList<>();
 
-        return "admin/checkin";
+    for (Reserva r : todas) {
+        List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
+        List<String> nombresIntegrantes = new ArrayList<>();
+        for (ReservaIntegrante ri : integrantes) {
+            if (ri.getAlumno() != null) {
+                nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+            }
+        }
+
+        String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+        String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+        String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                ? r.getLaboratorio().getTipo() : "Química";
+
+        String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+
+        listaCheckin.add(new CheckinReservaDto(
+                r.getIdReserva(),
+                labNombre,
+                tipoLab,
+                cubiculo,
+                (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
+                horario,
+                r.getEstado(),
+                nombresIntegrantes
+        ));
     }
+
+    long incidenciasAbiertas = sancionRepositorio.count();
+
+    modelo.addAttribute("reservas", listaCheckin);
+    modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
+
+    modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
+    modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+    modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+
+    return "admin/checkin";
+}
 
     // 2. ENDPOINT JSON PARA CARGAR EL MODAL CON INTEGRANTES, INSUMOS Y EPPS
     @GetMapping("/api/{idReserva}")
