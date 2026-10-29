@@ -8,6 +8,7 @@
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/base.css}" />
     <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+    <link rel="stylesheet" th:href="@{/css/modales.css}" />
 
     <!-- Fuentes y Librerías -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -87,57 +88,42 @@
           </div>
 
           <!-- 3 TARJETAS DE ESTADÍSTICAS -->
-        <div class="grid-tres-estadisticas-alumno">
-          <div class="card-estadistica-alumno">
-            <strong class="num-estadistica azul" th:text="${reservasDelMes}">7</strong>
-            <span class="label-estadistica">Reservas de este mes</span>
-            <a href="javascript:void(0)" onclick="abrirGrafico('reservas')" class="link-estadistica">Ver gráfico →</a>
+          <div class="grid-tres-estadisticas-alumno">
+            <div class="card-estadistica-alumno">
+              <strong class="num-estadistica azul" th:text="${reservasDelMes}">7</strong>
+              <span class="label-estadistica">Reservas de este mes</span>
+              <a href="javascript:void(0)" onclick="abrirGrafico('reservas')" class="link-estadistica">Ver gráfico →</a>
+            </div>
+            <div class="card-estadistica-alumno">
+              <strong class="num-estadistica morado" th:text="${horasTotales}">30</strong>
+              <span class="label-estadistica">Horas de laboratorio</span>
+              <a href="javascript:void(0)" onclick="abrirGrafico('horas')" class="link-estadistica">Ver gráfico →</a>
+            </div>
+            <div class="card-estadistica-alumno">
+              <strong class="num-estadistica naranja" th:text="${materialesTotales}">24</strong>
+              <span class="label-estadistica">Materiales solicitados</span>
+              <a href="javascript:void(0)" onclick="abrirGrafico('materiales')" class="link-estadistica">Ver gráfico →</a>
+            </div>
           </div>
-          <div class="card-estadistica-alumno">
-            <strong class="num-estadistica morado" th:text="${horasTotales}">30</strong>
-            <span class="label-estadistica">Horas de laboratorio</span>
-            <a href="javascript:void(0)" onclick="abrirGrafico('horas')" class="link-estadistica">Ver gráfico →</a>
-          </div>
-          <div class="card-estadistica-alumno">
-            <strong class="num-estadistica naranja" th:text="${materialesTotales}">24</strong>
-            <span class="label-estadistica">Materiales solicitados</span>
-            <a href="javascript:void(0)" onclick="abrirGrafico('materiales')" class="link-estadistica">Ver gráfico →</a>
-          </div>
-        </div>
 
           <!-- HISTORIAL DE RESERVAS -->
           <div class="cabecera-historial-con-filtro">
             <span class="subtitulo-seccion-gris">HISTORIAL DE RESERVAS</span>
 
             <div class="selector-mes-historial">
-              <a
-                th:href="@{/alumno/cuenta(mes=${mesAnterior})}"
-                class="btn-mes-nav"
-                title="Mes anterior"
-              >
+              <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
                 <i data-lucide="chevron-left"></i>
               </a>
               <input
                 type="month"
                 th:value="${mesInput}"
-                onchange="
-                  window.location.href = '/alumno/cuenta?mes=' + this.value
-                "
+                onchange="window.location.href = '/alumno/cuenta?mes=' + this.value"
                 class="input-mes-historial"
               />
-              <a
-                th:href="@{/alumno/cuenta(mes=${mesSiguiente})}"
-                class="btn-mes-nav"
-                title="Mes siguiente"
-              >
+              <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
                 <i data-lucide="chevron-right"></i>
               </a>
-              <a
-                th:href="@{/alumno/cuenta}"
-                class="btn-mes-actual"
-                th:if="${!esMesActual}"
-                title="Ir al mes actual"
-              >
+              <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
                 Actual
               </a>
             </div>
@@ -151,37 +137,22 @@
               onclick="abrirRecibo(this)"
             >
               <div class="info-historial">
-                <strong class="nombre-lab-historial" th:text="${h.laboratorio}"
-                  >Lab. Química</strong
-                >
-                <span
-                  class="detalle-historial"
-                  th:text="${h.fecha} + ' · ' + ${h.horario}"
-                  >18 Ago 2026 · 09:00–11:00</span
-                >
+                <strong class="nombre-lab-historial" th:text="${h.laboratorio}">Lab. Química</strong>
+                <span class="detalle-historial" th:text="${h.fecha} + ' · ' + ${h.horario}">18 Ago 2026 · 09:00–11:00</span>
               </div>
               <div class="accion-historial">
-                <span class="codigo-historial" th:text="${h.idReserva}"
-                  >R-007</span
-                >
+                <span class="codigo-historial" th:text="${h.idReserva}">R-007</span>
                 <span
                   class="badge-estado-historial"
                   th:classappend="${h.estado == 'CONFIRMADA' ? 'confirmada' : (h.estado == 'EN_USO' ? 'enuso' : (h.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
                   th:text="${h.estado}"
-                  >Completada</span
-                >
+                  >Completada</span>
               </div>
             </div>
 
-            <div
-              th:if="${#lists.isEmpty(historial)}"
-              class="estado-vacio-historial"
-            >
+            <div th:if="${#lists.isEmpty(historial)}" class="estado-vacio-historial">
               <i data-lucide="calendar-x"></i>
-              <p>
-                No tienes reservas en
-                <strong th:text="${mesFormateado}">este mes</strong>.
-              </p>
+              <p>No tienes reservas en <strong th:text="${mesFormateado}">este mes</strong>.</p>
             </div>
           </div>
 
@@ -190,104 +161,81 @@
             <span class="subtitulo-seccion-gris">HISTORIAL DE INCIDENCIAS</span>
 
             <div class="selector-mes-historial">
-              <a
-                th:href="@{/alumno/cuenta(mes=${mesAnterior})}"
-                class="btn-mes-nav"
-                title="Mes anterior"
-              >
+              <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
                 <i data-lucide="chevron-left"></i>
               </a>
               <input
                 type="month"
                 th:value="${mesInput}"
-                onchange="
-                  window.location.href = '/alumno/cuenta?mes=' + this.value
-                "
+                onchange="window.location.href = '/alumno/cuenta?mes=' + this.value"
                 class="input-mes-historial"
               />
-              <a
-                th:href="@{/alumno/cuenta(mes=${mesSiguiente})}"
-                class="btn-mes-nav"
-                title="Mes siguiente"
-              >
+              <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
                 <i data-lucide="chevron-right"></i>
               </a>
-              <a
-                th:href="@{/alumno/cuenta}"
-                class="btn-mes-actual"
-                th:if="${!esMesActual}"
-                title="Ir al mes actual"
-              >
+              <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
                 Actual
               </a>
             </div>
           </div>
 
           <!-- Lista de incidencias (Historial) -->
-<div class="lista-historial-reservas" th:unless="${#lists.isEmpty(historialIncidencias)}">
-    <div class="fila-historial-reserva clickeable" style="cursor: pointer"
-         th:each="incidencia : ${historialIncidencias}"
-         th:attr="data-id-sancion=${incidencia.idSancion}"
-         onclick="abrirModalIncidencia(this)">
-        
-        <div class="info-historial">
-            <span class="nombre-lab-historial" style="text-transform: capitalize" th:text="${incidencia.motivo}">
-                Motivo de incidencia
-            </span>
+          <div class="lista-historial-reservas" th:unless="${#lists.isEmpty(historialIncidencias)}">
+            <div class="fila-historial-reserva clickeable" style="cursor: pointer"
+                 th:each="incidencia : ${historialIncidencias}"
+                 th:attr="data-id-sancion=${incidencia.idSancion}"
+                 onclick="abrirModalIncidencia(this)">
+              
+              <div class="info-historial">
+                <span class="nombre-lab-historial" style="text-transform: capitalize" th:text="${incidencia.motivo}">
+                  Motivo de incidencia
+                </span>
+                <span class="detalle-historial">
+                  <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Monto pagado: ' : 'Monto a pagar: '}">Monto:</span>
+                  S/ <span th:text="${incidencia.montoDeuda}">0.00</span>
+                </span>
+                <span class="detalle-historial">
+                  <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}">Fecha:</span>
+                  <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
+                </span>
+              </div>
 
-            <span class="detalle-historial">
-                <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Monto pagado: ' : 'Monto a pagar: '}">Monto:</span>
-                S/ <span th:text="${incidencia.montoDeuda}">0.00</span>
-            </span>
-            <span class="detalle-historial">
-                <span th:text="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}">Fecha:</span>
-                <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
-            </span>
-        </div>
+              <div class="accion-historial">
+                <span class="badge-estado-historial confirmada" 
+                      th:if="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA'}" 
+                      th:text="'PAGADA'">PAGADA</span>
+                
+                <span class="badge-estado-historial cancelada" 
+                      th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}" 
+                      th:text="${incidencia.estado}">PENDIENTE</span>
 
-        <div class="accion-historial">
-            <!-- BADGE DE ESTADO -->
-            <span class="badge-estado-historial confirmada" 
-                  th:if="${incidencia.estado == 'PAGADA' or incidencia.estado == 'RESUELTA'}" 
-                  th:text="'PAGADA'">PAGADA</span>
-            
-            <span class="badge-estado-historial cancelada" 
-                  th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}" 
-                  th:text="${incidencia.estado}">PENDIENTE</span>
-
-            <!-- BOTÓN DE ACCIÓN -->
-            <!-- Si está pendiente, botón de pagar -->
-            <a th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}"
-               th:href="@{/alumno/incidencias/pagar/{id}(id=${incidencia.idSancion})}" 
-               class="btn-nueva-reserva" 
-               style="background-color: #ef4444; padding: 0.4rem 1rem; font-size: 0.8rem; text-decoration: none;"
-               onclick="event.stopPropagation();">
-               Pagar
-            </a>
-        </div>
-    </div>
-</div>
+                <a th:if="${incidencia.estado == 'PENDIENTE' or incidencia.estado == 'NOTIFICADA'}"
+                   th:href="@{/alumno/incidencias/pagar/{id}(id=${incidencia.idSancion})}" 
+                   class="btn-nueva-reserva" 
+                   style="background-color: #ef4444; padding: 0.4rem 1rem; font-size: 0.8rem; text-decoration: none;"
+                   onclick="event.stopPropagation();">
+                   Pagar
+                </a>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
-    </div>
+    </div> <!-- FIN DEL CONTENEDOR-APP -->
+
+    <!-- ======================================================= -->
+    <!-- MODALES MOVIDOS AFUERA PARA QUE FLOTEN EN PANTALLA      -->
+    <!-- ======================================================= -->
 
     <!-- MODAL DE GRÁFICO -->
-    <div id="modalGrafico" class="fondo-modal-oscuro" style="display: none">
-      <div class="tarjeta-modal modal-grafico-contenedor">
+    <div id="modalGrafico" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
+      <div class="tarjeta-modal modal-grafico-contenedor" style="background: #fff; border-radius: 18px; width: 90%; max-width: 600px;">
         <div class="cabecera-modal-grafico">
           <div>
-            <h3 id="tituloGrafico" class="titulo-modal-grafico">
-              Estadísticas
-            </h3>
+            <h3 id="tituloGrafico" class="titulo-modal-grafico">Estadísticas</h3>
             <p class="subtitulo-modal-grafico">Mes seleccionado</p>
           </div>
-          <button
-            type="button"
-            class="btn-cerrar-recibo"
-            onclick="cerrarGrafico()"
-          >
-            ✕
-          </button>
+          <button type="button" class="btn-cerrar-recibo" onclick="cerrarGrafico()">✕</button>
         </div>
         <div class="cuerpo-modal-grafico" style="position: relative; height: 340px; width: 100%">
             <canvas id="canvasGrafico"></canvas>
@@ -296,28 +244,20 @@
     </div>
 
     <!-- MODAL RECIBO DE RESERVA -->
-    <div id="modalRecibo" class="fondo-modal-oscuro" style="display: none">
-      <div class="tarjeta-modal modal-recibo-contenedor">
+    <div id="modalRecibo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
+      <div class="tarjeta-modal modal-recibo-contenedor" style="background: #fff; border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
         <div class="cabecera-modal-recibo">
           <div>
             <h3 class="titulo-modal-recibo">Recibo de Reserva</h3>
             <p class="subtitulo-modal-recibo" id="reciboId">RES001</p>
           </div>
-          <button
-            type="button"
-            class="btn-cerrar-recibo"
-            onclick="cerrarRecibo()"
-          >
-            ✕
-          </button>
+          <button type="button" class="btn-cerrar-recibo" onclick="cerrarRecibo()">✕</button>
         </div>
 
-        <div class="cuerpo-modal-recibo">
+        <div class="cuerpo-modal-recibo" style="overflow-y: auto; flex: 1;">
           <div class="cabecera-azul-recibo">
             <span class="lbl-recibo">LABORATORIO</span>
-            <strong id="reciboLab" class="nombre-lab-recibo"
-              >Lab. Química</strong
-            >
+            <strong id="reciboLab" class="nombre-lab-recibo">Lab. Química</strong>
             <span id="reciboCubiculo" class="cubiculo-recibo">A-101</span>
           </div>
 
@@ -332,9 +272,7 @@
             </div>
             <div class="col-meta-recibo">
               <span class="lbl-meta-recibo">ESTADO</span>
-              <span id="reciboEstado" class="badge-estado-recibo"
-                >CONFIRMADA</span
-              >
+              <span id="reciboEstado" class="badge-estado-recibo">CONFIRMADA</span>
             </div>
           </div>
 
@@ -351,58 +289,33 @@
           <div class="fila-total-recibo">
             <div>
               <span class="lbl-total-recibo">TOTAL PAGADO</span>
-              <span id="reciboMetodoPago" class="metodo-pago-recibo"
-                >GRATUITO</span
-              >
+              <span id="reciboMetodoPago" class="metodo-pago-recibo">GRATUITO</span>
             </div>
-            <strong id="reciboMontoTotal" class="monto-total-recibo"
-              >S/ 0.00</strong
-            >
+            <strong id="reciboMontoTotal" class="monto-total-recibo">S/ 0.00</strong>
           </div>
         </div>
 
         <div class="pie-modal-recibo">
-          <button
-            type="button"
-            class="btn-cerrar-modal-recibo"
-            onclick="cerrarRecibo()"
-          >
-            Cerrar
-          </button>
+          <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarRecibo()">Cerrar</button>
         </div>
       </div>
     </div>
 
     <!-- MODAL DETALLE DE INCIDENCIA -->
-    <div
-      id="modalDetalleIncidencia"
-      class="fondo-modal-oscuro"
-      style="display: none;"
-    >
-      <div class="tarjeta-modal modal-recibo-contenedor">
+    <div id="modalDetalleIncidencia" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
+      <div class="tarjeta-modal modal-recibo-contenedor" style="background: #fff; border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
         <div class="cabecera-modal-recibo">
           <div>
             <h3 class="titulo-modal-recibo">Detalle de Incidencia</h3>
             <p class="subtitulo-modal-recibo" id="incId">S001</p>
           </div>
-          <button
-            type="button"
-            class="btn-cerrar-recibo"
-            onclick="cerrarModalIncidencia()"
-          >
-            ✕
-          </button>
+          <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalIncidencia()">✕</button>
         </div>
 
-        <div class="cuerpo-modal-recibo">
+        <div class="cuerpo-modal-recibo" style="overflow-y: auto; flex: 1;">
           <div class="cabecera-azul-recibo">
             <span class="lbl-recibo">MOTIVO DE LA INCIDENCIA</span>
-            <strong
-              id="incMotivo"
-              class="nombre-lab-recibo"
-              style="font-size: 1rem; line-height: 1.3"
-              >Se rompió...</strong
-            >
+            <strong id="incMotivo" class="nombre-lab-recibo" style="font-size: 1rem; line-height: 1.3">Se rompió...</strong>
           </div>
 
           <div class="fila-meta-recibo">
@@ -426,9 +339,7 @@
               <strong id="incLab">Lab. Química</strong> -
               <span id="incCubiculo">A-101</span>
             </div>
-            <div id="incHorario" style="font-size: 0.85rem; color: #64748b">
-              12:00 - 14:00
-            </div>
+            <div id="incHorario" style="font-size: 0.85rem; color: #64748b">12:00 - 14:00</div>
           </div>
 
           <div class="seccion-recibo">
@@ -438,62 +349,25 @@
 
           <div class="seccion-recibo" id="seccionPagoIncidencia">
             <span class="titulo-seccion-recibo">Información de Pago</span>
-            <div
-              style="
-                background-color: #f8fafc;
-                padding: 1rem;
-                border-radius: 8px;
-                border: 1px solid #e2e8f0;
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  margin-bottom: 0.5rem;
-                "
-              >
+            <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                 <span style="font-size: 0.85rem; color: #64748b">Monto:</span>
-                <strong id="incMonto" style="color: #ef4444; font-size: 1.1rem"
-                  >S/ 25.00</strong
-                >
+                <strong id="incMonto" style="color: #ef4444; font-size: 1.1rem">S/ 25.00</strong>
               </div>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  margin-bottom: 0.5rem;
-                "
-                id="filaMetodoPago"
-              >
-                <span style="font-size: 0.85rem; color: #64748b"
-                  >Método de pago:</span
-                >
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;" id="filaMetodoPago">
+                <span style="font-size: 0.85rem; color: #64748b">Método de pago:</span>
                 <strong id="incMetodo" style="color: #0f172a">YAPE</strong>
               </div>
-              <div
-                style="display: flex; justify-content: space-between"
-                id="filaFechaPago"
-              >
-                <span style="font-size: 0.85rem; color: #64748b"
-                  >Fecha de pago:</span
-                >
-                <strong id="incFechaPago" style="color: #0f172a"
-                  >22 Oct 2026</strong
-                >
+              <div style="display: flex; justify-content: space-between" id="filaFechaPago">
+                <span style="font-size: 0.85rem; color: #64748b">Fecha de pago:</span>
+                <strong id="incFechaPago" style="color: #0f172a">22 Oct 2026</strong>
               </div>
             </div>
           </div>
         </div>
 
         <div class="pie-modal-recibo">
-          <button
-            type="button"
-            class="btn-cerrar-modal-recibo"
-            onclick="cerrarModalIncidencia()"
-          >
-            Cerrar
-          </button>
+          <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalIncidencia()">Cerrar</button>
         </div>
       </div>
     </div>
