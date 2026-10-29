@@ -71,13 +71,16 @@ public String verCheckin(
             fechaConsulta = java.time.LocalDate.now(); 
         }
 
-    // 2. Traer TODAS las reservas de esa fecha (historial completo)
-    List<Reserva> todas = reservaRepositorio.findAll().stream()
-            .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().equals(fechaConsulta))
-            .filter(r -> !"CANCELADA".equalsIgnoreCase(r.getEstado())) // No mostrar las canceladas
-            .sorted((a, b) -> b.getIdReserva().compareTo(a.getIdReserva())) // Ordenar por ID descendente
-            .toList();
+    
+        // 👇 CREAMOS LA VARIABLE FINAL AQUÍ 👇
+        final java.time.LocalDate fechaFinal = fechaConsulta;
 
+        // 2. Traer TODAS las reservas de esa fecha (historial completo)
+        List<Reserva> todas = reservaRepositorio.findAll().stream()
+                .filter(r -> r.getFechaReserva() != null && r.getFechaReserva().equals(fechaFinal)) // 👈 USAMOS fechaFinal
+                .filter(r -> !"CANCELADA".equalsIgnoreCase(r.getEstado()))
+                .sorted((a, b) -> b.getIdReserva().compareTo(a.getIdReserva()))
+                .toList();
     // 3. Armar la lista de DTOs
     List<CheckinReservaDto> listaCheckin = new ArrayList<>();
 
