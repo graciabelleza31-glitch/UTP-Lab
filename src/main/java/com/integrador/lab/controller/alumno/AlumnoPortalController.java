@@ -575,14 +575,16 @@ public class AlumnoPortalController {
         modelo.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
         modelo.addAttribute("esMesActual", fechaConsulta.getMonthValue() == hoy.getMonthValue() && fechaConsulta.getYear() == hoy.getYear());
 
-        // ⭐ FILTRADO DE INCIDENCIAS POR MES (INCLUYENDO PAGADAS)
+                // ⭐ FILTRADO DE INCIDENCIAS POR MES (INCLUYENDO PAGADAS)
+        // 1. Creamos una variable final para que el compilador no se queje
+        final String idAlumnoStr = alumno.getIdEstud(); 
+        final int mesConsulta = fechaConsulta.getMonthValue();
+        final int anioConsulta = fechaConsulta.getYear();
+
         List<Sancion> todasLasIncidencias = sancionRepositorio.findAll();
 
-        int mesConsulta = fechaConsulta.getMonthValue();
-        int anioConsulta = fechaConsulta.getYear();
-
         List<Sancion> incidenciasDelMes = todasLasIncidencias.stream()
-                .filter(s -> s.getAlumno() != null && s.getAlumno().getIdEstud().equals(alumno.getIdEstud()))
+                .filter(s -> s.getAlumno() != null && s.getAlumno().getIdEstud().equals(idAlumnoStr))
                 .filter(s -> s.getReserva() != null && s.getReserva().getFechaReserva() != null)
                 .filter(s -> {
                     int mesSancion = s.getReserva().getFechaReserva().getMonthValue();
