@@ -48,45 +48,45 @@ public class IncidenciasAdminController {
     @Autowired 
     private ReservaRepository reservaRepositorio;
 
-        @GetMapping
+    @GetMapping
     @Transactional(readOnly = true)
     public String verIncidencias(
             @RequestParam(required = false) String fecha,
             HttpSession sesion, 
             Model modelo) {
 
-        // 1. Calcular fecha de consulta SIN usar variables de tipo LocalDate
-        String fechaConsultaStr = fecha;
-        if (fechaConsultaStr == null || fechaConsultaStr.isEmpty()) {
-            fechaConsultaStr = java.time.LocalDate.now().toString();
-        }
-
-        // Validar que la fecha sea parseable
+        // 1. Calcular la fecha de consulta (si es null, usaremos "hoy" para el selector visual)
         java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
-        try {
-            fechaConsulta = java.time.LocalDate.parse(fechaConsultaStr);
-        } catch (Exception e) {
-            fechaConsulta = java.time.LocalDate.now();
-            fechaConsultaStr = fechaConsulta.toString();
+        if (fecha != null && !fecha.isEmpty()) {
+            try {
+                fechaConsulta = java.time.LocalDate.parse(fecha);
+            } catch (Exception e) {
+                fechaConsulta = java.time.LocalDate.now();
+            }
         }
-
-        // 2. Traer todas las sanciones y filtrar por la fecha
-        List<Sancion> todas = sancionRepositorio.findAll();
-        
-        // Usamos la variable fechaConsulta ya parseada
         final java.time.LocalDate fechaFinal = fechaConsulta;
-        
-        List<Sancion> sancionesDelDia = todas.stream()
-                .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal))
-                .collect(Collectors.toList());
+
+        // 2. Traer TODAS las sanciones (Aquí estaba el error, faltaba esta línea)
+        List<Sancion> todas = sancionRepositorio.findAll();
+
+        // 3. Filtrar según la lógica
+        List<Sancion> sancionesFiltradas;
+        if (fecha != null && !fecha.isEmpty()) {
+            sancionesFiltradas = todas.stream()
+                    .filter(s -> s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal))
+                    .collect(Collectors.toList());
+        } else {
+            sancionesFiltradas = todas;
+        }
 
         long cantAbiertas = 0;
         long cantNotificadas = 0;
         long cantResueltas = 0;
         BigDecimal totalMontoPendiente = BigDecimal.ZERO;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-        // 3. Agrupar por reserva
-        Map<String, List<Sancion>> sancionesPorReserva = sancionesDelDia.stream()
+        // 4. Agrupar por reserva
+        Map<String, List<Sancion>> sancionesPorReserva = sancionesFiltradas.stream()
                 .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
 
         List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
@@ -138,9 +138,7 @@ public class IncidenciasAdminController {
             
             String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
             String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
-            
-            // Usamos nombre completo para evitar conflictos
-            String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+            String strFechaNotif = primera.getFechaSancion() != null ? primera.getFechaSancion().format(dtf) : "";
 
             listaIncidencias.add(new IncidenciaCardDto(
                     entry.getKey(),
@@ -157,26 +155,33 @@ public class IncidenciasAdminController {
             ));
         }
 
-        // 👇 ORDENAR: Primero las activas (no resueltas), luego las resueltas
+        // 5. ORDENAR: Primero las activas (no resueltas), luego las resueltas
         listaIncidencias.sort((a, b) -> {
-            if (a.isResuelta() && !b.isResuelta()) return 1;  // 'a' resuelta va después
-            if (!a.isResuelta() && b.isResuelta()) return -1; // 'a' activa va primero
-            return 0; // Si ambas son iguales, mantienen su orden
+            if (a.isResuelta() && !b.isResuelta()) return 1;
+            if (!a.isResuelta() && b.isResuelta()) return -1;
+            return 0;
         });
 
-        // 4. Pasar datos al modelo
+        // 6. Pasar datos al modelo
         modelo.addAttribute("incidencias", listaIncidencias);
         modelo.addAttribute("cantAbiertas", cantAbiertas);
         modelo.addAttribute("cantNotificadas", cantNotificadas);
         modelo.addAttribute("cantResueltas", cantResueltas);
         modelo.addAttribute("totalPendiente", "S/ " + totalMontoPendiente.setScale(2).toString());
-        // Usamos el String para el modelo
-        modelo.addAttribute("fechaConsulta", fechaConsultaStr);
+        
+        // El total de incidencias para el menú y campanita debe ser global
+        long totalGlobalActivas = sancionRepositorio.findAll().stream()
+                .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADA".equalsIgnoreCase(s.getEstado()))
+                .count();
+        modelo.addAttribute("totalIncidencias", totalGlobalActivas);
+
+        modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
         modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
         modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
 
         return "admin/incidencias";
     }
+
     // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO
     @PostMapping("/notificar/{idReserva}")
     @ResponseBody
@@ -261,7 +266,7 @@ public class IncidenciasAdminController {
         private String estado;
         private boolean notificada;
         private String fechaNotificado;
-        private boolean resuelta; // 👈 NUEVO CAMPO
+        private boolean resuelta;
 
         public IncidenciaCardDto(String idSancion, String item, String motivo, String laboratorio, String estudiante, String correo, String costo, String estado, boolean notificada, String fechaNotificado, boolean resuelta) {
             this.idSancion = idSancion;

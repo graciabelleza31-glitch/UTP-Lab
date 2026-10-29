@@ -77,7 +77,7 @@ public class InventarioAdminController {
         modelo.addAttribute("categorias", categorias);
         modelo.addAttribute("totalItems", totalItems);
         modelo.addAttribute("stockCritico", stockCritico);
-        modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
+        
 
         return "admin/inventario";
     }

@@ -113,10 +113,9 @@ public class InspeccionController {
             return 0;
         });
 
-        long cantIncidencias = sancionRepositorio.count();
 
         modelo.addAttribute("inspecciones", listaInspeccion);
-        modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
+        
         
         modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
         modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());

@@ -114,10 +114,9 @@ public String verCheckin(
         ));
     }
 
-    long incidenciasAbiertas = sancionRepositorio.count();
-
+    
     modelo.addAttribute("reservas", listaCheckin);
-    modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
+    
 
     modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
     modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
