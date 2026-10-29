@@ -67,54 +67,56 @@ public class InspeccionController {
 
     // 1. SOLO SE LISTAN LAS RESERVAS EN ESTADO 'DEVUELTA' (PROVENIENTES DEL CHECK-OUT)
     @GetMapping
-@Transactional(readOnly = true)
-public String verInspeccion(
-        @RequestParam(required = false) String fecha, // 👈 Recibimos la fecha
-        HttpSession sesion, 
-        Model modelo) {
+    @Transactional(readOnly = true)
+    public String verInspeccion(
+            @RequestParam(required = false) String fecha, 
+            HttpSession sesion, 
+            Model modelo) {
 
-    // 1. Calcular la fecha de consulta
-    LocalDate fechaConsulta = LocalDate.now();
-    if (fecha != null && !fecha.isEmpty()) {
-        try {
-            fechaConsulta = LocalDate.parse(fecha);
-        } catch (Exception e) {
-            fechaConsulta = LocalDate.now();
+        // 1. Calcular la fecha de consulta
+        java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
+        if (fecha != null && !fecha.isEmpty()) {
+            try {
+                fechaConsulta = java.time.LocalDate.parse(fecha);
+            } catch (Exception e) {
+                fechaConsulta = java.time.LocalDate.now();
+            }
         }
-    }
 
-    // 2. Traer reservas EN_USO y DEVUELTA, pero SOLO de la fecha seleccionada
-    List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
-List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
-List<Reserva> inspeccionadas = reservaRepositorio.findByEstado("INSPECCIONADA");
+        // 2. Traer reservas de ESA fecha (EN_USO, DEVUELTA e INSPECCIONADA)
+        List<Reserva> enUso = reservaRepositorio.findByEstado("EN_USO");
+        List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
+        List<Reserva> inspeccionadas = reservaRepositorio.findByEstado("INSPECCIONADA");
+        
+        List<Reserva> todasLasPendientes = new ArrayList<>();
+        if (enUso != null) todasLasPendientes.addAll(enUso);
+        if (devueltas != null) todasLasPendientes.addAll(devueltas);
+        if (inspeccionadas != null) todasLasPendientes.addAll(inspeccionadas);
 
-List<Reserva> todasLasPendientes = new ArrayList<>();
-if (enUso != null) todasLasPendientes.addAll(enUso);
-if (devueltas != null) todasLasPendientes.addAll(devueltas);
-if (inspeccionadas != null) todasLasPendientes.addAll(inspeccionadas);
+        // 👇 CREAMOS LA VARIABLE FINAL PARA EVITAR EL ERROR DE LAMBDA 👇
+        final java.time.LocalDate fechaFinal = fechaConsulta;
 
-    // 👇 AQUÍ APLICAMOS EL FILTRO POR FECHA
-    List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
-    for (Reserva r : todasLasPendientes) {
-        // Si la reserva no es de la fecha consultada, la saltamos
-        if (r.getFechaReserva() == null || !r.getFechaReserva().equals(fechaConsulta)) {
-            continue; 
+        List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
+        for (Reserva r : todasLasPendientes) {
+            // Si la reserva no es de la fecha consultada, la saltamos
+            if (r.getFechaReserva() == null || !r.getFechaReserva().equals(fechaFinal)) {
+                continue; 
+            }
+            listaInspeccion.add(convertirADto(r));
         }
-        listaInspeccion.add(convertirADto(r));
+
+        long cantIncidencias = sancionRepositorio.count();
+
+        // 3. Pasar datos al modelo
+        modelo.addAttribute("inspecciones", listaInspeccion);
+        modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
+        
+        modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
+        modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+        modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+
+        return "admin/inspeccion";
     }
-
-    long cantIncidencias = sancionRepositorio.count();
-
-    // 3. Pasar datos al modelo (incluyendo las fechas para el selector)
-    modelo.addAttribute("inspecciones", listaInspeccion);
-    modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
-    
-    modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
-    modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
-    modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
-
-    return "admin/inspeccion";
-}
 
     // Método auxiliar para no repetir código
     private InspeccionCardDto convertirADto(Reserva r) {

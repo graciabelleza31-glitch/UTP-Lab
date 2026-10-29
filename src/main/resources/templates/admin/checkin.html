@@ -178,8 +178,15 @@
               <div class="fila-nombre-estado">
                 <strong class="nombre-lab-checkin" th:text="${r.laboratorio}">Lab. Química</strong>
                 <span class="badge-estado-pill" 
-      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : (r.estado == 'EN_USO' ? 'estado-en-uso' : 'estado-pendiente')}"
-      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : (r.estado == 'EN_USO' ? 'EN USO' : 'Pendiente')}">
+      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : 
+                      (r.estado == 'EN_USO' ? 'estado-en-uso' : 
+                      (r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA' ? 'estado-devuelta' : 
+                      (r.estado == 'CON_INCIDENCIA' ? 'estado-incidencia' : 'estado-pendiente')))}"
+      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : 
+               (r.estado == 'EN_USO' ? 'EN USO' : 
+               (r.estado == 'DEVUELTA' ? 'Devuelta' : 
+               (r.estado == 'INSPECCIONADA' ? 'Inspeccionada' : 
+               (r.estado == 'CON_INCIDENCIA' ? 'Con Incidencia' : 'Pendiente'))))}">
   Confirmada
 </span>
               </div>
@@ -195,11 +202,11 @@
               </div>
             </div>
 
-            <div class="accion-derecha-checkin">
+           <div class="accion-derecha-checkin">
   <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
   
-  <!-- CASO 1: Si ya se usó (EN_USO, DEVUELTA o INSPECCIONADA), mostrar "Ver Resumen" -->
-  <button th:if="${r.estado == 'EN_USO' or r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA'}"
+  <!-- CASO 1: Estados ya usados -> "Ver Resumen" -->
+  <button th:if="${r.estado == 'EN_USO' or r.estado == 'DEVUELTA' or r.estado == 'INSPECCIONADA' or r.estado == 'CON_INCIDENCIA'}"
           type="button" 
           class="btn-verde-iniciar" 
           style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;"
@@ -208,7 +215,7 @@
     <i data-lucide="file-text"></i> Ver Resumen
   </button>
 
-  <!-- CASO 2: Si está pendiente, mostrar "Iniciar" -->
+  <!-- CASO 2: Estados pendientes -> "Iniciar" -->
   <button th:if="${r.estado == 'CONFIRMADA' or r.estado == 'PENDIENTE'}"
           type="button" 
           class="btn-verde-iniciar" 

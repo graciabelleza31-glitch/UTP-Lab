@@ -74,17 +74,17 @@
             <div class="accion-derecha-checkin">
   <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
   
-  <!-- CASO 1: Si ya está INSPECCIONADA, mostramos un botón de resumen -->
+  <!-- CASO 1: Si ya está INSPECCIONADA -> Botón Gris "Ver Resumen" -->
   <button th:if="${ins.estado == 'INSPECCIONADA'}"
           type="button" 
           class="btn-verde-iniciar" 
-          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;"
+          style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; cursor: pointer;"
           th:data-id="${ins.idReserva}"
           onclick="abrirResumenInspeccion(this.getAttribute('data-id'))">
     <i data-lucide="file-text"></i> Ver Resumen
   </button>
 
-  <!-- CASO 2: Si está EN_USO, mostramos "Registrar Salida" -->
+  <!-- CASO 2: Si está EN_USO -> Botón Verde "Registrar Salida" -->
   <button th:if="${ins.estado == 'EN_USO'}"
           type="button" 
           class="btn-verde-iniciar" 
@@ -94,7 +94,7 @@
     <i data-lucide="corner-down-left"></i> Registrar Salida
   </button>
 
-  <!-- CASO 3: Si está DEVUELTA, mostramos "Inspeccionar" -->
+  <!-- CASO 3: Si está DEVUELTA -> Botón Azul "Inspeccionar" -->
   <button th:if="${ins.estado == 'DEVUELTA'}"
           type="button" 
           class="btn-verde-iniciar" 

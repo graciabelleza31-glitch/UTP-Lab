@@ -129,46 +129,77 @@ function abrirModalIncidencia(fila) {
             document.getElementById('incHorario').innerText = data.horario;
             document.getElementById('incMonto').innerText = 'S/ ' + parseFloat(data.monto).toFixed(2);
 
+            // --- BADGE DE ESTADO ---
             const badge = document.getElementById('incEstado');
             badge.innerText = data.estado;
-            badge.className = 'badge-estado-recibo';
-            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') badge.classList.add('confirmada');
-            else if (data.estado === 'NOTIFICADA') badge.classList.add('enuso');
-            else badge.classList.add('cancelada');
+            badge.className = 'badge-estado-recibo'; // Clase base
+            // Limpiamos estilos en línea previos para que la clase funcione
+            badge.style.background = '';
+            badge.style.color = '';
+            badge.style.padding = '3px 8px';
+            badge.style.borderRadius = '6px';
+            badge.style.fontSize = '0.72rem';
+            badge.style.fontWeight = '700';
+            badge.style.display = 'inline-block';
 
+            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') {
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#15803d';
+            } else if (data.estado === 'NOTIFICADA') {
+                badge.style.background = '#fef3c7';
+                badge.style.color = '#d97706';
+            } else {
+                badge.style.background = '#fee2e2';
+                badge.style.color = '#dc2626';
+            }
+
+            // --- INFORMACIÓN DE PAGO ---
             if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') {
                 document.getElementById('filaMetodoPago').style.display = 'flex';
                 document.getElementById('filaFechaPago').style.display = 'flex';
                 document.getElementById('incMetodo').innerText = data.metodoPago ? data.metodoPago.replace('PAGO_', '') : 'YAPE';
-// Después (formateado):
-if (data.fechaPago) {
-    const fecha = new Date(data.fechaPago);
-    document.getElementById('incFechaPago').innerText = fecha.toLocaleDateString('es-PE', { 
-        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-    });
-} else {
-    document.getElementById('incFechaPago').innerText = '—';
-}
+                
+                // Formatear la fecha de pago (viene como string ISO)
+                if (data.fechaPago) {
+                    const fecha = new Date(data.fechaPago);
+                    document.getElementById('incFechaPago').innerText = fecha.toLocaleDateString('es-PE', { 
+                        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    });
+                } else {
+                    document.getElementById('incFechaPago').innerText = '—';
+                }
             } else {
                 document.getElementById('filaMetodoPago').style.display = 'none';
                 document.getElementById('filaFechaPago').style.display = 'none';
             }
 
+            // --- INTEGRANTES (Diseño de tarjetas con avatar) ---
             const contInteg = document.getElementById('incIntegrantes');
             contInteg.innerHTML = '';
-            if (data.integrantes) {
+            if (data.integrantes && data.integrantes.length > 0) {
                 data.integrantes.forEach(i => {
+                    // Generamos las iniciales
+                    const iniciales = i.nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                    
                     contInteg.insertAdjacentHTML('beforeend', `
-                        <div class="item-integrante-recibo">
-                            <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
-                            <div>
-                                <strong>${i.nombre}</strong>
-                                <span>${i.codigo}</span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.85rem; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #1e1b4b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0;">
+                                ${iniciales}
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <strong style="font-size: 0.85rem; color: #0f172a;">${i.nombre}</strong>
+                                <span style="font-size: 0.75rem; color: #64748b;">${i.codigo}</span>
                             </div>
                         </div>
                     `);
                 });
+            } else {
+                contInteg.innerHTML = '<p style="font-size: 0.85rem; color: #64748b;">No hay integrantes registrados.</p>';
             }
+        })
+        .catch(() => {
+            alert('Error al cargar los detalles de la incidencia.');
+            cerrarModalIncidencia();
         });
 }
 

@@ -221,15 +221,12 @@
 
     </div>
   </div>
-
-      <!-- MODAL DETALLE DE INCIDENCIA -->
-    <!-- MODAL DETALLE DE INCIDENCIA (FORZADO) -->
+<!-- MODAL DETALLE DE INCIDENCIA (DISEÑO MEJORADO) -->
 <div id="modalDetalleIncidencia" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
   
-  <!-- Tarjeta principal -->
   <div style="background: #fff; border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
     
-    <!-- Cabecera con título y botón X -->
+    <!-- Cabecera -->
     <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;">
       <div>
         <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0;">Detalle de Incidencia</h3>
@@ -250,15 +247,15 @@
       <!-- Metadatos (Reserva, Fecha, Estado) -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.85rem; background: #f8fafc; border-radius: 10px;">
         <div>
-          <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">RESERVA</span>
+          <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 700;">RESERVA</span>
           <strong id="incReserva" style="display: block; font-size: 0.85rem; color: #0f172a;">RES001</strong>
         </div>
         <div>
-          <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">FECHA</span>
+          <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 700;">FECHA</span>
           <strong id="incFecha" style="display: block; font-size: 0.85rem; color: #0f172a;">2026-10-22</strong>
         </div>
         <div>
-          <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">ESTADO</span>
+          <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 700;">ESTADO</span>
           <span id="incEstado" style="display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #dbeafe; color: #1d4ed8;">PENDIENTE</span>
         </div>
       </div>

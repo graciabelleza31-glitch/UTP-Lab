@@ -882,6 +882,9 @@
     color: #1d4ed8;
 }
 
+.estado-devuelta { background: #f3e8ff; color: #7e22ce; }
+.estado-incidencia { background: #fee2e2; color: #dc2626; }
+
 .estado-pendiente {
     background: #fef3c7;
     color: #b45309;

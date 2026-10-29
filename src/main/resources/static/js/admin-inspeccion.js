@@ -325,7 +325,7 @@ function abrirResumenInspeccion(idReserva) {
             resumenHtml += `<strong>Integrantes:</strong><br>`;
             data.integrantes.forEach(i => { resumenHtml += `- ${i.nombre}<br>`; });
             
-            resumenHtml += `<br><strong>Insumos y EPPs:</strong><br>`;
+            resumenHtml += `<br><strong>Insumos y EPPs Devueltos:</strong><br>`;
             data.insumos.forEach(i => { resumenHtml += `- ${i.nombre}<br>`; });
             data.epps.forEach(e => { resumenHtml += `- ${e.nombre}<br>`; });
 
