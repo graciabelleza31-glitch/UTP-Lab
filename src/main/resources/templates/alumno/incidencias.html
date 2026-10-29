@@ -39,7 +39,7 @@
         </span>
       </div>
 
-      <!-- ⭐ SELECTOR DE MES (AGREGADO AQUÍ) -->
+      <!-- SELECTOR DE MES -->
       <div class="cabecera-historial-con-filtro" style="margin-bottom: 2rem;">
         <span class="subtitulo-seccion-gris" th:text="'Mostrando incidencias de ' + ${mesFormateado}">Mostrando incidencias</span>
         
@@ -71,20 +71,13 @@
         </div>
       </div>
 
-      <!-- LISTADO DE TARJETAS -->
+      <!-- LISTADO DE TARJETAS (ÚNICO) -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
 
-        <!-- MENSAJE CUANDO NO HAY DEUDAS -->
-        <div th:if="${#lists.isEmpty(incidencias)}" style="text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px dashed #cbd5e1; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);">
-          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem auto; border: 2px solid #a7f3d0;">
-            ✓
-          </div>
-          <h3 style="font-size: 1.2rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem;">¡Sin incidencias pendientes!</h3>
-          <p style="font-size: 0.88rem; color: #64748b; max-width: 420px; margin: 0 auto;">No tienes sanciones ni cargos pendientes de pago. Tu cuenta está habilitada para reservar laboratorios y materiales.</p>
-        </div>
-
-        <div th:each="inc : ${incidencias}" class="card-incidencia-estudiante" th:id="'tarjeta-inc-' + ${inc.idSancion}">
-          
+<div th:each="inc : ${incidencias}" class="card-incidencia-estudiante" th:id="'tarjeta-inc-' + ${inc.idSancion}"
+     th:attr="data-id-sancion=${inc.idSancion}"
+     onclick="abrirModalIncidencia(this)"
+     style="cursor: pointer;">          
           <!-- PARTE SUPERIOR -->
           <div class="fila-top-card">
             <div class="datos-item-danado">
@@ -127,12 +120,14 @@
             <div class="seccion-costo-reposicion">
               <span class="etiqueta-dim">Costo de reposición</span>
               <strong class="monto-rojo-grande" th:text="${inc.costo}">S/ 350.00</strong>
-              <span class="texto-notificado-fecha">
+              <span class="texto-notificado-fecha" th:if="${!inc.resuelto}">
                 📧 Notificado el: <span th:text="${inc.fechaNotificado}">2026-08-19 11:30</span>
+              </span>
+              <span class="texto-notificado-fecha" th:if="${inc.resuelto}" style="color: #059669;">
+                ✓ Pagado correctamente
               </span>
             </div>
 
-            <!-- Botón Pagar o Regularizado -->
             <div th:id="'contenedor-accion-' + ${inc.idSancion}">
               <button th:if="${!inc.resuelto}" 
                       type="button" 
@@ -152,13 +147,20 @@
           </div>
 
         </div>
+
+        <!-- ESTADO VACÍO -->
+        <div th:if="${#lists.isEmpty(incidencias)}" class="tarjeta-sin-checkins-vacia">
+          <span class="icono-fiesta-confeti">✅</span>
+          <strong>No tienes incidencias registradas en este mes</strong>
+        </div>
+
       </div>
 
     </section>
   </main>
 
   <!-- MODAL DE PAGO -->
-  <div id="modalPagoIncidencia" class="fondo-modal" style="display: none;">
+  <div id="modalPagoIncidencia" class="fondo-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
     <div class="caja-modal-pago">
       <button class="btn-cerrar-x" onclick="cerrarModalPago()">&times;</button>
       
@@ -219,6 +221,78 @@
 
     </div>
   </div>
+
+      <!-- MODAL DETALLE DE INCIDENCIA -->
+    <div id="modalDetalleIncidencia" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
+      <div class="tarjeta-modal modal-recibo-contenedor" style="background: #fff; border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+        
+        <div class="cabecera-modal-recibo">
+          <div>
+            <h3 class="titulo-modal-recibo">Detalle de Incidencia</h3>
+            <p class="subtitulo-modal-recibo" id="incId">S001</p>
+          </div>
+          <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalIncidencia()">✕</button>
+        </div>
+
+        <div class="cuerpo-modal-recibo" style="overflow-y: auto; flex: 1;">
+          <div class="cabecera-azul-recibo">
+            <span class="lbl-recibo">MOTIVO DE LA INCIDENCIA</span>
+            <strong id="incMotivo" class="nombre-lab-recibo" style="font-size: 1rem; line-height: 1.3">Se rompió...</strong>
+          </div>
+
+          <div class="fila-meta-recibo">
+            <div class="col-meta-recibo">
+              <span class="lbl-meta-recibo">RESERVA</span>
+              <strong id="incReserva">RES001</strong>
+            </div>
+            <div class="col-meta-recibo">
+              <span class="lbl-meta-recibo">FECHA</span>
+              <strong id="incFecha">2026-10-22</strong>
+            </div>
+            <div class="col-meta-recibo">
+              <span class="lbl-meta-recibo">ESTADO</span>
+              <span id="incEstado" class="badge-estado-recibo">PENDIENTE</span>
+            </div>
+          </div>
+
+          <div class="seccion-recibo">
+            <span class="titulo-seccion-recibo">Laboratorio</span>
+            <div style="font-size: 0.9rem; color: #334155">
+              <strong id="incLab">Lab. Química</strong> -
+              <span id="incCubiculo">A-101</span>
+            </div>
+            <div id="incHorario" style="font-size: 0.85rem; color: #64748b">12:00 - 14:00</div>
+          </div>
+
+          <div class="seccion-recibo">
+            <span class="titulo-seccion-recibo">Integrantes del Grupo</span>
+            <div id="incIntegrantes" class="lista-integrantes-recibo"></div>
+          </div>
+
+          <div class="seccion-recibo" id="seccionPagoIncidencia">
+            <span class="titulo-seccion-recibo">Información de Pago</span>
+            <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.85rem; color: #64748b">Monto:</span>
+                <strong id="incMonto" style="color: #ef4444; font-size: 1.1rem">S/ 25.00</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;" id="filaMetodoPago">
+                <span style="font-size: 0.85rem; color: #64748b">Método de pago:</span>
+                <strong id="incMetodo" style="color: #0f172a">YAPE</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between" id="filaFechaPago">
+                <span style="font-size: 0.85rem; color: #64748b">Fecha de pago:</span>
+                <strong id="incFechaPago" style="color: #0f172a">22 Oct 2026</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pie-modal-recibo">
+          <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalIncidencia()">Cerrar</button>
+        </div>
+      </div>
+    </div>
 
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
   
