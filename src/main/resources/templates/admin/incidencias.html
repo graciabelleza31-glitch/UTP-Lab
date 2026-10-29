@@ -98,9 +98,9 @@
 
               <!-- Código y Botón Dinámico -->
               <div class="accion-derecha-inc">
-                <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
-                
-                 <!-- CASO 1: Si ya está RESUELTA -> Botón Gris "Ver Resumen" -->
+  <span class="cod-inc-gris" th:text="${inc.idSancion}">RES005</span>
+  
+  <!-- CASO 1: Si YA ESTÁ RESUELTA -> SOLO "Ver Resumen" -->
   <button th:if="${inc.resuelta}" 
           type="button" 
           class="btn-verde-iniciar" 
@@ -110,27 +110,25 @@
     <i data-lucide="file-text"></i> Ver Resumen
   </button>
 
-                <!-- Botón Resolver (si ya está notificada) -->
-                <button th:if="${inc.notificada}" 
-                        type="button" 
-                        class="btn-resolver-verde"
-                        th:data-id="${inc.idSancion}"
-                        th:data-estudiante="${inc.estudiante}"
-                        onclick="ejecutarResolverIncidencia(this)">
-                  <i data-lucide="check"></i> Resolver Todo
-                </button>
+  <!-- CASO 2: Si está NOTIFICADA pero NO resuelta -> "Resolver Todo" -->
+  <button th:if="${!inc.resuelta and inc.notificada}" 
+          type="button" 
+          class="btn-resolver-verde"
+          th:data-id="${inc.idSancion}"
+          onclick="ejecutarResolverIncidencia(this)">
+    <i data-lucide="check"></i> Resolver Todo
+  </button>
 
-                <!-- Botón Notificar (si está pendiente) -->
-                <button th:unless="${inc.notificada}" 
-                        type="button" 
-                        class="btn-notificar-naranja"
-                        th:data-id="${inc.idSancion}"
-                        th:data-estudiante="${inc.estudiante}"
-                        th:data-correo="${inc.correo}"
-                        onclick="ejecutarNotificarIncidencia(this)">
-                  <i data-lucide="mail"></i> Notificar a Todos
-                </button>
-              </div>
+  <!-- CASO 3: Si está PENDIENTE -> "Notificar a Todos" -->
+  <button th:if="${!inc.resuelta and !inc.notificada}" 
+          type="button" 
+          class="btn-notificar-naranja"
+          th:data-id="${inc.idSancion}"
+          th:data-estudiante="${inc.estudiante}"
+          onclick="ejecutarNotificarIncidencia(this)">
+    <i data-lucide="mail"></i> Notificar a Todos
+  </button>
+</div>
             </div>
 
             <!-- Grilla inferior de metadatos -->

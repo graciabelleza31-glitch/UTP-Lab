@@ -157,6 +157,13 @@ public class IncidenciasAdminController {
             ));
         }
 
+        // 👇 ORDENAR: Primero las activas (no resueltas), luego las resueltas
+        listaIncidencias.sort((a, b) -> {
+            if (a.isResuelta() && !b.isResuelta()) return 1;  // 'a' resuelta va después
+            if (!a.isResuelta() && b.isResuelta()) return -1; // 'a' activa va primero
+            return 0; // Si ambas son iguales, mantienen su orden
+        });
+
         // 4. Pasar datos al modelo
         modelo.addAttribute("incidencias", listaIncidencias);
         modelo.addAttribute("cantAbiertas", cantAbiertas);
