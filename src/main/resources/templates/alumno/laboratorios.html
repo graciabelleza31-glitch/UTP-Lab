@@ -1117,9 +1117,11 @@
       </div>
     </div>
 
+    <!-- Scripts globales (lucide, etc.) -->
     <div th:replace="~{fragments/scripts}"></div>
-      <div th:replace="~{fragments/topbar-alumno :: scripts}"></div>
 
+    <!-- Scripts del Topbar del Alumno (Corregido el nombre) -->
+    <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
 
     <!-- JS específico de Laboratorios -->
     <script th:src="@{/js/alumno-laboratorios.js}"></script>
