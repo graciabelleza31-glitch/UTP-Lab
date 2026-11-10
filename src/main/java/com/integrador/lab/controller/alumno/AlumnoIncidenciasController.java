@@ -144,38 +144,46 @@ public String verMisIncidencias(
     @Autowired
     private com.integrador.lab.repository.ReservaIntegranteRepository reservaIntegranteRepositorio;
 
-        // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO
+    // =========================================================================
+    // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO
+    // =========================================================================
     @PostMapping("/pagar/{id}")
-@ResponseBody
-@Transactional
-public ResponseEntity<?> registrarPagoAlumno(
-        @PathVariable("id") String id,
-        @RequestParam(value = "metodoPago", defaultValue = "YAPE") String metodoPago,
-        @RequestParam(value = "numeroTarjeta", required = false) String numeroTarjeta,
-        @RequestParam(value = "titularTarjeta", required = false) String titularTarjeta,
-        @RequestParam(value = "fechaExpTarjeta", required = false) String fechaExpTarjeta,
-        @RequestParam(value = "cvvTarjeta", required = false) String cvvTarjeta,
-        HttpSession session) {
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> registrarPagoAlumno(
+            @PathVariable("id") String id,
+            @RequestParam(value = "metodoPago", defaultValue = "YAPE") String metodoPago,
+            @RequestParam(value = "numeroTarjeta", required = false) String numeroTarjeta,
+            @RequestParam(value = "titularTarjeta", required = false) String titularTarjeta,
+            @RequestParam(value = "fechaExpTarjeta", required = false) String fechaExpTarjeta,
+            @RequestParam(value = "cvvTarjeta", required = false) String cvvTarjeta,
+            @RequestParam(value = "numeroYape", required = false) String numeroYape,
+            @RequestParam(value = "codigoYape", required = false) String codigoYape,
+            @RequestParam(value = "numeroPlin", required = false) String numeroPlin,
+            @RequestParam(value = "codigoPlin", required = false) String codigoPlin,
+            HttpSession session) {
 
-    Optional<Sancion> opt = sancionRepositorio.findById(id);
-    if (opt.isEmpty()) {
-        return ResponseEntity.badRequest().body(Map.of("error", "Sanción no encontrada"));
-    }
+        Optional<Sancion> opt = sancionRepositorio.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Sanción no encontrada"));
+        }
 
-    Sancion s = opt.get();
+        Sancion s = opt.get();
 
-    // ⭐ SIMULAR EL PAGO CON TODOS LOS DATOS
-    PagoSimulacionService.ResultadoPago resultado =
-            pagoSimulacionService.procesarPago(
-                metodoPago, numeroTarjeta, titularTarjeta, 
-                fechaExpTarjeta, cvvTarjeta, s.getMontoDeuda());
+        // ⭐ NUEVA FIRMA con Yape y Plin
+        PagoSimulacionService.ResultadoPago resultado =
+                pagoSimulacionService.procesarPago(
+                        metodoPago,
+                        numeroTarjeta, titularTarjeta, fechaExpTarjeta, cvvTarjeta,
+                        numeroYape, codigoYape,
+                        numeroPlin, codigoPlin,
+                        s.getMontoDeuda());
 
-    if (!resultado.isExitoso()) {
-        return ResponseEntity.badRequest().body(Map.of(
-            "error", resultado.getMensaje()
-        ));
-    }
-        // ⭐ PAGO GRUPAL: marcar todas las sanciones de la reserva
+        if (!resultado.isExitoso()) {
+            return ResponseEntity.badRequest().body(Map.of("error", resultado.getMensaje()));
+        }
+
+        // Si el pago es exitoso:
         com.integrador.lab.modelo.Reserva reservaDeLaSancion = s.getReserva();
 
         if (reservaDeLaSancion != null) {
@@ -190,7 +198,7 @@ public ResponseEntity<?> registrarPagoAlumno(
                 sancionRepositorio.save(x);
             }
 
-            // Desbloquear a TODOS los integrantes de la reserva
+            // Desbloquear a TODOS los integrantes de la reserva si no tienen otras deudas
             List<com.integrador.lab.modelo.ReservaIntegrante> integrantes =
                     reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
 
@@ -207,7 +215,6 @@ public ResponseEntity<?> registrarPagoAlumno(
                 }
             }
         } else {
-            // Fallback: solo marcar esta sanción
             s.setEstado("PAGADA");
             sancionRepositorio.save(s);
 
@@ -222,7 +229,7 @@ public ResponseEntity<?> registrarPagoAlumno(
             }
         }
 
-        // Refrescar la sesión con el alumno actualizado
+        // Refrescar la sesión del alumno logueado
         Alumno alumnoSesion = (Alumno) session.getAttribute("usuarioLogueado");
         if (alumnoSesion != null) {
             Alumno alumnoFresco = alumnoRepositorio.findById(alumnoSesion.getIdEstud()).orElse(null);
@@ -231,11 +238,11 @@ public ResponseEntity<?> registrarPagoAlumno(
             }
         }
 
-         return ResponseEntity.ok(Map.of(
-        "status", "ok",
-        "transaccion", resultado.getTransaccion() != null ? resultado.getTransaccion() : "TXN-000",
-        "mensaje", resultado.getMensaje()
-    ));
+        return ResponseEntity.ok(Map.of(
+            "status", "ok",
+            "transaccion", resultado.getTransaccion() != null ? resultado.getTransaccion() : "TXN-000",
+            "mensaje", resultado.getMensaje()
+        ));
     }
 
         public static class SancionAlumnoDto {

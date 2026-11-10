@@ -1,19 +1,21 @@
+// ============================================================================
 // 1. INICIALIZACIÓN DE ÍCONOS Y FECHAS
+// ============================================================================
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-    
+
     const hoy = new Date();
     const año = hoy.getFullYear();
     const mes = String(hoy.getMonth() + 1).padStart(2, '0');
     const dia = String(hoy.getDate()).padStart(2, '0');
     const fechaHoy = `${año}-${mes}-${dia}`;
-    
+
     const inputConsulta = document.getElementById('inputFechaConsulta');
     const inputWizard = document.getElementById('wizardFechaInput');
     const inputHidden = document.getElementById('wizardFechaEnvio');
-    
+
     if (inputConsulta) {
         inputConsulta.value = fechaHoy;
         inputConsulta.min = fechaHoy;
@@ -28,42 +30,45 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 const BLOQUES_HORARIOS = [
-  { h: "07:00", f: "08:00" }, { h: "08:00", f: "09:00" }, { h: "09:00", f: "10:00" },
-  { h: "10:00", f: "11:00" }, { h: "11:00", f: "12:00" }, { h: "12:00", f: "13:00" },
-  { h: "13:00", f: "14:00" }, { h: "14:00", f: "15:00" }, { h: "15:00", f: "16:00" },
-  { h: "16:00", f: "17:00" }, { h: "17:00", f: "18:00" }, { h: "18:00", f: "19:00" }
+    { h: "07:00", f: "08:00" }, { h: "08:00", f: "09:00" }, { h: "09:00", f: "10:00" },
+    { h: "10:00", f: "11:00" }, { h: "11:00", f: "12:00" }, { h: "12:00", f: "13:00" },
+    { h: "13:00", f: "14:00" }, { h: "14:00", f: "15:00" }, { h: "15:00", f: "16:00" },
+    { h: "16:00", f: "17:00" }, { h: "17:00", f: "18:00" }, { h: "18:00", f: "19:00" }
 ];
 
+// ============================================================================
+// 2. FILTROS Y MODAL DE HORARIOS (CONSULTA)
+// ============================================================================
 function filtrarLabs(tipo, btn) {
-  document.querySelectorAll('.barra-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  document.querySelectorAll('.rejilla-laboratorios .tarjeta-lab-grid').forEach(t => {
-    t.style.display = (tipo === 'TODOS' || t.getAttribute('data-tipo') === tipo) ? 'flex' : 'none';
-  });
+    document.querySelectorAll('.barra-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.querySelectorAll('.rejilla-laboratorios .tarjeta-lab-grid').forEach(t => {
+        t.style.display = (tipo === 'TODOS' || t.getAttribute('data-tipo') === tipo) ? 'flex' : 'none';
+    });
 }
 
 function gestionarClickLab(tarjeta) {
-  if (tarjeta.classList.contains('tarjeta-deshabilitada')) return;
-  abrirModalHorarios(tarjeta);
+    if (tarjeta.classList.contains('tarjeta-deshabilitada')) return;
+    abrirModalHorarios(tarjeta);
 }
 
 let labSeleccionadoActual = null;
 
 function abrirModalHorarios(tarjeta) {
-  labSeleccionadoActual = {
-    id: tarjeta.getAttribute('data-id'),
-    nombre: tarjeta.getAttribute('data-nombre'),
-    cubiculo: tarjeta.getAttribute('data-cubiculo')
-  };
-  document.getElementById('tituloLabModal').innerText = labSeleccionadoActual.nombre;
-  document.getElementById('subtituloLabModal').innerText = `Bloque ${labSeleccionadoActual.cubiculo} · 12 puestos`;
-  document.getElementById('modalHorarios').style.display = 'flex';
-  actualizarHorariosModalConsulta();
-  lucide.createIcons();
+    labSeleccionadoActual = {
+        id: tarjeta.getAttribute('data-id'),
+        nombre: tarjeta.getAttribute('data-nombre'),
+        cubiculo: tarjeta.getAttribute('data-cubiculo')
+    };
+    document.getElementById('tituloLabModal').innerText = labSeleccionadoActual.nombre;
+    document.getElementById('subtituloLabModal').innerText = `Bloque ${labSeleccionadoActual.cubiculo} · 12 puestos`;
+    document.getElementById('modalHorarios').style.display = 'flex';
+    actualizarHorariosModalConsulta();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function cerrarModalHorarios() {
-  document.getElementById('modalHorarios').style.display = 'none';
+    document.getElementById('modalHorarios').style.display = 'none';
 }
 
 function actualizarHorariosModalConsulta() {
@@ -75,10 +80,7 @@ function actualizarHorariosModalConsulta() {
     const ahora = new Date();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const año = ahora.getFullYear();
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const dia = String(ahora.getDate()).padStart(2, '0');
-    const hoyStr = `${año}-${mes}-${dia}`;
+    const hoyStr = ahora.toISOString().split('T')[0];
     const esHoy = (fecha === hoyStr);
 
     fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
@@ -95,12 +97,12 @@ function actualizarHorariosModalConsulta() {
                 }
                 const estaOcupado = ocupados.includes(b.h);
                 const estaBloqueado = estaOcupado || yaPaso;
-                
+
                 const slot = document.createElement('div');
                 slot.className = `btn-hora-slot ${estaBloqueado ? 'ocupado' : 'disponible'}`;
                 slot.innerText = b.h;
                 grid.appendChild(slot);
-                
+
                 if (estaBloqueado) cOcup++; else cDisp++;
             });
             document.getElementById('txtCantDisp').innerText = cDisp;
@@ -126,102 +128,108 @@ function validarFechaNoPasada(input) {
 }
 
 function pasarDeHorariosAWizard() {
-  cerrarModalHorarios();
-  abrirWizardPaso1();
-  if (labSeleccionadoActual) {
-    const item = document.querySelector(`.item-lab-radio[data-id="${labSeleccionadoActual.id}"]`);
-    if (item) seleccionarLabWizard(item);
-  }
+    cerrarModalHorarios();
+    abrirWizardPaso1();
+    if (labSeleccionadoActual) {
+        const item = document.querySelector(`.item-lab-radio[data-id="${labSeleccionadoActual.id}"]`);
+        if (item) seleccionarLabWizard(item);
+    }
 }
 
+// ============================================================================
+// 3. WIZARD DE RESERVA - ESTADO Y NAVEGACIÓN
+// ============================================================================
 let pasoActual = 1;
 let tieneInsumosActivo = false;
+let horasSeleccionadas = [];
+let totalIntegrantes = 1;
+const codigosAgregados = new Set();
 
 function abrirWizardPaso1() {
-  document.getElementById('modalWizard').style.display = 'flex';
-  irALaboratorio();
-  lucide.createIcons();
+    document.getElementById('modalWizard').style.display = 'flex';
+    irALaboratorio();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function cerrarWizard() {
-  document.getElementById('modalWizard').style.display = 'none';
-  document.getElementById('wizardIdLab').value = '';
-  document.getElementById('wizardHoraInicio').value = '';
-  document.getElementById('wizardHoraFin').value = '';
-  document.querySelectorAll('.item-lab-radio').forEach(i => i.classList.remove('seleccionado'));
+    document.getElementById('modalWizard').style.display = 'none';
+    document.getElementById('wizardIdLab').value = '';
+    document.getElementById('wizardHoraInicio').value = '';
+    document.getElementById('wizardHoraFin').value = '';
+    document.querySelectorAll('.item-lab-radio').forEach(i => i.classList.remove('seleccionado'));
 
-  horasSeleccionadas = [];
-  document.querySelectorAll('.btn-slot-select').forEach(s => s.classList.remove('seleccionado'));
-  document.getElementById('tagMax2Horas').style.display = 'none';
+    horasSeleccionadas = [];
+    document.querySelectorAll('.btn-slot-select').forEach(s => s.classList.remove('seleccionado'));
+    document.getElementById('tagMax2Horas').style.display = 'none';
 
-  document.querySelectorAll('.tarjeta-integrante-fila').forEach((f, idx) => {
-    if (idx > 0) f.remove();
-  });
-  codigosAgregados.clear();
-  totalIntegrantes = 1;
-  document.getElementById('contadorBadgeIntegrantes').innerText = '1/5';
-  document.getElementById('inputCodigoBuscar').value = '';
-  document.getElementById('inputNombreAutocompletado').value = '';
-  document.getElementById('msgErrorBusqueda').style.display = 'none';
+    document.querySelectorAll('.tarjeta-integrante-fila').forEach((f, idx) => {
+        if (idx > 0) f.remove();
+    });
+    codigosAgregados.clear();
+    totalIntegrantes = 1;
+    document.getElementById('contadorBadgeIntegrantes').innerText = '1/5';
+    document.getElementById('inputCodigoBuscar').value = '';
+    document.getElementById('inputNombreAutocompletado').value = '';
+    document.getElementById('msgErrorBusqueda').style.display = 'none';
 
-  document.getElementById('checkSolicitarInsumos').checked = false;
-  tieneInsumosActivo = false;
-  document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
-  document.getElementById('contadorInsumosBadge').innerText = '0/10';
+    document.getElementById('checkSolicitarInsumos').checked = false;
+    tieneInsumosActivo = false;
+    document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
+    document.getElementById('contadorInsumosBadge').innerText = '0/10';
 
-  document.querySelectorAll('.card-epp-select:not(.incluido)').forEach(c => {
-    c.classList.remove('seleccionado');
-    c.querySelector('input[type="checkbox"]').checked = false;
-  });
-  costoEppsTotal = 0;
+    document.querySelectorAll('.card-epp-select:not(.incluido)').forEach(c => {
+        c.classList.remove('seleccionado');
+        c.querySelector('input[type="checkbox"]').checked = false;
+    });
+    costoEppsTotal = 0;
 
-  document.getElementById('checkAceptoTerminos').checked = false;
-  irALaboratorio();
+    document.getElementById('checkAceptoTerminos').checked = false;
+    irALaboratorio();
 }
 
 function toggleInsumosInmediato(checkbox) {
-  tieneInsumosActivo = checkbox.checked;
-  actualizarIndicadores(pasoActual);
+    tieneInsumosActivo = checkbox.checked;
+    actualizarIndicadores(pasoActual);
 }
 
 function actualizarIndicadores(paso) {
-  const totalPasos = tieneInsumosActivo ? 5 : 4;
-  let html = '';
-  for (let i = 1; i <= totalPasos; i++) {
-    let clase = 'paso-circulo';
-    let texto = i;
-    if (i < paso) { clase += ' completado'; texto = '✓'; } 
-    else if (i === paso) { clase += ' activo'; }
-    html += `<span class="${clase}">${texto}</span>`;
-    if (i < totalPasos) html += `<span class="linea-paso"></span>`;
-  }
-  html += `<span class="txt-paso-contador">Paso ${paso}/${totalPasos}</span>`;
-  document.getElementById('contenedorIndicadoresPasos').innerHTML = html;
+    const totalPasos = tieneInsumosActivo ? 5 : 4;
+    let html = '';
+    for (let i = 1; i <= totalPasos; i++) {
+        let clase = 'paso-circulo';
+        let texto = i;
+        if (i < paso) { clase += ' completado'; texto = '✓'; }
+        else if (i === paso) { clase += ' activo'; }
+        html += `<span class="${clase}">${texto}</span>`;
+        if (i < totalPasos) html += `<span class="linea-paso"></span>`;
+    }
+    html += `<span class="txt-paso-contador">Paso ${paso}/${totalPasos}</span>`;
+    document.getElementById('contenedorIndicadoresPasos').innerHTML = html;
 }
 
 function seleccionarLabWizard(item) {
-  document.querySelectorAll('.item-lab-radio').forEach(i => i.classList.remove('seleccionado'));
-  item.classList.add('seleccionado');
-  document.getElementById('wizardIdLab').value = item.getAttribute('data-id');
-  labSeleccionadoActual = {
-    id: item.getAttribute('data-id'),
-    nombre: item.getAttribute('data-nombre'),
-    cubiculo: item.getAttribute('data-cubiculo')
-  };
-  cargarHorariosWizard();
+    document.querySelectorAll('.item-lab-radio').forEach(i => i.classList.remove('seleccionado'));
+    item.classList.add('seleccionado');
+    document.getElementById('wizardIdLab').value = item.getAttribute('data-id');
+    labSeleccionadoActual = {
+        id: item.getAttribute('data-id'),
+        nombre: item.getAttribute('data-nombre'),
+        cubiculo: item.getAttribute('data-cubiculo')
+    };
+    cargarHorariosWizard();
 }
 
 function cambiarFechaWizard(val) {
-  document.getElementById('wizardFechaEnvio').value = val;
-  cargarHorariosWizard();
+    document.getElementById('wizardFechaEnvio').value = val;
+    cargarHorariosWizard();
 }
 
 function filtrarLabsWizard(tipo, btn) {
-  document.querySelectorAll('.barra-filtros.mini .btn-filtro').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  document.querySelectorAll('.item-lab-radio').forEach(item => {
-    item.style.display = (tipo === 'TODOS' || item.getAttribute('data-tipo') === tipo) ? 'flex' : 'none';
-  });
+    document.querySelectorAll('.barra-filtros.mini .btn-filtro').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.querySelectorAll('.item-lab-radio').forEach(item => {
+        item.style.display = (tipo === 'TODOS' || item.getAttribute('data-tipo') === tipo) ? 'flex' : 'none';
+    });
 }
 
 function cargarHorariosWizard() {
@@ -239,12 +247,8 @@ function cargarHorariosWizard() {
     const ahora = new Date();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const año = ahora.getFullYear();
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const dia = String(ahora.getDate()).padStart(2, '0');
-    const hoyStr = `${año}-${mes}-${dia}`;
+    const hoyStr = ahora.toISOString().split('T')[0];
     const esHoy = (fecha === hoyStr);
-    const esFuturo = (fecha > hoyStr);
 
     fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
         .then(res => res.json())
@@ -280,387 +284,604 @@ function cargarHorariosWizard() {
         });
 }
 
-let horasSeleccionadas = [];
 function seleccionarHora(btn, inicio, fin) {
-  if (btn.classList.contains('bloqueado')) return;
-  if (btn.classList.contains('seleccionado')) {
-    btn.classList.remove('seleccionado');
-    horasSeleccionadas = horasSeleccionadas.filter(h => h.inicio !== inicio);
-  } else {
-    if (horasSeleccionadas.length >= 2) { alert('Solo puedes seleccionar un máximo de 2 horas.'); return; }
-    btn.classList.add('seleccionado');
-    horasSeleccionadas.push({ inicio: inicio, fin: fin });
-  }
-  document.getElementById('tagMax2Horas').style.display = (horasSeleccionadas.length === 2) ? 'inline-block' : 'none';
-  if (horasSeleccionadas.length > 0) {
-    horasSeleccionadas.sort((a, b) => a.inicio.localeCompare(b.inicio));
-    document.getElementById('wizardHoraInicio').value = horasSeleccionadas[0].inicio;
-    document.getElementById('wizardHoraFin').value = horasSeleccionadas[horasSeleccionadas.length - 1].fin;
-  } else {
-    document.getElementById('wizardHoraInicio').value = '';
-    document.getElementById('wizardHoraFin').value = '';
-  }
+    if (btn.classList.contains('bloqueado')) return;
+    if (btn.classList.contains('seleccionado')) {
+        btn.classList.remove('seleccionado');
+        horasSeleccionadas = horasSeleccionadas.filter(h => h.inicio !== inicio);
+    } else {
+        if (horasSeleccionadas.length >= 2) { alert('Solo puedes seleccionar un máximo de 2 horas.'); return; }
+        btn.classList.add('seleccionado');
+        horasSeleccionadas.push({ inicio: inicio, fin: fin });
+    }
+    document.getElementById('tagMax2Horas').style.display = (horasSeleccionadas.length === 2) ? 'inline-block' : 'none';
+    if (horasSeleccionadas.length > 0) {
+        horasSeleccionadas.sort((a, b) => a.inicio.localeCompare(b.inicio));
+        document.getElementById('wizardHoraInicio').value = horasSeleccionadas[0].inicio;
+        document.getElementById('wizardHoraFin').value = horasSeleccionadas[horasSeleccionadas.length - 1].fin;
+    } else {
+        document.getElementById('wizardHoraInicio').value = '';
+        document.getElementById('wizardHoraFin').value = '';
+    }
 }
 
 function ocultarTodasSecciones() {
-  document.getElementById('seccionPasoLab').style.display = 'none';
-  document.getElementById('seccionPasoIntegrantes').style.display = 'none';
-  document.getElementById('seccionPasoInsumos').style.display = 'none';
-  document.getElementById('seccionPasoEpps').style.display = 'none';
-  document.getElementById('seccionPasoBoleta').style.display = 'none';
+    document.getElementById('seccionPasoLab').style.display = 'none';
+    document.getElementById('seccionPasoIntegrantes').style.display = 'none';
+    document.getElementById('seccionPasoInsumos').style.display = 'none';
+    document.getElementById('seccionPasoEpps').style.display = 'none';
+    document.getElementById('seccionPasoBoleta').style.display = 'none';
 }
 
 function irALaboratorio() {
-  pasoActual = 1; ocultarTodasSecciones();
-  document.getElementById('seccionPasoLab').style.display = 'block';
-  actualizarIndicadores(1);
+    pasoActual = 1; ocultarTodasSecciones();
+    document.getElementById('seccionPasoLab').style.display = 'block';
+    actualizarIndicadores(1);
 }
 
 function validarEIrAIntegrantes() {
-  const idLab = document.getElementById('wizardIdLab').value;
-  const hora = document.getElementById('wizardHoraInicio').value;
-  if (!idLab) { alert('Por favor selecciona un laboratorio.'); return; }
-  if (!hora) { alert('Por favor selecciona al menos un bloque horario.'); return; }
-  irAIntegrantes();
+    const idLab = document.getElementById('wizardIdLab').value;
+    const hora = document.getElementById('wizardHoraInicio').value;
+    if (!idLab) { alert('Por favor selecciona un laboratorio.'); return; }
+    if (!hora) { alert('Por favor selecciona al menos un bloque horario.'); return; }
+    irAIntegrantes();
 }
 
 function irAIntegrantes() {
-  pasoActual = 2; ocultarTodasSecciones();
-  document.getElementById('seccionPasoIntegrantes').style.display = 'block';
-  actualizarIndicadores(2);
+    pasoActual = 2; ocultarTodasSecciones();
+    document.getElementById('seccionPasoIntegrantes').style.display = 'block';
+    actualizarIndicadores(2);
 }
 
 function validarIntegrantesYSiguiente() {
-  tieneInsumosActivo = document.getElementById('checkSolicitarInsumos').checked;
-  if (tieneInsumosActivo) { irAInsumos(); } 
-  else {
-    document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
-    irAEPPs();
-  }
+    tieneInsumosActivo = document.getElementById('checkSolicitarInsumos').checked;
+    if (tieneInsumosActivo) { irAInsumos(); }
+    else {
+        document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
+        irAEPPs();
+    }
 }
 
 function irAInsumos() {
-  pasoActual = 3; ocultarTodasSecciones();
-  document.getElementById('seccionPasoInsumos').style.display = 'block';
-  actualizarIndicadores(3);
+    pasoActual = 3; ocultarTodasSecciones();
+    document.getElementById('seccionPasoInsumos').style.display = 'block';
+    actualizarIndicadores(3);
 }
 
 function volverDesdeEpps() {
-  if (tieneInsumosActivo) irAInsumos(); else irAIntegrantes();
+    if (tieneInsumosActivo) irAInsumos(); else irAIntegrantes();
 }
 
 function irAEPPs() {
-  pasoActual = tieneInsumosActivo ? 4 : 3; ocultarTodasSecciones();
-  document.getElementById('seccionPasoEpps').style.display = 'block';
-  actualizarIndicadores(pasoActual);
+    pasoActual = tieneInsumosActivo ? 4 : 3; ocultarTodasSecciones();
+    document.getElementById('seccionPasoEpps').style.display = 'block';
+    actualizarIndicadores(pasoActual);
 }
 
 function irABoleta() {
-  cargarBoletaResumen();
-  pasoActual = tieneInsumosActivo ? 5 : 4;
-  ocultarTodasSecciones();
-  document.getElementById('seccionPasoBoleta').style.display = 'block';
-  actualizarIndicadores(pasoActual);
-  
+    cargarBoletaResumen();
+    pasoActual = tieneInsumosActivo ? 5 : 4;
+    ocultarTodasSecciones();
+    document.getElementById('seccionPasoBoleta').style.display = 'block';
+    actualizarIndicadores(pasoActual);
 }
 
-let totalIntegrantes = 1;
-const codigosAgregados = new Set();
+// ============================================================================
+// 4. INTEGRANTES - BÚSQUEDA Y AGREGAR
+// ============================================================================
+document.getElementById('inputCodigoBuscar')?.addEventListener('input', function () {
+    const codigo = this.value.trim().toUpperCase();
+    const msgError = document.getElementById('msgErrorBusqueda');
+    const inputNombre = document.getElementById('inputNombreAutocompletado');
 
-    document.getElementById('inputCodigoBuscar').addEventListener('input', function () {
-      const codigo = this.value.trim().toUpperCase();
-      const msgError = document.getElementById('msgErrorBusqueda');
-      const inputNombre = document.getElementById('inputNombreAutocompletado');
-
-      if (codigo.length >= 6) {
-        const fechaWizard = document.getElementById('wizardFechaEnvio').value;
+    if (codigo.length >= 6) {
         fetch('/api/alumnos/buscar/' + encodeURIComponent(codigo))
-          .then(res => res.json())
-          .then(data => {
-            if (data.encontrado) {
-              if (!data.habilitado) {
-                // Usamos el motivo si viene, si no, el mensaje por defecto
-                msgError.innerText = data.motivo || 'El alumno no está habilitado para reservar.';
-                msgError.style.display = 'block';
+            .then(res => res.json())
+            .then(data => {
+                if (data.encontrado) {
+                    if (!data.habilitado) {
+                        msgError.innerText = data.motivo || 'El alumno no está habilitado para reservar.';
+                        msgError.style.display = 'block';
+                        inputNombre.value = '';
+                        inputNombre.removeAttribute('data-codigo-real');
+                    } else {
+                        inputNombre.value = data.nombreCompleto;
+                        inputNombre.setAttribute('data-codigo-real', data.codigo);
+                        msgError.style.display = 'none';
+                    }
+                } else {
+                    inputNombre.value = '';
+                    msgError.innerText = 'Código o DNI no encontrado en el sistema.';
+                    msgError.style.display = 'block';
+                }
+            })
+            .catch(() => {
                 inputNombre.value = '';
-                inputNombre.removeAttribute('data-codigo-real');
-              } else {
-                inputNombre.value = data.nombreCompleto;
-                inputNombre.setAttribute('data-codigo-real', data.codigo);
-                msgError.style.display = 'none';
-              }
-            } else {
-              inputNombre.value = '';
-              msgError.innerText = 'Código o DNI no encontrado en el sistema.';
-              msgError.style.display = 'block';
-            }
-          })
-          .catch(() => { 
-            inputNombre.value = ''; 
-            msgError.innerText = 'Error al buscar el alumno.';
-            msgError.style.display = 'block';
-          });
-      } else {
+                msgError.innerText = 'Error al buscar el alumno.';
+                msgError.style.display = 'block';
+            });
+    } else {
         inputNombre.value = '';
         msgError.style.display = 'none';
-      }
-    });
-    
+    }
+});
+
 function agregarIntegrantePorCodigo() {
-  if (totalIntegrantes >= 5) { alert('Límite alcanzado: Máximo 5 integrantes por reserva.'); return; }
-  const inputNombre = document.getElementById('inputNombreAutocompletado');
-  const inputCodigo = document.getElementById('inputCodigoBuscar');
-  const codigoReal = inputNombre.getAttribute('data-codigo-real') || inputCodigo.value.trim().toUpperCase();
-  const nombre = inputNombre.value.trim();
+    if (totalIntegrantes >= 5) { alert('Límite alcanzado: Máximo 5 integrantes por reserva.'); return; }
+    const inputNombre = document.getElementById('inputNombreAutocompletado');
+    const inputCodigo = document.getElementById('inputCodigoBuscar');
+    const codigoReal = inputNombre.getAttribute('data-codigo-real') || inputCodigo.value.trim().toUpperCase();
+    const nombre = inputNombre.value.trim();
 
-  if (!codigoReal || !nombre) { alert('Ingresa un código o DNI registrado.'); return; }
-  if (codigosAgregados.has(codigoReal)) { alert('Este integrante ya se encuentra en la lista.'); return; }
+    if (!codigoReal || !nombre) { alert('Ingresa un código o DNI registrado.'); return; }
+    if (codigosAgregados.has(codigoReal)) { alert('Este integrante ya se encuentra en la lista.'); return; }
 
-  const lista = document.getElementById('listaIntegrantesAgregados');
-  const iniciales = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-  const html = `
-    <div class="tarjeta-integrante-fila" id="integrante_${codigoReal}">
-      <div class="avatar-circulo-estudiante">${iniciales}</div>
-      <div class="info-estud-fila">
-        <strong class="nombre-estud-txt">${nombre}</strong>
-        <span class="codigo-estud-txt">${codigoReal}</span>
-      </div>
-      <button type="button" class="btn-eliminar-integrante" onclick="eliminarIntegrante('${codigoReal}')">✕</button>
-      <input type="hidden" name="integrantesCodigos" value="${codigoReal}" />
-    </div>
-  `;
-  lista.insertAdjacentHTML('beforeend', html);
-  codigosAgregados.add(codigoReal);
-  totalIntegrantes++;
-  document.getElementById('contadorBadgeIntegrantes').innerText = `${totalIntegrantes}/5`;
-  inputCodigo.value = '';
-  inputNombre.value = '';
-  inputNombre.removeAttribute('data-codigo-real');
+    const lista = document.getElementById('listaIntegrantesAgregados');
+    const iniciales = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const html = `
+        <div class="tarjeta-integrante-fila" id="integrante_${codigoReal}">
+            <div class="avatar-circulo-estudiante">${iniciales}</div>
+            <div class="info-estud-fila">
+                <strong class="nombre-estud-txt">${nombre}</strong>
+                <span class="codigo-estud-txt">${codigoReal}</span>
+            </div>
+            <button type="button" class="btn-eliminar-integrante" onclick="eliminarIntegrante('${codigoReal}')">✕</button>
+            <input type="hidden" name="integrantesCodigos" value="${codigoReal}" />
+        </div>
+    `;
+    lista.insertAdjacentHTML('beforeend', html);
+    codigosAgregados.add(codigoReal);
+    totalIntegrantes++;
+    document.getElementById('contadorBadgeIntegrantes').innerText = `${totalIntegrantes}/5`;
+    inputCodigo.value = '';
+    inputNombre.value = '';
+    inputNombre.removeAttribute('data-codigo-real');
 }
 
 function eliminarIntegrante(cod) {
-  const f = document.getElementById('integrante_' + cod);
-  if (f) {
-    f.remove();
-    codigosAgregados.delete(cod);
-    totalIntegrantes--;
-    document.getElementById('contadorBadgeIntegrantes').innerText = `${totalIntegrantes}/5`;
-  }
+    const f = document.getElementById('integrante_' + cod);
+    if (f) {
+        f.remove();
+        codigosAgregados.delete(cod);
+        totalIntegrantes--;
+        document.getElementById('contadorBadgeIntegrantes').innerText = `${totalIntegrantes}/5`;
+    }
 }
 
+// ============================================================================
+// 5. INSUMOS - CONTADOR, BÚSQUEDA Y FILTRO
+// ============================================================================
 function actualizarContadorInsumos(chk) {
-  const checks = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
-  if (checks.length > 10) { alert('Máximo 10 insumos.'); chk.checked = false; return; }
-  document.getElementById('contadorInsumosBadge').innerText = `${checks.length}/10`;
+    const checks = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
+    if (checks.length > 10) { alert('Máximo 10 insumos.'); chk.checked = false; return; }
+    document.getElementById('contadorInsumosBadge').innerText = `${checks.length}/10`;
 }
 
 function buscarInsumos(txt) {
-  const f = txt.toLowerCase();
-  document.querySelectorAll('.item-insumo-check').forEach(i => {
-    const nom = (i.getAttribute('data-nombre') || '').toLowerCase();
-    i.style.display = nom.includes(f) ? 'block' : 'none';
-  });
+    const f = txt.toLowerCase();
+    document.querySelectorAll('.item-insumo-check').forEach(i => {
+        const nom = (i.getAttribute('data-nombre') || '').toLowerCase();
+        i.style.display = nom.includes(f) ? 'block' : 'none';
+    });
 }
 
 function filtrarCategoriaInsumos(cat, btn) {
-  document.querySelectorAll('#seccionPasoInsumos .btn-filtro').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  document.querySelectorAll('.item-insumo-check').forEach(i => {
-    const c = (i.getAttribute('data-categoria') || '').toLowerCase();
-    i.style.display = (cat === 'TODOS' || c.includes(cat.toLowerCase())) ? 'block' : 'none';
-  });
+    document.querySelectorAll('#seccionPasoInsumos .btn-filtro').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.querySelectorAll('.item-insumo-check').forEach(i => {
+        const c = (i.getAttribute('data-categoria') || '').toLowerCase();
+        i.style.display = (cat === 'TODOS' || c.includes(cat.toLowerCase())) ? 'block' : 'none';
+    });
 }
 
+// ============================================================================
+// 6. EPPs Y COSTOS
+// ============================================================================
 let costoEppsTotal = 0;
+
 function toggleEpp(card) {
-  const chk = card.querySelector('input[type="checkbox"]');
-  if (chk.disabled) return;
-  chk.checked = !chk.checked;
-  card.classList.toggle('seleccionado', chk.checked);
-  calcularCostos();
+    const chk = card.querySelector('input[type="checkbox"]');
+    if (chk.disabled) return;
+    chk.checked = !chk.checked;
+    card.classList.toggle('seleccionado', chk.checked);
+    calcularCostos();
 }
 
 function calcularCostos() {
-  costoEppsTotal = 0;
-  document.querySelectorAll('.card-epp-select input[type="checkbox"]:checked').forEach(c => {
-    costoEppsTotal += parseFloat(c.getAttribute('data-precio') || 0);
-  });
-}
-
-function cargarBoletaResumen() {
-  calcularCostos();
-  const lab = labSeleccionadoActual || { nombre: 'Laboratorio', cubiculo: 'S/C' };
-  document.getElementById('boletaLabCubiculo').innerText = `${lab.nombre} · ${lab.cubiculo}`;
-  document.getElementById('boletaFechaTxt').innerText = document.getElementById('wizardFechaEnvio').value;
-  const hIni = document.getElementById('wizardHoraInicio').value || '08:00';
-  const hFin = document.getElementById('wizardHoraFin').value || '10:00';
-  document.getElementById('boletaHorarioTxt').innerText = `${hIni} – ${hFin}`;
-
-  const integrantesFilas = document.querySelectorAll('#listaIntegrantesAgregados .tarjeta-integrante-fila');
-  let nombresIntegrantes = [];
-  integrantesFilas.forEach(fila => {
-      const nombre = fila.querySelector('.nombre-estud-txt').innerText;
-      nombresIntegrantes.push(nombre);
-  });
-  document.getElementById('boletaIntegrantesTitulo').innerText = `Integrantes (${nombresIntegrantes.length})`;
-  document.getElementById('boletaIntegrantesNombres').innerText = nombresIntegrantes.join(', ');
-
-  const insumos = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
-  const bloqueInsumos = document.getElementById('boletaSeccionInsumosBloque');
-  const listaUl = document.getElementById('boletaInsumosLista');
-  listaUl.innerHTML = '';
-  if (insumos.length > 0 && tieneInsumosActivo) {
-    bloqueInsumos.style.display = 'block';
-    document.getElementById('boletaInsumosTitulo').innerText = `Insumos (${insumos.length})`;
-    insumos.forEach(ins => {
-      const li = document.createElement('li');
-      li.innerText = ins.getAttribute('data-nombre');
-      listaUl.appendChild(li);
+    costoEppsTotal = 0;
+    document.querySelectorAll('.card-epp-select input[type="checkbox"]:checked').forEach(c => {
+        costoEppsTotal += parseFloat(c.getAttribute('data-precio') || 0);
     });
-  } else {
-    bloqueInsumos.style.display = 'none';
-  }
-
-  if (costoEppsTotal > 0) {
-    document.getElementById('filaCobroEpps').style.display = 'flex';
-    document.getElementById('boletaMontoEpps').innerText = `S/ ${costoEppsTotal.toFixed(2)}`;
-    document.getElementById('boletaMontoTotalTxt').innerText = `S/ ${costoEppsTotal.toFixed(2)}`;
-    document.getElementById('inputMontoTotalFinal').value = costoEppsTotal.toFixed(2);
-    document.getElementById('pasarelaTotalMonto').innerText = `S/ ${costoEppsTotal.toFixed(2)}`;
-    document.getElementById('montoQrText').innerText = `S/ ${costoEppsTotal.toFixed(2)}`;
-    document.getElementById('btnAccionBoleta').innerText = "Ir a pagar →";
-  } else {
-    document.getElementById('filaCobroEpps').style.display = 'none';
-    document.getElementById('boletaMontoTotalTxt').innerText = "S/ 0.00";
-    document.getElementById('inputMontoTotalFinal').value = "0.00";
-    document.getElementById('btnAccionBoleta').innerText = "Confirmar reserva →";
-  }
 }
 
-let enviandoReserva = false;
-async function validarYEnviarReserva() {
-  if (enviandoReserva) return;
-  const idLab = document.getElementById('wizardIdLab').value;
-  const fecha = document.getElementById('wizardFechaEnvio').value;
-  const inicio = document.getElementById('wizardHoraInicio').value;
-  const fin = document.getElementById('wizardHoraFin').value;
+// ============================================================================
+// 7. BOLETA RESUMEN
+// ============================================================================
+function cargarBoletaResumen() {
+    calcularCostos();
+    const lab = labSeleccionadoActual || { nombre: 'Laboratorio', cubiculo: 'S/C' };
 
-  if (!idLab || !fecha || !inicio || !fin) { alert('Selecciona el laboratorio, la fecha y el horario.'); return; }
+    setTextIfExists('boletaLabCubiculo', `${lab.nombre} · ${lab.cubiculo}`);
+    setTextIfExists('boletaFechaTxt', document.getElementById('wizardFechaEnvio').value);
 
-  try {
-    const respuesta = await fetch(`/api/laboratorios/${encodeURIComponent(idLab)}/horarios-ocupados?fecha=${encodeURIComponent(fecha)}`);
-    if (!respuesta.ok) throw new Error('No se pudieron consultar los horarios.');
-    const ocupados = await respuesta.json();
-    const bloquesDelIntervalo = BLOQUES_HORARIOS.filter(b => b.h >= inicio && b.h < fin);
-    const bloquesEnConflicto = bloquesDelIntervalo.filter(b => ocupados.includes(b.h));
+    const hIni = document.getElementById('wizardHoraInicio').value || '08:00';
+    const hFin = document.getElementById('wizardHoraFin').value || '10:00';
+    setTextIfExists('boletaHorarioTxt', `${hIni} – ${hFin}`);
 
-    if (bloquesEnConflicto.length > 0) {
-      alert('¡Cruce de horario!\n\nEl laboratorio ya tiene una reserva activa en el horario seleccionado. Elige otro horario antes de continuar.');
-      cargarHorariosWizard();
-      return;
+    // Integrantes
+    const integrantesFilas = document.querySelectorAll('#listaIntegrantesAgregados .tarjeta-integrante-fila');
+    let nombresIntegrantes = [];
+    integrantesFilas.forEach(fila => {
+        const nombre = fila.querySelector('.nombre-estud-txt')?.innerText || '';
+        if (nombre) nombresIntegrantes.push(nombre);
+    });
+    setTextIfExists('boletaIntegrantesTitulo', `Integrantes (${nombresIntegrantes.length})`);
+    setTextIfExists('boletaIntegrantesNombres', nombresIntegrantes.join(', '));
+
+    // Insumos
+    const insumos = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
+    const bloqueInsumos = document.getElementById('boletaSeccionInsumosBloque');
+    const listaUl = document.getElementById('boletaInsumosLista');
+    if (listaUl) listaUl.innerHTML = '';
+    if (insumos.length > 0 && tieneInsumosActivo) {
+        if (bloqueInsumos) bloqueInsumos.style.display = 'block';
+        setTextIfExists('boletaInsumosTitulo', `Insumos (${insumos.length})`);
+        insumos.forEach(ins => {
+            if (listaUl) {
+                const li = document.createElement('li');
+                li.innerText = ins.getAttribute('data-nombre');
+                listaUl.appendChild(li);
+            }
+        });
+    } else {
+        if (bloqueInsumos) bloqueInsumos.style.display = 'none';
     }
-    enviandoReserva = true;
-    document.getElementById('formReservaCompleta').submit();
-  } catch (error) {
-    console.error(error);
-    alert('No pudimos verificar la disponibilidad del laboratorio. Por seguridad, la reserva no se ha enviado. Inténtalo nuevamente.');
-  }
+
+    // EPPs / totales
+    if (costoEppsTotal > 0) {
+        setDisplayIfExists('filaCobroEpps', 'flex');
+        setTextIfExists('boletaMontoEpps', `S/ ${costoEppsTotal.toFixed(2)}`);
+        setTextIfExists('boletaMontoTotalTxt', `S/ ${costoEppsTotal.toFixed(2)}`);
+        setValueIfExists('inputMontoTotalFinal', costoEppsTotal.toFixed(2));
+        setTextIfExists('pasarelaTotalMonto', `S/ ${costoEppsTotal.toFixed(2)}`);
+        // ⭐ Ya no existe montoQrText: lo cambiamos por montoYapeText
+        setTextIfExists('montoYapeText', `S/ ${costoEppsTotal.toFixed(2)}`);
+        setTextIfExists('btnAccionBoleta', "Ir a pagar →");
+    } else {
+        setDisplayIfExists('filaCobroEpps', 'none');
+        setTextIfExists('boletaMontoTotalTxt', "S/ 0.00");
+        setValueIfExists('inputMontoTotalFinal', "0.00");
+        setTextIfExists('montoYapeText', "S/ 0.00");
+        setTextIfExists('btnAccionBoleta', "Confirmar reserva →");
+    }
+}
+
+// Helpers defensivos
+function setTextIfExists(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = valor;
+}
+function setValueIfExists(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.value = valor;
+}
+function setDisplayIfExists(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = valor;
+}
+
+
+// ============================================================================
+// 8. VALIDACIÓN Y ENVÍO (AJAX)
+// ============================================================================
+let enviandoReserva = false;
+let ultimoIntentoPago = null;
+
+async function validarYEnviarReserva() {
+    if (enviandoReserva) return;
+    const idLab = document.getElementById('wizardIdLab').value;
+    const fecha = document.getElementById('wizardFechaEnvio').value;
+    const inicio = document.getElementById('wizardHoraInicio').value;
+    const fin = document.getElementById('wizardHoraFin').value;
+
+    if (!idLab || !fecha || !inicio || !fin) {
+        alert('Selecciona el laboratorio, la fecha y el horario.');
+        return;
+    }
+
+    try {
+        const respuesta = await fetch(
+            `/api/laboratorios/${encodeURIComponent(idLab)}/horarios-ocupados?fecha=${encodeURIComponent(fecha)}`
+        );
+        if (!respuesta.ok) throw new Error('No se pudieron consultar los horarios.');
+        const ocupados = await respuesta.json();
+
+        const bloquesDelIntervalo = BLOQUES_HORARIOS.filter(b => b.h >= inicio && b.h < fin);
+        const bloquesEnConflicto = bloquesDelIntervalo.filter(b => ocupados.includes(b.h));
+
+        if (bloquesEnConflicto.length > 0) {
+            alert('¡Cruce de horario!\n\nEl laboratorio ya tiene una reserva activa en el horario seleccionado. Elige otro horario antes de continuar.');
+            cargarHorariosWizard();
+            return;
+        }
+
+        enviandoReserva = true;
+
+        const form = document.getElementById('formReservaCompleta');
+        const formData = new FormData(form);
+
+        ultimoIntentoPago = formData;
+        ejecutarPagoAjax(formData);
+
+    } catch (error) {
+        console.error(error);
+        alert('No pudimos verificar la disponibilidad del laboratorio. Por seguridad, la reserva no se ha enviado. Inténtalo nuevamente.');
+    } finally {
+        enviandoReserva = false;
+    }
 }
 
 function procesarBotonFinalBoleta() {
-  if (!document.getElementById('checkAceptoTerminos').checked) {
-    alert('Debes aceptar los términos y condiciones para continuar.');
-    return;
-  }
-  
-  if (costoEppsTotal > 0) {
-    // 1. Ocultamos el wizard de reserva
-    document.getElementById('modalWizard').style.display = 'none';
-    
-    // 2. Mostramos el pago
-    document.getElementById('modalPagoReserva').style.display = 'flex';
-  } else {
-    document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
-    validarYEnviarReserva();
-  }
+    if (!document.getElementById('checkAceptoTerminos').checked) {
+        alert('Debes aceptar los términos y condiciones para continuar.');
+        return;
+    }
+
+    if (costoEppsTotal > 0) {
+        document.getElementById('modalWizard').style.display = 'none';
+        document.getElementById('modalPagoReserva').style.display = 'flex';
+    } else {
+        document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
+        validarYEnviarReserva();
+    }
 }
 
 function enviarFormularioFinal() {
-  const metodo = document.getElementById('inputMetodoPagoSeleccionado').value;
-
-  if (metodo === 'TARJETA') {
-    const num = document.getElementById('inputNumeroTarjeta').value.replace(/\s/g, '');
-    const titular = document.getElementById('inputTitularTarjeta').value.trim();
-    const fecha = document.getElementById('inputFechaExpTarjeta').value.trim();
-    const cvv = document.getElementById('inputCvvTarjeta').value.trim();
-
-    if (!num || num.length < 16) {
-      alert('❌ Ingresa un número de tarjeta válido (16 dígitos).');
-      return;
-    }
-    if (!titular) {
-      alert('❌ Ingresa el nombre del titular.');
-      return;
-    }
-    if (!fecha || !cvv) {
-      alert('❌ Completa la fecha de expiración y el CVV.');
-      return;
-    }
-
-    // Crear campos ocultos en el form
     const form = document.getElementById('formReservaCompleta');
-    
-    function crearHidden(name, value) {
-      let input = document.getElementById('hidden_' + name);
-      if (!input) {
-        input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.id = 'hidden_' + name;
-        form.appendChild(input);
-      }
-      input.value = value;
-    }
-    
-    crearHidden('numeroTarjeta', num);
-    crearHidden('titularTarjeta', titular);
-    crearHidden('fechaExpTarjeta', fecha);
-    crearHidden('cvvTarjeta', cvv);
-  }
+    const metodo = document.getElementById('inputMetodoPagoSeleccionado').value;
 
-  validarYEnviarReserva();
+    if (metodo === 'TARJETA') {
+        const num = document.getElementById('inputNumeroTarjeta').value.replace(/\s/g, '');
+        const titular = document.getElementById('inputTitularTarjeta').value.trim();
+        const exp = document.getElementById('inputFechaExpTarjeta').value.trim();
+        const cvv = document.getElementById('inputCvvTarjeta').value.trim();
+
+        if (num.length < 13 || !titular || !exp || cvv.length < 3) {
+            mostrarResultadoPago('error', 'Datos de tarjeta inválidos',
+                'Revisa el número, titular, fecha y CVV de tu tarjeta.');
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.append('numeroTarjeta', num);
+        formData.append('titularTarjeta', titular);
+        formData.append('fechaExpTarjeta', exp);
+        formData.append('cvvTarjeta', cvv);
+        ultimoIntentoPago = formData;
+        ejecutarPagoAjax(formData);
+        return;
+    }
+
+   if (metodo === 'YAPE') {
+        const numYape = (document.getElementById('inputNumeroYape').value || '').replace(/\D/g, '');
+        const codigoYape = (document.getElementById('inputCodigoYape').value || '').replace(/\D/g, '');
+
+        if (numYape.length !== 9) {
+            mostrarResultadoPago('error', 'Número de Yape inválido',
+                'Ingresa un número de 9 dígitos que empiece con 9.');
+            return;
+        }
+        if (codigoYape.length !== 6) {
+            mostrarResultadoPago('error', 'Código inválido',
+                'El código de aprobación debe tener 6 dígitos.');
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.append('numeroYape', numYape);
+        formData.append('codigoYape', codigoYape);
+        ultimoIntentoPago = formData;
+        ejecutarPagoAjax(formData);
+        return;
+    }
+
+    if (metodo === 'PLIN') {
+        const numPlin = (document.getElementById('inputNumeroPlin').value || '').replace(/\D/g, '');
+        const codigoPlin = (document.getElementById('inputCodigoPlin').value || '').trim().toUpperCase();
+
+        if (numPlin.length !== 9) {
+            mostrarResultadoPago('error', 'Número de Plin inválido',
+                'Ingresa un número de 9 dígitos que empiece con 9.');
+            return;
+        }
+        if (!codigoPlin || codigoPlin.length < 8) {
+            mostrarResultadoPago('error', 'Código de operación inválido',
+                'Copia el código que aparece debajo del QR (formato PLxxxxxx).');
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.append('numeroPlin', numPlin);
+        formData.append('codigoPlin', codigoPlin);
+        ultimoIntentoPago = formData;
+        ejecutarPagoAjax(formData);
+        return;
+    }
+
+    // GRATUITO
+    const formData = new FormData(form);
+    ultimoIntentoPago = formData;
+    ejecutarPagoAjax(formData);
+}
+function ejecutarPagoAjax(formData) {
+    const modalResultado = document.getElementById('modalResultadoPago');
+    modalResultado.style.display = 'flex';
+
+    document.getElementById('iconoResultadoPago').textContent = '⏳';
+    document.getElementById('tituloResultadoPago').textContent = 'Procesando pago...';
+    document.getElementById('tituloResultadoPago').style.color = '#0f172a';
+    document.getElementById('mensajeResultadoPago').textContent = 'Por favor espera un momento.';
+    document.getElementById('accionesResultadoPago').style.display = 'none';
+    document.getElementById('spinnerResultadoPago').style.display = 'block';
+
+    const btnPagar = document.querySelector('.btn-confirmar-pago-final');
+    if (btnPagar) { btnPagar.disabled = true; btnPagar.textContent = 'Procesando...'; }
+
+    fetch('/alumno/reservas/confirmar-pago', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(async (response) => {
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                return { success: false, mensaje: 'Ocurrió un error inesperado. Intenta nuevamente.' };
+            }
+        })
+        .then((data) => {
+            if (btnPagar) { btnPagar.disabled = false; btnPagar.textContent = 'Confirmar y Pagar'; }
+
+            if (data.success) {
+                mostrarResultadoPago('exito', '¡Pago exitoso! 🎉',
+                    data.mensaje || 'Tu reserva ha sido confirmada.');
+                setTimeout(() => {
+                    cerrarResultadoPago();
+                    cerrarModalPago();
+                    cerrarWizard();
+                    location.reload();
+                }, 2000);
+            } else {
+                mostrarResultadoPago('error', 'Pago rechazado ❌',
+                    data.mensaje || 'Tu tarjeta fue rechazada. Verifica los datos o intenta con otro método de pago.');
+            }
+        })
+        .catch(() => {
+            if (btnPagar) { btnPagar.disabled = false; btnPagar.textContent = 'Confirmar y Pagar'; }
+            mostrarResultadoPago('error', 'Error de conexión',
+                'No se pudo procesar el pago. Revisa tu conexión e intenta nuevamente.');
+        });
+}
+
+// ============================================================================
+// 9. SUB-MODAL RESULTADO PAGO
+// ============================================================================
+function mostrarResultadoPago(tipo, titulo, mensaje) {
+    document.getElementById('spinnerResultadoPago').style.display = 'none';
+    document.getElementById('accionesResultadoPago').style.display = 'flex';
+
+    const icono = document.getElementById('iconoResultadoPago');
+    const tituloEl = document.getElementById('tituloResultadoPago');
+    const mensajeEl = document.getElementById('mensajeResultadoPago');
+    const btnReintentar = document.getElementById('btnReintentarPago');
+
+    if (tipo === 'exito') {
+        icono.textContent = '✅';
+        tituloEl.style.color = '#10b981';
+        btnReintentar.style.display = 'none';
+    } else {
+        icono.textContent = '❌';
+        tituloEl.style.color = '#ef4444';
+        btnReintentar.style.display = 'block';
+    }
+
+    tituloEl.textContent = titulo;
+    mensajeEl.textContent = mensaje;
+}
+
+function reintentarPago() {
+    if (ultimoIntentoPago) {
+        ejecutarPagoAjax(ultimoIntentoPago);
+    }
+}
+
+function cerrarResultadoPago() {
+    document.getElementById('modalResultadoPago').style.display = 'none';
 }
 
 function cerrarModalPago() {
-  // 1. Ocultamos el pago
-  document.getElementById('modalPagoReserva').style.display = 'none';
-  
-  // 2. Volvemos a mostrar el wizard de reserva
-  document.getElementById('modalWizard').style.display = 'flex';
+    document.getElementById('modalPagoReserva').style.display = 'none';
+    document.getElementById('modalWizard').style.display = 'flex';
+}
+
+// ============================================================================
+// 10. SELECCIÓN DE MÉTODO DE PAGO
+// ============================================================================
+let codigoPlinActual = null;
+
+function generarQrPlin(codigo) {
+    const cont = document.getElementById('qrcodePlin');
+    if (!cont) return;
+    cont.innerHTML = ''; // limpiar el QR anterior
+    if (typeof QRCode === 'undefined') {
+        console.warn('QRCode.js no está cargado');
+        return;
+    }
+    new QRCode(cont, {
+        text: codigo,
+        width: 180,
+        height: 180,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    document.getElementById('codigoQrPlin').innerText = codigo;
+}
+
+function generarCodigoPlinAleatorio() {
+    const num = Math.floor(100000 + Math.random() * 900000);
+    return 'PL' + num;
 }
 
 function seleccionarMetodo(opc, met) {
-  document.querySelectorAll('.opcion-metodo-pago').forEach(o => o.classList.remove('seleccionado'));
-  opc.classList.add('seleccionado');
-  document.getElementById('inputMetodoPagoSeleccionado').value = met;
+    document.querySelectorAll('.opcion-metodo-pago').forEach(o => o.classList.remove('seleccionado'));
+    opc.classList.add('seleccionado');
+    document.getElementById('inputMetodoPagoSeleccionado').value = met;
 
-  // Mostrar/ocultar secciones
-  const seccionQr = document.getElementById('seccionQrPago');
-  const seccionTarjeta = document.getElementById('seccionTarjetaPago');
+    const seccionBilleteras = document.getElementById('seccionBilleterasPago');
+    const subYape = document.getElementById('subSeccionYape');
+    const subPlin = document.getElementById('subSeccionPlin');
+    const seccionTarjeta = document.getElementById('seccionTarjetaPago');
+    const icono = document.getElementById('iconoBilletera');
+    const subtitulo = document.getElementById('subtituloBilletera');
 
-  if (met === 'TARJETA') {
-    seccionQr.style.display = 'none';
-    seccionTarjeta.style.display = 'block';
-  } else {
-    seccionQr.style.display = 'block';
-    seccionTarjeta.style.display = 'none';
-  }
+    if (met === 'TARJETA') {
+        if (seccionBilleteras) seccionBilleteras.style.display = 'none';
+        if (seccionTarjeta) seccionTarjeta.style.display = 'block';
+        return;
+    }
+
+    if (seccionTarjeta) seccionTarjeta.style.display = 'none';
+    if (seccionBilleteras) seccionBilleteras.style.display = 'block';
+
+    if (met === 'YAPE') {
+        icono.textContent = '📱';
+        subtitulo.textContent = 'Ingresa tu número de Yape y el código de 6 dígitos';
+        if (subYape) subYape.style.display = 'block';
+        if (subPlin) subPlin.style.display = 'none';
+    } else if (met === 'PLIN') {
+        icono.textContent = '💚';
+        subtitulo.textContent = 'Escanea el QR o copia el código de operación';
+        if (subYape) subYape.style.display = 'none';
+        if (subPlin) subPlin.style.display = 'block';
+
+        // Generar un código nuevo cada vez que se elige Plin
+        codigoPlinActual = generarCodigoPlinAleatorio();
+        generarQrPlin(codigoPlinActual);
+    }
 }
 
+// ============================================================================
+// 11. MODAL RESUMEN DE RESERVA
+// ============================================================================
 function abrirModalResumen(tarjeta) {
     const idReserva = tarjeta.getAttribute('data-id-reserva');
     if (!idReserva) return;
-    
+
     const formCancelar = document.getElementById('formCancelarReserva');
     if (formCancelar) {
         formCancelar.action = `/alumno/reservas/${idReserva}/cancelar`;
@@ -668,7 +889,7 @@ function abrirModalResumen(tarjeta) {
 
     document.getElementById('resumenId').innerText = idReserva;
     document.getElementById('modalResumenReserva').style.display = 'flex';
-    
+
     fetch(`/alumno/api/recibo/${idReserva}`)
         .then(res => res.json())
         .then(data => {
@@ -677,30 +898,31 @@ function abrirModalResumen(tarjeta) {
                 cerrarModalResumen();
                 return;
             }
-            
+
             document.getElementById('resumenLab').innerText = data.laboratorio;
             document.getElementById('resumenCubiculo').innerText = data.cubiculo;
             document.getElementById('resumenFecha').innerText = data.fecha;
-            document.getElementById('resumenHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
-            
+            document.getElementById('resumenHorario').innerText =
+                data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
+
             const estadoBadge = document.getElementById('resumenEstado');
             estadoBadge.innerText = data.estado;
             estadoBadge.className = 'badge-estado-recibo';
             if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
             else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
-            
-            // 👇 AGREGAR EL ENCARGADO A LA VISTA 👇
+            else if (data.estado === 'DEVUELTA') estadoBadge.classList.add('devuelta');
+
             const lblEncargado = document.getElementById('resumenEncargado');
             if (lblEncargado) {
                 lblEncargado.innerText = data.nombreEncargado || 'Por asignar';
             }
-            
+
             const contInteg = document.getElementById('resumenIntegrantes');
             contInteg.innerHTML = '';
             data.integrantes.forEach(i => {
                 contInteg.insertAdjacentHTML('beforeend', `
                     <div class="item-integrante-recibo">
-                        <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
+                        <div class="avatar-mini-recibo">${i.nombre.substring(0, 2).toUpperCase()}</div>
                         <div>
                             <strong>${i.nombre}</strong>
                             <span>${i.codigo}</span>
@@ -708,11 +930,11 @@ function abrirModalResumen(tarjeta) {
                     </div>
                 `);
             });
-            
+
             const contItems = document.getElementById('resumenItems');
             const seccionItems = document.getElementById('seccionInsumosResumen');
             contItems.innerHTML = '';
-            if (data.items.length === 0) {
+            if (!data.items || data.items.length === 0) {
                 seccionItems.style.display = 'none';
             } else {
                 seccionItems.style.display = 'block';
@@ -726,6 +948,10 @@ function abrirModalResumen(tarjeta) {
                 });
             }
             actualizarEstadoReservaEnVivo(idReserva, data.estado);
+        })
+        .catch(() => {
+            alert('No se pudo cargar el resumen de la reserva.');
+            cerrarModalResumen();
         });
 }
 
@@ -734,21 +960,15 @@ function cerrarModalResumen() {
 }
 
 // ============================================================================
-// FUNCIÓN PARA ACTUALIZAR LA TARJETA DEL ALUMNO EN TIEMPO REAL
+// 12. ACTUALIZACIÓN EN VIVO DEL ESTADO DE LA RESERVA
 // ============================================================================
 function actualizarEstadoReservaEnVivo(idReserva, nuevoEstado) {
-    // 1. Buscar la tarjeta de la reserva en el DOM
     const tarjeta = document.querySelector(`.tarjeta-reserva-activa[data-id-reserva="${idReserva}"]`);
-    
     if (!tarjeta) return;
 
-    // 2. Actualizar el Badge de estado
     const badge = tarjeta.querySelector('.badge-estado-historial');
     if (badge) {
-        // Limpiamos clases viejas
-        badge.className = 'badge-estado-historial'; 
-        
-        // Aplicamos la nueva clase según el estado
+        badge.className = 'badge-estado-historial';
         if (nuevoEstado === 'EN_USO') {
             badge.classList.add('enuso');
             badge.innerText = 'En Uso';
@@ -758,27 +978,28 @@ function actualizarEstadoReservaEnVivo(idReserva, nuevoEstado) {
         } else if (nuevoEstado === 'INSPECCIONADA') {
             badge.classList.add('inspeccionada');
             badge.innerText = 'Inspeccionada';
+        } else if (nuevoEstado === 'CONFIRMADA') {
+            badge.classList.add('confirmada');
+            badge.innerText = 'Confirmada';
+        } else if (nuevoEstado === 'CANCELADA') {
+            badge.classList.add('cancelada');
+            badge.innerText = 'Cancelada';
         }
     }
 
-    // 3. Si el estado pasa a EN_USO, actualizamos el contador visual
     if (nuevoEstado === 'EN_USO') {
         const contador = document.querySelector('.alert-info');
         if (contador) {
-            // Buscamos el número actual en el texto
             const text = contador.innerText;
             const match = text.match(/Hoy llevas (\d+) de 2/);
             if (match) {
                 const reservasHoy = parseInt(match[1]) + 1;
                 const restantes = Math.max(0, 2 - reservasHoy);
                 contador.innerHTML = `Hoy llevas <strong>${reservasHoy}</strong> de 2 reservas permitidas. Te quedan <strong>${restantes}</strong>.`;
-                
-                // Si ya llegó a 2, ocultar el botón de nueva reserva
+
                 if (reservasHoy >= 2) {
                     const btnNuevaReserva = document.querySelector('.btn-nueva-reserva');
-                    if (btnNuevaReserva) {
-                        btnNuevaReserva.style.display = 'none';
-                    }
+                    if (btnNuevaReserva) btnNuevaReserva.style.display = 'none';
                 }
             }
         }
@@ -786,40 +1007,32 @@ function actualizarEstadoReservaEnVivo(idReserva, nuevoEstado) {
 }
 
 // ============================================================================
-// PASO C: VIGILANTE AUTOMÁTICO (Se ejecuta cada 30 segundos)
+// 13. VIGILANTE AUTOMÁTICO (cada 30s)
 // ============================================================================
 setInterval(() => {
-    // Buscamos todas las tarjetas de reservas activas en la pantalla
     const tarjetas = document.querySelectorAll('.tarjeta-reserva-activa');
-    
     tarjetas.forEach(tarjeta => {
         const idReserva = tarjeta.getAttribute('data-id-reserva');
         if (!idReserva) return;
 
-        // Consultamos el estado actual al backend
         fetch(`/alumno/api/recibo/${idReserva}`)
             .then(res => res.json())
             .then(data => {
                 if (data.encontrado) {
-                    // Actualizamos la tarjeta con el estado real
                     actualizarEstadoReservaEnVivo(idReserva, data.estado);
                 }
             })
-            .catch(() => {
-                // Si falla la consulta (ej. sin internet), lo ignoramos silenciosamente
-            });
+            .catch(() => { /* silencio */ });
     });
-}, 30000); // 30000 milisegundos = 30 segundos
+}, 30000);
 
+// ============================================================================
+// 14. CANCELAR RESERVA
+// ============================================================================
 function confirmarCancelacionReserva() {
-    // 1. Pedimos confirmación
     if (!confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')) {
         return;
     }
-
-    // 2. Obtenemos el formulario
     const form = document.getElementById('formCancelarReserva');
-
-    // 3. Hacemos el submit (el backend nos redirigirá a /alumno/laboratorios)
     form.submit();
 }

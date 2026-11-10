@@ -19,6 +19,85 @@
       rel="stylesheet"
     />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <!-- Estilos de imágenes para tarjetas de laboratorios -->
+    <style>
+      .tarjeta-lab-grid {
+        display: flex;
+        flex-direction: column;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+      }
+      .tarjeta-lab-grid:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+      }
+      .portada-lab-wrapper {
+        position: relative;
+        width: 100%;
+        height: 145px;
+        background-color: #f1f5f9;
+        overflow: hidden;
+      }
+      .img-lab-portada {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      .tarjeta-lab-grid:hover .img-lab-portada {
+        transform: scale(1.05);
+      }
+      .icono-flotante-tipo {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(4px);
+      }
+      .icono-flotante-tipo svg,
+      .icono-flotante-tipo i {
+        width: 18px;
+        height: 18px;
+      }
+      .item-lab-radio {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .miniatura-lab-wizard {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background-color: #f1f5f9;
+      }
+      .img-lab-thumb {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-15px); }
+        60% { transform: translateY(-7px); }
+      }
+    </style>
   </head>
   <body>
     <div class="contenedor-app">
@@ -171,10 +250,10 @@
                   </div>
                 </div>
                 <span class="badge-estado-historial" 
-      th:classappend="${r.estado == 'CONFIRMADA' ? 'confirmada' : (r.estado == 'EN_USO' ? 'enuso' : (r.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
-      th:text="${r.estado == 'EN_USO' ? 'En Uso' : (r.estado == 'DEVUELTA' ? 'Devuelta' : r.estado)}">
-  Confirmada
-</span>
+                  th:classappend="${r.estado == 'CONFIRMADA' ? 'confirmada' : (r.estado == 'EN_USO' ? 'enuso' : (r.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
+                  th:text="${r.estado == 'EN_USO' ? 'En Uso' : (r.estado == 'DEVUELTA' ? 'Devuelta' : r.estado)}">
+                  Confirmada
+                </span>
                 <span class="codigo-reserva-gris" th:text="${r.idReserva}"
                   >R-001</span
                 >
@@ -248,16 +327,23 @@
                 th:data-cubiculo="${lab.ubicacionCubiculo}"
                 onclick="gestionarClickLab(this)"
               >
-                <div
-                  class="icono-cuadro-lab"
-                  th:classappend="${lab.tipo == 'Mecatrónica' ? 'bg-engranaje' : (lab.tipo == 'Física' ? 'bg-rayo' : 'bg-quimica')}"
-                >
-                  <i th:if="${lab.tipo == 'Química'}" data-lucide="beaker"></i>
-                  <i
-                    th:if="${lab.tipo == 'Mecatrónica'}"
-                    data-lucide="settings"
-                  ></i>
-                  <i th:if="${lab.tipo == 'Física'}" data-lucide="zap"></i>
+                <!-- PORTADA DE IMAGEN (DESDE BD CON FALLBACK LOCAL) -->
+                <div class="portada-lab-wrapper">
+                  <img
+                    th:src="@{${lab.imagenUrl != null and !#strings.isEmpty(lab.imagenUrl) ? lab.imagenUrl : '/img/labs/' + (lab.tipo == 'Química' ? 'quimica.jpg' : (lab.tipo == 'Mecatrónica' ? 'mecatronica.jpg' : 'fisica.jpg'))}}"
+                    th:alt="${lab.nombre}"
+                    class="img-lab-portada"
+                    onerror="this.onerror=null; this.src='/img/labs/quimica.jpg';"
+                  />
+
+                  <div
+                    class="icono-flotante-tipo"
+                    th:classappend="${lab.tipo == 'Mecatrónica' ? 'bg-engranaje' : (lab.tipo == 'Física' ? 'bg-rayo' : 'bg-quimica')}"
+                  >
+                    <i th:if="${lab.tipo == 'Química'}" data-lucide="beaker"></i>
+                    <i th:if="${lab.tipo == 'Mecatrónica'}" data-lucide="settings"></i>
+                    <i th:if="${lab.tipo == 'Física'}" data-lucide="zap"></i>
+                  </div>
                 </div>
 
                 <div class="info-tarjeta-lab">
@@ -270,7 +356,6 @@
                   >
                     Bloque A, A-101
                   </p>
-                  <span class="puestos-tag">12 puestos</span>
                 </div>
               </div>
             </div>
@@ -285,7 +370,7 @@
             <div class="icono-cabecera-lab"><i data-lucide="beaker"></i></div>
             <div style="flex: 1; margin-left: 1rem;">
               <h3 id="tituloLabModal">Lab. Química</h3>
-              <p id="subtituloLabModal">Bloque A · Sala A-101 · 12 puestos</p>
+              <p id="subtituloLabModal">Bloque A · Sala A-101</p>
             </div>
             <button
               type="button"
@@ -435,19 +520,13 @@
                   th:data-cubiculo="${lab.ubicacionCubiculo}"
                   onclick="seleccionarLabWizard(this)"
                 >
-                  <div
-                    class="icono-cuadro-lab mini"
-                    th:classappend="${lab.tipo == 'Mecatrónica' ? 'bg-engranaje' : (lab.tipo == 'Física' ? 'bg-rayo' : 'bg-quimica')}"
-                  >
-                    <i
-                      th:if="${lab.tipo == 'Química'}"
-                      data-lucide="beaker"
-                    ></i>
-                    <i
-                      th:if="${lab.tipo == 'Mecatrónica'}"
-                      data-lucide="settings"
-                    ></i>
-                    <i th:if="${lab.tipo == 'Física'}" data-lucide="zap"></i>
+                  <div class="miniatura-lab-wizard">
+                    <img
+                      th:src="@{${lab.imagenUrl != null and !#strings.isEmpty(lab.imagenUrl) ? lab.imagenUrl : '/img/labs/' + (lab.tipo == 'Química' ? 'quimica.jpg' : (lab.tipo == 'Mecatrónica' ? 'mecatronica.jpg' : 'fisica.jpg'))}}"
+                      th:alt="${lab.nombre}"
+                      class="img-lab-thumb"
+                      onerror="this.onerror=null; this.src='/img/labs/fisica.jpg';"
+                    />
                   </div>
                   <div class="info-lab-mini">
                     <strong th:text="${lab.nombre}">Lab. Química</strong>
@@ -995,11 +1074,10 @@
                 <span class="lbl-meta-recibo">HORARIO</span>
                 <strong id="resumenHorario">07:00 – 09:00</strong>
               </div>
-              <!-- 👇 ENCARGADO A CARGO (NUEVO) 👇 -->
-<div class="col-meta-recibo">
-    <span class="lbl-meta-recibo">ENCARGADO A CARGO</span>
-    <strong id="resumenEncargado" style="color: #0f172a; font-size: 0.95rem;">Por asignar</strong>
-</div>
+              <div class="col-meta-recibo">
+                <span class="lbl-meta-recibo">ENCARGADO A CARGO</span>
+                <strong id="resumenEncargado" style="color: #0f172a; font-size: 0.95rem;">Por asignar</strong>
+              </div>
               <div class="col-meta-recibo">
                 <span class="lbl-meta-recibo">ESTADO</span>
                 <span id="resumenEstado" class="badge-estado-recibo"
@@ -1023,7 +1101,6 @@
           </div>
 
           <div class="pie-modal-recibo" style="justify-content: space-between">
-            <!-- Formulario para cancelar con acción dinámica -->
             <form
               id="formCancelarReserva"
               action=""
@@ -1050,9 +1127,7 @@
       </div>
     </div> <!-- FIN DEL CONTENEDOR-APP -->
 
-    <!-- ======================================================= -->
-    <!-- MODAL 3: PAGO (MOVIDO FUERA DEL CONTENEDOR PRINCIPAL)   -->
-    <!-- ======================================================= -->
+    <!-- MODAL 3: PAGO -->
     <div
       id="modalPagoReserva"
       class="fondo-modal"
@@ -1108,42 +1183,85 @@
           </div>
         </div>
 
-        <!-- QR simulado para YAPE/PLIN -->
-        <div id="seccionQrPago" style="text-align:center; margin: 1rem 0;">
-          <div style="background:#f8fafc; border-radius:12px; padding:1.5rem;">
-            <p style="font-size:2.5rem; margin:0;">📱</p>
-            <p style="font-size:0.85rem; color:#64748b; margin:0.5rem 0;">
-              Escanea el QR o presiona "Confirmar y Pagar"
-            </p>
-            <p style="font-weight:700; margin:0;" id="montoQrText">S/ 0.00</p>
+        <div id="seccionBilleterasPago" style="display: block; margin: 1rem 0;">
+          <div style="background:#f8fafc; border-radius:12px; padding:1.2rem;">
+
+            <div style="text-align:center; margin-bottom: 1rem;">
+              <p style="font-size:2rem; margin:0;" id="iconoBilletera">📱</p>
+              <p style="font-size:0.85rem; color:#64748b; margin:0.5rem 0;" id="subtituloBilletera">
+                Ingresa tu número y el código de aprobación
+              </p>
+              <p style="font-weight:700; margin:0; color:#2563eb;" id="montoBilleteraText">S/ 0.00</p>
+            </div>
+
+            <!-- YAPE: número + código -->
+            <div id="subSeccionYape">
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                <div>
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de celular Yape</label>
+                  <input type="text" id="inputNumeroYape" name="numeroYape" placeholder="987654321" maxlength="9"
+                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                </div>
+                <div>
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Código de aprobación (6 dígitos)</label>
+                  <input type="text" id="inputCodigoYape" name="codigoYape" placeholder="123456" maxlength="6"
+                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                </div>
+              </div>
+            </div>
+
+            <!-- PLIN: QR + número + código -->
+            <div id="subSeccionPlin" style="display: none;">
+              <div style="text-align:center; margin-bottom: 1rem;">
+                <div id="qrcodePlin" style="display:inline-block; padding:12px; background:#fff; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
+                <p style="font-size:0.75rem; color:#64748b; margin-top:0.5rem;">
+                  Escanea el QR con la app Plin o copia el código
+                </p>
+                <p style="font-weight:700; font-size:1rem; color:#0f172a; letter-spacing:1px; margin-top:0.25rem;"
+                  id="codigoQrPlin">PL------</p>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                <div>
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de celular Plin</label>
+                  <input type="text" id="inputNumeroPlin" name="numeroPlin" placeholder="987654321" maxlength="9"
+                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                </div>
+                <div>
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Código de operación (del QR)</label>
+                  <input type="text" id="inputCodigoPlin" name="codigoPlin" placeholder="PL123456" maxlength="8"
+                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Formulario de tarjeta (oculto por defecto) -->
+        <!-- Formulario de tarjeta -->
         <div id="seccionTarjetaPago" style="display: none; margin: 1rem 0;">
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de tarjeta</label>
               <input type="text" id="inputNumeroTarjeta" name="numeroTarjeta"
-                    placeholder="4111 1111 1111 1111" maxlength="19"
-                    style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                     placeholder="4544645698726985" maxlength="19"
+                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Titular</label>
               <input type="text" id="inputTitularTarjeta"
-                    placeholder="JUAN PEREZ"
-                    style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                     placeholder="JUAN PEREZ"
+                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div style="display:flex; gap:0.75rem;">
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">Fecha exp.</label>
                 <input type="text" id="inputFechaExpTarjeta" placeholder="MM/AA" maxlength="5"
-                      style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">CVV</label>
                 <input type="text" id="inputCvvTarjeta" placeholder="123" maxlength="3"
-                      style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
             </div>
           </div>
@@ -1159,11 +1277,35 @@
       </div>
     </div>
 
-    <!-- ========================================== -->
-<!-- MODAL DE GUÍA INTERACTIVA PARA ALUMNOS     -->
-<!-- ========================================== -->
-<div id="modalGuiaInteractiva" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 20px; width: 90%; max-width: 480px; padding: 2.5rem 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); position: relative; overflow: hidden; text-align: center;">
+        <!-- SUB-MODAL: RESULTADO DEL PAGO -->
+    <div id="modalResultadoPago" class="fondo-modal" style="display: none; z-index: 1000000; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+      <div class="tarjeta-modal" style="max-width: 420px; padding: 2rem; text-align: center;">
+        <div id="iconoResultadoPago" style="font-size: 4rem; margin-bottom: 1rem;">⏳</div>
+        <h3 id="tituloResultadoPago" style="color: #0f172a; font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem;">Procesando pago...</h3>
+        <p id="mensajeResultadoPago" style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+          Por favor espera un momento.
+        </p>
+        <div id="accionesResultadoPago" style="display: none; flex-direction: column; gap: 0.75rem;">
+          <button type="button" id="btnReintentarPago" class="btn-azul-continuar" style="display:none;" onclick="reintentarPago()">
+            Reintentar pago
+          </button>
+          <button type="button" id="btnCerrarResultadoPago" class="btn-gris-cerrar" onclick="cerrarResultadoPago()">
+            Cerrar
+          </button>
+        </div>
+        <div id="spinnerResultadoPago" style="margin-top: 1rem;">
+          <div style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; margin: 0 auto; animation: spin 0.8s linear infinite;"></div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <!-- MODAL DE GUÍA INTERACTIVA PARA ALUMNOS -->
+    <div id="modalGuiaInteractiva" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
+      <div style="background: white; border-radius: 20px; width: 90%; max-width: 480px; padding: 2.5rem 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); position: relative; overflow: hidden; text-align: center;">
         
         <!-- Barra de progreso superior -->
         <div style="position: absolute; top: 0; left: 0; height: 6px; background: #2563eb; transition: width 0.4s ease; width: 0%;" id="barraProgresoGuia"></div>
@@ -1173,134 +1315,114 @@
 
         <!-- Contenido dinámico -->
         <div id="contenidoGuia" style="margin-top: 1rem;">
-            <!-- El JS llenará esto -->
+          <!-- El JS llenará esto -->
         </div>
 
         <!-- Controles -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem;">
-            <button onclick="cerrarGuia(true)" style="background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; font-size: 0.9rem; padding: 0;">Omitir</button>
-            
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="btnAtrasGuia" onclick="pasoAnteriorGuia()" style="display: none; background: #f1f5f9; color: #475569; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Atrás</button>
-                <button id="btnSiguienteGuia" onclick="siguientePasoGuia()" style="background: #2563eb; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Siguiente</button>
-            </div>
+          <button onclick="cerrarGuia(true)" style="background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; font-size: 0.9rem; padding: 0;">Omitir</button>
+          
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="btnAtrasGuia" onclick="pasoAnteriorGuia()" style="display: none; background: #f1f5f9; color: #475569; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Atrás</button>
+            <button id="btnSiguienteGuia" onclick="siguientePasoGuia()" style="background: #2563eb; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Siguiente</button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- SCRIPT DE LA GUÍA -->
-<script>
-    const pasosGuia = [
+    <!-- SCRIPT DE LA GUÍA -->
+    <script>
+      const pasosGuia = [
         {
-            titulo: "¡Bienvenido a UTP +Lab! 👋",
-            texto: "Estamos felices de tenerte aquí. Esta pequeña guía te mostrará cómo reservar tu primer laboratorio en menos de 1 minuto.",
-            icono: "🎓"
+          titulo: "¡Bienvenido a UTP +Lab! 👋",
+          texto: "Estamos felices de tenerte aquí. Esta pequeña guía te mostrará cómo reservar tu primer laboratorio en menos de 1 minuto.",
+          icono: "🎓"
         },
         {
-            titulo: "1. Elige tu Laboratorio 🔬",
-            texto: "En esta pantalla encontrarás los cubículos disponibles (Química, Física, Mecatrónica). Fíjate en los que tienen el punto verde, ¡esos están libres!",
-            icono: "🔭"
+          titulo: "1. Elige tu Laboratorio 🔬",
+          texto: "En esta pantalla encontrarás los cubículos disponibles (Química, Física, Mecatrónica). Fíjate en los que tienen el punto verde, ¡esos están libres!",
+          icono: "🔭"
         },
         {
-            titulo: "2. Revisa los Materiales 📦",
-            texto: "Al elegir un laboratorio, verás los equipos y EPPs (como batas y gafas) que necesitas. ¡Asegúrate de revisar el stock antes de reservar!",
-            icono: "🧪"
+          titulo: "2. Revisa los Materiales 📦",
+          texto: "Al elegir un laboratorio, verás los equipos y EPPs (como batas y gafas) que necesitas. ¡Asegúrate de revisar el stock antes de reservar!",
+          icono: "🧪"
         },
         {
-            titulo: "3. ¡Reserva y Listo! ✅",
-            texto: "Elige la fecha y hora (máximo 2 horas). Una vez confirmada, acércate al laboratorio en el horario indicado para que el Encargado valide tu Check-in.",
-            icono: "🚀"
+          titulo: "3. ¡Reserva y Listo! ✅",
+          texto: "Elige la fecha y hora (máximo 2 horas). Una vez confirmada, acércate al laboratorio en el horario indicado para que el Encargado valide tu Check-in.",
+          icono: "🚀"
         }
-    ];
+      ];
 
-    let pasoActualGuia = 0;
+      let pasoActualGuia = 0;
 
-    // Verificamos si el alumno ya vio la guía al cargar la página
-    document.addEventListener("DOMContentLoaded", () => {
-        // Usamos localStorage para recordar si ya la vio
+      document.addEventListener("DOMContentLoaded", () => {
         const yaVioGuia = localStorage.getItem('utp_guia_alumno_vista');
-        
-        // Si es un alumno nuevo (o borró caché), mostramos la guía
         if (!yaVioGuia) {
-            // Pequeño delay para que la página cargue primero
-            setTimeout(() => {
-                document.getElementById('modalGuiaInteractiva').style.display = 'flex';
-                renderizarPasoGuia();
-            }, 800); 
+          setTimeout(() => {
+            document.getElementById('modalGuiaInteractiva').style.display = 'flex';
+            renderizarPasoGuia();
+          }, 800); 
         }
-    });
+      });
 
-    function renderizarPasoGuia() {
+      function renderizarPasoGuia() {
         const paso = pasosGuia[pasoActualGuia];
-        
-        // Animación simple de fade-in
         const contenedor = document.getElementById('contenidoGuia');
         contenedor.style.opacity = '0';
         
         setTimeout(() => {
-            contenedor.innerHTML = `
-                <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s;">${paso.icono}</div>
-                <h2 style="color: #0f172a; font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">${paso.titulo}</h2>
-                <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6; margin: 0;">${paso.texto}</p>
-            `;
-            contenedor.style.transition = 'opacity 0.3s ease';
-            contenedor.style.opacity = '1';
+          contenedor.innerHTML = `
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s;">${paso.icono}</div>
+            <h2 style="color: #0f172a; font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">${paso.titulo}</h2>
+            <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6; margin: 0;">${paso.texto}</p>
+          `;
+          contenedor.style.transition = 'opacity 0.3s ease';
+          contenedor.style.opacity = '1';
         }, 100);
 
-        // Actualizamos la barra de progreso
         const progreso = ((pasoActualGuia + 1) / pasosGuia.length) * 100;
         document.getElementById('barraProgresoGuia').style.width = progreso + '%';
 
-        // Lógica de los botones
         const btnAtras = document.getElementById('btnAtrasGuia');
         const btnSiguiente = document.getElementById('btnSiguienteGuia');
 
         btnAtras.style.display = pasoActualGuia === 0 ? 'none' : 'block';
 
         if (pasoActualGuia === pasosGuia.length - 1) {
-            btnSiguiente.innerText = "¡Empezar!";
-            btnSiguiente.style.background = "#10b981"; // Verde
+          btnSiguiente.innerText = "¡Empezar!";
+          btnSiguiente.style.background = "#10b981";
         } else {
-            btnSiguiente.innerText = "Siguiente";
-            btnSiguiente.style.background = "#2563eb"; // Azul
+          btnSiguiente.innerText = "Siguiente";
+          btnSiguiente.style.background = "#2563eb";
         }
-    }
+      }
 
-    function siguientePasoGuia() {
+      function siguientePasoGuia() {
         if (pasoActualGuia < pasosGuia.length - 1) {
-            pasoActualGuia++;
-            renderizarPasoGuia();
+          pasoActualGuia++;
+          renderizarPasoGuia();
         } else {
-            cerrarGuia(true); // Si es el último paso, cerramos
+          cerrarGuia(true);
         }
-    }
+      }
 
-    function pasoAnteriorGuia() {
+      function pasoAnteriorGuia() {
         if (pasoActualGuia > 0) {
-            pasoActualGuia--;
-            renderizarPasoGuia();
+          pasoActualGuia--;
+          renderizarPasoGuia();
         }
-    }
+      }
 
-    function cerrarGuia(guardarEstado) {
+      function cerrarGuia(guardarEstado) {
         const modal = document.getElementById('modalGuiaInteractiva');
         modal.style.display = 'none';
-        
-        // Si el usuario terminó la guía o le dio a "Omitir", guardamos que ya la vio
         if (guardarEstado) {
-            localStorage.setItem('utp_guia_alumno_vista', 'true');
+          localStorage.setItem('utp_guia_alumno_vista', 'true');
         }
-    }
-</script>
-
-<!-- Pequeño CSS para la animación del icono -->
-<style>
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-15px); }
-        60% { transform: translateY(-7px); }
-    }
-</style>
+      }
+    </script>
 
     <!-- Scripts globales (lucide, etc.) -->
     <div th:replace="~{fragments/scripts}"></div>

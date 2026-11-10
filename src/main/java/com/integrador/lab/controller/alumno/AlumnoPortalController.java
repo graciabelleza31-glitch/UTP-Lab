@@ -12,12 +12,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -222,259 +225,318 @@ public class AlumnoPortalController {
         return "alumno/catalogos";
     }
 
-    // =========================================================================
-    // 3. PROCESAR RESERVA, INTEGRANTES, ÍTEMS, STOCK Y BOLETA
-    // =========================================================================
-    @PostMapping("/reservas/confirmar-pago")
-    @Transactional
-    public String procesarPagoYReserva(
-            @RequestParam("idLab") String idLab,
-            @RequestParam("fecha") String fechaStr,
-            @RequestParam("horaInicio") String horaInicioStr,
-            @RequestParam("horaFin") String horaFinStr,
-            @RequestParam("integrantesCodigos") List<String> codigosIntegrantes,
-            @RequestParam(value = "insumosIds", required = false) List<String> insumosIds,
-            @RequestParam(value = "eppsIds", required = false) List<String> eppsIds,
-            @RequestParam("montoTotal") BigDecimal montoTotal,
-            @RequestParam(value = "metodoPago", defaultValue = "GRATUITO") String metodoPago,
-            @RequestParam(value = "numeroTarjeta", required = false) String numeroTarjeta,
-            @RequestParam(value = "titularTarjeta", required = false) String titularTarjeta,
-            @RequestParam(value = "fechaExpTarjeta", required = false) String fechaExpTarjeta,
-            @RequestParam(value = "cvvTarjeta", required = false) String cvvTarjeta,
-            HttpSession sesion, RedirectAttributes redirectAttributes) {
+@PostMapping("/reservas/confirmar-pago")
+@Transactional
+public Object procesarPagoYReserva(
+        @RequestParam("idLab") String idLab,
+        @RequestParam("fecha") String fechaStr,
+        @RequestParam("horaInicio") String horaInicioStr,
+        @RequestParam("horaFin") String horaFinStr,
+        @RequestParam("integrantesCodigos") List<String> codigosIntegrantes,
+        @RequestParam(value = "insumosIds", required = false) List<String> insumosIds,
+        @RequestParam(value = "eppsIds", required = false) List<String> eppsIds,
+        @RequestParam("montoTotal") BigDecimal montoTotal,
+        @RequestParam(value = "metodoPago", defaultValue = "GRATUITO") String metodoPago,
+        @RequestParam(value = "numeroTarjeta", required = false) String numeroTarjeta,
+        @RequestParam(value = "titularTarjeta", required = false) String titularTarjeta,
+        @RequestParam(value = "fechaExpTarjeta", required = false) String fechaExpTarjeta,
+        @RequestParam(value = "cvvTarjeta", required = false) String cvvTarjeta,
+        @RequestParam(value = "numeroYape", required = false) String numeroYape,
+        @RequestParam(value = "codigoYape", required = false) String codigoYape,
+        @RequestParam(value = "numeroPlin", required = false) String numeroPlin,
+        @RequestParam(value = "codigoPlin", required = false) String codigoPlin,
+        @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+        HttpSession sesion,
+        RedirectAttributes redirectAttributes) {
 
-        Object usuario = sesion.getAttribute("usuarioLogueado");
-        if (usuario == null) return "redirect:/login";
-        Alumno alumnoLogueado = (Alumno) usuario;
 
-        String idCarreraAlumno = (alumnoLogueado.getCarrera() != null) ? alumnoLogueado.getCarrera().getIdCarrera() : null;
-        if (idCarreraAlumno == null) return "redirect:/alumno/laboratorios";
-        
-        List<Laboratorio> labsPermitidos = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarreraAlumno);
-        boolean labPermitido = labsPermitidos.stream().anyMatch(l -> l.getIdLab().equals(idLab));
-        if (!labPermitido) {
-            redirectAttributes.addFlashAttribute("errorReserva", "Tu carrera no tiene acceso a este laboratorio.");
-            return "redirect:/alumno/laboratorios";
-        }
+    System.out.println("═══════════════════════════════════════════════");
+    System.out.println("🚀 [1] LLEGÓ AL CONTROLLER");
+    System.out.println("   metodoPago     = [" + metodoPago + "]");
+    System.out.println("   numeroTarjeta  = [" + numeroTarjeta + "]");
+    System.out.println("   titularTarjeta = [" + titularTarjeta + "]");
+    System.out.println("   fechaExpTarjeta= [" + fechaExpTarjeta + "]");
+    System.out.println("   cvvTarjeta     = [" + cvvTarjeta + "]");
+    System.out.println("   montoTotal     = " + montoTotal);
+    System.out.println("   esAjax         = " + "XMLHttpRequest".equals(requestedWith));
+    System.out.println("═══════════════════════════════════════════════");
 
-        boolean tieneSancion = sancionRepositorio.existsByAlumno_IdEstudAndEstado(alumnoLogueado.getIdEstud(), "PENDIENTE");
-        String estadoCuentaAlumno = (alumnoLogueado.getEstadoCuenta() != null) ? alumnoLogueado.getEstadoCuenta().trim().toUpperCase() : "";
-        boolean cuentaBloqueada = "BLOQUEADO_POR_DEUDA".equals(estadoCuentaAlumno) || estadoCuentaAlumno.contains("BLOQUEADO");
+    boolean esAjax = "XMLHttpRequest".equals(requestedWith);
 
-        if (tieneSancion || cuentaBloqueada) return "redirect:/alumno/laboratorios";
-
-        // ⭐ SIMULAR EL PAGO
-        PagoSimulacionService.ResultadoPago resultadoPago =
-            pagoSimulacionService.procesarPago(
-                metodoPago, numeroTarjeta, titularTarjeta, 
-                fechaExpTarjeta, cvvTarjeta, montoTotal);
-
-        if (!resultadoPago.isExitoso()) {
-            redirectAttributes.addFlashAttribute("errorReserva", resultadoPago.getMensaje());
-            return "redirect:/alumno/laboratorios";
-        }
-
-        Optional<Laboratorio> labOpt = laboratorioRepositorio.findById(idLab);
-        if (labOpt.isEmpty()) return "redirect:/alumno/laboratorios";
-        Laboratorio lab = labOpt.get();
-
-        LocalDate fecha;
-        LocalTime horaInicio;
-        LocalTime horaFin;
-
-        try {
-            fecha = LocalDate.parse(fechaStr);
-            horaInicio = LocalTime.parse(horaInicioStr);
-            horaFin = LocalTime.parse(horaFinStr);
-        } catch (DateTimeParseException e) {
-            return "redirect:/alumno/laboratorios";
-        }
-
-        if (fecha.isBefore(LocalDate.now())) return "redirect:/alumno/laboratorios";
-        if (!horaFin.isAfter(horaInicio)) return "redirect:/alumno/laboratorios";
-
-        // 1. LÍMITE DE DOS RESERVAS DIARIAS
-        List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
-        List<String> idsReservasDelDia = new ArrayList<>();
-
-        for (ReservaIntegrante participacion : participacionesAlumno) {
-            Reserva reservaExistente = participacion.getReserva();
-            if (reservaExistente == null || reservaExistente.getFechaReserva() == null || !fecha.equals(reservaExistente.getFechaReserva())) continue;
-            
-            String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
-            
-            if (!estado.equals("CANCELADA")) {
-                if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
-                    idsReservasDelDia.add(reservaExistente.getIdReserva());
-                }
-            }
-        }
-
-        if (idsReservasDelDia.size() >= 2) {
-            redirectAttributes.addFlashAttribute("errorReserva", "Ya alcanzaste el límite de dos reservas para este día. Las reservas canceladas no cuentan.");
-            return "redirect:/alumno/laboratorios";
-        }
-
-        // B. Validar integrantes (Y evitar duplicar al creador)
-        if (codigosIntegrantes != null) {
-            for (String codIntegrante : codigosIntegrantes) {
-                if (codIntegrante.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) continue;
-
-                List<ReservaIntegrante> participacionesIntegrante = reservaIntegranteRepositorio.findByAlumno_IdEstud(codIntegrante.trim());
-                List<String> idsReservasIntegrante = new ArrayList<>();
-
-                for (ReservaIntegrante part : participacionesIntegrante) {
-                    Reserva r = part.getReserva();
-                    if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
-
-                    String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-                    if (!est.equals("CANCELADA")) {
-                        if (!idsReservasIntegrante.contains(r.getIdReserva())) {
-                            idsReservasIntegrante.add(r.getIdReserva());
-                        }
-                    }
-                }
-
-                if (idsReservasIntegrante.size() >= 2) {
-                    redirectAttributes.addFlashAttribute("errorReserva", 
-                        "No se puede completar la reserva. El alumno con código " + codIntegrante + " ya alcanzó su límite de 2 reservas para este día.");
-                    return "redirect:/alumno/laboratorios";
-                }
-            }
-        }
-
-        // 2. EVITAR SUPERPOSICIONES
-        List<Reserva> reservasDelLaboratorio = reservaRepositorio.findByLaboratorio_IdLabAndFechaReserva(idLab, fecha);
-
-        for (Reserva reservaExistente : reservasDelLaboratorio) {
-            String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
-            
-            boolean reservaActiva = estado.equals("CONFIRMADA") || estado.equals("EN_USO");
-            if (!reservaActiva) continue; 
-
-            LocalTime inicioExistente = reservaExistente.getHoraInicio();
-            LocalTime finExistente = reservaExistente.getHoraFin();
-            if (inicioExistente == null || finExistente == null) continue;
-
-            boolean haySuperposicion = horaInicio.isBefore(finExistente) && horaFin.isAfter(inicioExistente);
-
-            if (haySuperposicion) {
-                redirectAttributes.addFlashAttribute("errorReserva", "¡Cruce de horario! El laboratorio ya tiene una reserva activa durante el horario seleccionado. Elige otra hora.");
-                return "redirect:/alumno/laboratorios";
-            }
-        }
-
-        // A. Generación de ID
-        String idReserva = "RES001";
-        Optional<String> ultimoIdOpt = reservaRepositorio.findUltimoIdReserva();
-
-        if (ultimoIdOpt.isPresent()) {
-            try {
-                String ultimoId = ultimoIdOpt.get().trim();
-                int num = Integer.parseInt(ultimoId.substring(3));
-                idReserva = String.format("RES%03d", num + 1);
-            } catch (Exception e) {
-                long count = reservaRepositorio.count() + 1;
-                idReserva = String.format("RES%03d", count);
-            }
-        }
-
-        Reserva nuevaReserva = new Reserva(idReserva, lab, fecha, horaInicio, horaFin, "CONFIRMADA");
-        reservaRepositorio.save(nuevaReserva);
-
-        // B. Guardar Responsable
-        ReservaIntegrante responsable = new ReservaIntegrante(nuevaReserva, alumnoLogueado, false);
-        reservaIntegranteRepositorio.save(responsable);
-
-        // C. Guardar Integrantes
-        if (codigosIntegrantes != null) {
-            for (String cod : codigosIntegrantes) {
-                if (!cod.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) {
-                    Alumno integrante = alumnoRepositorio.findById(cod.trim()).orElse(null);
-                    
-                    if (integrante != null && integrante.getCarrera() != null) {
-                        List<Laboratorio> labsPermitidosIntegrante = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(integrante.getCarrera().getIdCarrera());
-                        
-                        if (labsPermitidosIntegrante.isEmpty()) {
-                            redirectAttributes.addFlashAttribute("errorReserva", "El alumno con código " + cod + " pertenece a una carrera que no tiene acceso a laboratorios.");
-                            return "redirect:/alumno/laboratorios";
-                        }
-                    }
-
-                    if (integrante != null) {
-                        reservaIntegranteRepositorio.save(new ReservaIntegrante(nuevaReserva, integrante, false));
-                    }
-                }
-            }
-        }
-
-        // D. Guardar Insumos y EPPs
-        List<String> productosElegidos = new ArrayList<>();
-        if (insumosIds != null) productosElegidos.addAll(insumosIds);
-        if (eppsIds != null) productosElegidos.addAll(eppsIds);
-
-        for (String idProd : productosElegidos) {
-            productoRepositorio.findById(idProd).ifPresent(prod -> {
-                ReservaItem item = new ReservaItem(nuevaReserva, prod, 1, false);
-                reservaItemRepositorio.save(item);
-
-                if (prod.getStockActual() != null && prod.getStockActual() > 0) {
-                    prod.setStockActual(prod.getStockActual() - 1);
-                    productoRepositorio.save(prod);
-                }
-            });
-        }
-
-        // E. Boleta
-        long totalBoletas = boletaRepositorio.count() + 1;
-        String idBoleta = String.format("BOL%03d", totalBoletas);
-
-        Boleta boleta = new Boleta(
-                idBoleta,
-                alumnoLogueado,
-                null,
-                nuevaReserva,
-                LocalDateTime.now(),
-                montoTotal,
-                resultadoPago.getTransaccion() != null
-                        ? metodoPago.toUpperCase() + " · " + resultadoPago.getTransaccion()
-                        : "GRATUITO"
-        );
-        boletaRepositorio.save(boleta);
-
-        // ⭐ ENVIAR CORREO DE CONFIRMACIÓN
-        try {
-            String correoDestino = alumnoLogueado.getIdEstud().toLowerCase() + "@utp.edu.pe";
-            String asunto;
-            String mensaje;
-
-            if (montoTotal.compareTo(BigDecimal.ZERO) > 0) {
-                asunto = "🧾 Boleta de Pago - Reserva Confirmada - UTP +Lab";
-                mensaje = "Hola " + alumnoLogueado.getNombre() + ",\n\n" +
-                        "ES UNA PRUEBA Tu reserva ha sido confirmada y tu pago ha sido procesado exitosamente.\n\n" +
-                        "Adjunto a este correo encontrarás tu boleta en formato PDF.\n" +
-                        "Recuerda llegar 10 minutos antes para tu check-in.\n\n" +
-                        "Atentamente,\nEl equipo de UTP +Lab";
-                byte[] pdfBytes = boletaPdfService.generarPdfBoleta(boleta, nuevaReserva).readAllBytes();
-                emailService.enviarCorreoConAdjunto(correoDestino, asunto, mensaje, pdfBytes, "Boleta_" + idBoleta + ".pdf");
-            } else {
-                asunto = "ES UN CORREO DE PRUEBA ✅ Confirmación de Reserva - UTP +Lab";
-                mensaje = "Hola " + alumnoLogueado.getNombre() + ",\n\n" +
-                        "Tu reserva en " + lab.getNombre() + " (" + lab.getUbicacionCubiculo() + ") ha sido confirmada.\n\n" +
-                        "Fecha: " + fecha + "\n" +
-                        "Horario: " + horaInicio + " - " + horaFin + "\n" +
-                        "Código de Reserva: " + idReserva + "\n\n" +
-                        "Recuerda llegar 10 minutos antes para tu check-in.\n\n" +
-                        "Atentamente,\nEl equipo de UTP +Lab";
-                emailService.enviarCorreo(correoDestino, asunto, mensaje);
-            }
-            System.out.println("✅ Correo enviado a: " + correoDestino + " | Asunto: " + asunto);
-        } catch (Exception e) {
-            System.out.println("❌ Error al enviar correo: " + e.getMessage());
-        }
-
-        return "redirect:/alumno/laboratorios";
+    Object usuario = sesion.getAttribute("usuarioLogueado");
+    if (usuario == null) {
+        System.out.println("❌ [2] RETORNO: sesión nula");
+        return esAjax
+                ? respuestaJson(false, "Sesión expirada. Inicia sesión nuevamente.", null)
+                : "redirect:/login";
     }
+    Alumno alumnoLogueado = (Alumno) usuario;
+    System.out.println("✅ [3] Alumno: " + alumnoLogueado.getIdEstud());
+
+    String idCarreraAlumno = (alumnoLogueado.getCarrera() != null) ? alumnoLogueado.getCarrera().getIdCarrera() : null;
+    if (idCarreraAlumno == null) {
+        System.out.println("❌ [4] RETORNO: sin carrera");
+        return responderError(esAjax, redirectAttributes,
+                "Tu cuenta no tiene carrera asignada.", "/alumno/laboratorios");
+    }
+    System.out.println("✅ [5] Carrera: " + idCarreraAlumno);
+
+    List<Laboratorio> labsPermitidos = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarreraAlumno);
+    boolean labPermitido = labsPermitidos.stream().anyMatch(l -> l.getIdLab().equals(idLab));
+    if (!labPermitido) {
+        System.out.println("❌ [6] RETORNO: lab no permitido. idLab=" + idLab + " permitidos=" + labsPermitidos.size());
+        return responderError(esAjax, redirectAttributes,
+                "Tu carrera no tiene acceso a este laboratorio.", "/alumno/laboratorios");
+    }
+    System.out.println("✅ [7] Lab permitido");
+
+    boolean tieneSancion = sancionRepositorio.existsByAlumno_IdEstudAndEstado(alumnoLogueado.getIdEstud(), "PENDIENTE");
+    String estadoCuentaAlumno = (alumnoLogueado.getEstadoCuenta() != null) ? alumnoLogueado.getEstadoCuenta().trim().toUpperCase() : "";
+    boolean cuentaBloqueada = "BLOQUEADO_POR_DEUDA".equals(estadoCuentaAlumno) || estadoCuentaAlumno.contains("BLOQUEADO");
+
+    System.out.println("   tieneSancion   = " + tieneSancion);
+    System.out.println("   estadoCuenta   = [" + estadoCuentaAlumno + "]");
+    System.out.println("   cuentaBloqueada= " + cuentaBloqueada);
+
+    if (tieneSancion || cuentaBloqueada) {
+        System.out.println("❌ [8] RETORNO: cuenta bloqueada");
+        return responderError(esAjax, redirectAttributes,
+                "Tu cuenta está bloqueada por incidencias pendientes.", "/alumno/laboratorios");
+    }
+    System.out.println("✅ [9] Cuenta habilitada");
+
+    System.out.println("💰 [10] Llamando al service de pago...");
+    PagoSimulacionService.ResultadoPago resultadoPago =
+        pagoSimulacionService.procesarPago(
+                metodoPago, numeroTarjeta, titularTarjeta,
+                fechaExpTarjeta, cvvTarjeta,
+                numeroYape, codigoYape,
+                numeroPlin, codigoPlin,
+                montoTotal);
+                
+    System.out.println("💰 [11] Service devolvió: exitoso=" + resultadoPago.isExitoso() + " | mensaje=" + resultadoPago.getMensaje());
+
+    if (!resultadoPago.isExitoso()) {
+        System.out.println("❌ [12] RETORNO: pago rechazado por service");
+        return responderError(esAjax, redirectAttributes,
+                resultadoPago.getMensaje(), "/alumno/laboratorios");
+    }
+
+    System.out.println("✅ [13] Pago aprobado, continuando con la reserva...");
+
+    // ⬇️⬇️ A PARTIR DE AQUÍ TU CÓDIGO ORIGINAL (validaciones de fecha, hora, límite, etc.) ⬇️⬇️
+    Optional<Laboratorio> labOpt = laboratorioRepositorio.findById(idLab);
+    if (labOpt.isEmpty()) return responderError(esAjax, redirectAttributes, "El laboratorio ya no existe.", "/alumno/laboratorios");
+    Laboratorio lab = labOpt.get();
+
+    LocalDate fecha;
+    LocalTime horaInicio;
+    LocalTime horaFin;
+    try {
+        fecha = LocalDate.parse(fechaStr);
+        horaInicio = LocalTime.parse(horaInicioStr);
+        horaFin = LocalTime.parse(horaFinStr);
+    } catch (DateTimeParseException e) {
+        return responderError(esAjax, redirectAttributes, "Formato de fecha u hora inválido.", "/alumno/laboratorios");
+    }
+
+    if (fecha.isBefore(LocalDate.now())) return responderError(esAjax, redirectAttributes, "No puedes reservar en fechas pasadas.", "/alumno/laboratorios");
+    if (!horaFin.isAfter(horaInicio)) return responderError(esAjax, redirectAttributes, "La hora de fin debe ser posterior a la hora de inicio.", "/alumno/laboratorios");
+
+    // 1. LÍMITE DE DOS RESERVAS DIARIAS
+    List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
+    List<String> idsReservasDelDia = new ArrayList<>();
+
+    for (ReservaIntegrante participacion : participacionesAlumno) {
+        Reserva reservaExistente = participacion.getReserva();
+        if (reservaExistente == null || reservaExistente.getFechaReserva() == null || !fecha.equals(reservaExistente.getFechaReserva())) continue;
+
+        String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
+
+        if (!estado.equals("CANCELADA")) {
+            if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+                idsReservasDelDia.add(reservaExistente.getIdReserva());
+            }
+        }
+    }
+
+    if (idsReservasDelDia.size() >= 2) {
+        return responderError(esAjax, redirectAttributes,
+                "Ya alcanzaste el límite de dos reservas para este día. Las reservas canceladas no cuentan.",
+                "/alumno/laboratorios");
+    }
+
+    // B. Validar integrantes
+    if (codigosIntegrantes != null) {
+        for (String codIntegrante : codigosIntegrantes) {
+            if (codIntegrante.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) continue;
+
+            List<ReservaIntegrante> participacionesIntegrante = reservaIntegranteRepositorio.findByAlumno_IdEstud(codIntegrante.trim());
+            List<String> idsReservasIntegrante = new ArrayList<>();
+
+            for (ReservaIntegrante part : participacionesIntegrante) {
+                Reserva r = part.getReserva();
+                if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
+
+                String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
+                if (!est.equals("CANCELADA")) {
+                    if (!idsReservasIntegrante.contains(r.getIdReserva())) {
+                        idsReservasIntegrante.add(r.getIdReserva());
+                    }
+                }
+            }
+
+            if (idsReservasIntegrante.size() >= 2) {
+                return responderError(esAjax, redirectAttributes,
+                        "No se puede completar la reserva. El alumno con código " + codIntegrante + " ya alcanzó su límite de 2 reservas para este día.",
+                        "/alumno/laboratorios");
+            }
+        }
+    }
+
+    // 2. EVITAR SUPERPOSICIONES
+    List<Reserva> reservasDelLaboratorio = reservaRepositorio.findByLaboratorio_IdLabAndFechaReserva(idLab, fecha);
+
+    for (Reserva reservaExistente : reservasDelLaboratorio) {
+        String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
+
+        boolean reservaActiva = estado.equals("CONFIRMADA") || estado.equals("EN_USO");
+        if (!reservaActiva) continue;
+
+        LocalTime inicioExistente = reservaExistente.getHoraInicio();
+        LocalTime finExistente = reservaExistente.getHoraFin();
+        if (inicioExistente == null || finExistente == null) continue;
+
+        boolean haySuperposicion = horaInicio.isBefore(finExistente) && horaFin.isAfter(inicioExistente);
+
+        if (haySuperposicion) {
+            return responderError(esAjax, redirectAttributes,
+                    "¡Cruce de horario! El laboratorio ya tiene una reserva activa durante el horario seleccionado. Elige otra hora.",
+                    "/alumno/laboratorios");
+        }
+    }
+
+    // A. Generación de ID
+    String idReserva = "RES001";
+    Optional<String> ultimoIdOpt = reservaRepositorio.findUltimoIdReserva();
+
+    if (ultimoIdOpt.isPresent()) {
+        try {
+            String ultimoId = ultimoIdOpt.get().trim();
+            int num = Integer.parseInt(ultimoId.substring(3));
+            idReserva = String.format("RES%03d", num + 1);
+        } catch (Exception e) {
+            long count = reservaRepositorio.count() + 1;
+            idReserva = String.format("RES%03d", count);
+        }
+    }
+
+    Reserva nuevaReserva = new Reserva(idReserva, lab, fecha, horaInicio, horaFin, "CONFIRMADA");
+    reservaRepositorio.save(nuevaReserva);
+
+    // B. Guardar Responsable
+    ReservaIntegrante responsable = new ReservaIntegrante(nuevaReserva, alumnoLogueado, false);
+    reservaIntegranteRepositorio.save(responsable);
+
+    // C. Guardar Integrantes
+    if (codigosIntegrantes != null) {
+        for (String cod : codigosIntegrantes) {
+            if (!cod.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) {
+                Alumno integrante = alumnoRepositorio.findById(cod.trim()).orElse(null);
+
+                if (integrante != null && integrante.getCarrera() != null) {
+                    List<Laboratorio> labsPermitidosIntegrante = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(integrante.getCarrera().getIdCarrera());
+
+                    if (labsPermitidosIntegrante.isEmpty()) {
+                        return responderError(esAjax, redirectAttributes,
+                                "El alumno con código " + cod + " pertenece a una carrera que no tiene acceso a laboratorios.",
+                                "/alumno/laboratorios");
+                    }
+                }
+
+                if (integrante != null) {
+                    reservaIntegranteRepositorio.save(new ReservaIntegrante(nuevaReserva, integrante, false));
+                }
+            }
+        }
+    }
+
+    // D. Guardar Insumos y EPPs
+    List<String> productosElegidos = new ArrayList<>();
+    if (insumosIds != null) productosElegidos.addAll(insumosIds);
+    if (eppsIds != null) productosElegidos.addAll(eppsIds);
+
+    for (String idProd : productosElegidos) {
+        productoRepositorio.findById(idProd).ifPresent(prod -> {
+            ReservaItem item = new ReservaItem(nuevaReserva, prod, 1, false);
+            reservaItemRepositorio.save(item);
+
+            if (prod.getStockActual() != null && prod.getStockActual() > 0) {
+                prod.setStockActual(prod.getStockActual() - 1);
+                productoRepositorio.save(prod);
+            }
+        });
+    }
+
+    // E. Boleta
+    long totalBoletas = boletaRepositorio.count() + 1;
+    String idBoleta = String.format("BOL%03d", totalBoletas);
+
+    Boleta boleta = new Boleta(
+            idBoleta,
+            alumnoLogueado,
+            null,
+            nuevaReserva,
+            LocalDateTime.now(),
+            montoTotal,
+            resultadoPago.getTransaccion() != null
+                    ? metodoPago.toUpperCase() + " · " + resultadoPago.getTransaccion()
+                    : "GRATUITO"
+    );
+    boletaRepositorio.save(boleta);
+
+    // ⭐ ENVIAR CORREO DE CONFIRMACIÓN
+    try {
+        String correoDestino = alumnoLogueado.getIdEstud().toLowerCase() + "@utp.edu.pe";
+        String asunto;
+        String mensaje;
+
+        if (montoTotal.compareTo(BigDecimal.ZERO) > 0) {
+            asunto = "🧾 Boleta de Pago - Reserva Confirmada - UTP +Lab";
+            mensaje = "Hola " + alumnoLogueado.getNombre() + ",\n\n" +
+                    "ES UNA PRUEBA Tu reserva ha sido confirmada y tu pago ha sido procesado exitosamente.\n\n" +
+                    "Adjunto a este correo encontrarás tu boleta en formato PDF.\n" +
+                    "Recuerda llegar 10 minutos antes para tu check-in.\n\n" +
+                    "Atentamente,\nEl equipo de UTP +Lab";
+            byte[] pdfBytes = boletaPdfService.generarPdfBoleta(boleta, nuevaReserva).readAllBytes();
+            emailService.enviarCorreoConAdjunto(correoDestino, asunto, mensaje, pdfBytes, "Boleta_" + idBoleta + ".pdf");
+        } else {
+            asunto = "ES UN CORREO DE PRUEBA ✅ Confirmación de Reserva - UTP +Lab";
+            mensaje = "Hola " + alumnoLogueado.getNombre() + ",\n\n" +
+                    "Tu reserva en " + lab.getNombre() + " (" + lab.getUbicacionCubiculo() + ") ha sido confirmada.\n\n" +
+                    "Fecha: " + fecha + "\n" +
+                    "Horario: " + horaInicio + " - " + horaFin + "\n" +
+                    "Código de Reserva: " + idReserva + "\n\n" +
+                    "Recuerda llegar 10 minutos antes para tu check-in.\n\n" +
+                    "Atentamente,\nEl equipo de UTP +Lab";
+            emailService.enviarCorreo(correoDestino, asunto, mensaje);
+        }
+        System.out.println("✅ Correo enviado a: " + correoDestino + " | Asunto: " + asunto);
+    } catch (Exception e) {
+        System.out.println("❌ Error al enviar correo: " + e.getMessage());
+    }
+
+    // ⭐ RESPUESTA FINAL
+    if (esAjax) {
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("mensaje", "¡Reserva confirmada con éxito! Código: " + idReserva);
+        resp.put("idReserva", idReserva);
+        resp.put("idBoleta", idBoleta);
+        return ResponseEntity.ok(resp);
+    }
+    return "redirect:/alumno/laboratorios";
+}
 
     // =========================================================================
     // 4. VISTA INDEPENDIENTE: PROTOCOLOS DE SEGURIDAD
@@ -736,6 +798,33 @@ public class AlumnoPortalController {
         }
         resp.put("nombreEncargado", nombreEncargado);
         
+        return resp;
+    }
+
+    // =========================================================================
+    // API: VALIDACIÓN PREVIA DE TARJETA VÍA AJAX
+    // =========================================================================
+    @PostMapping("/api/pagos/validar-tarjeta")
+    @ResponseBody
+    public Map<String, Object> validarTarjetaAjax(@RequestBody Map<String, String> payload) {
+        Map<String, Object> resp = new HashMap<>();
+
+        String num = payload.get("numeroTarjeta");
+        String titular = payload.get("titular");
+        String exp = payload.get("fechaExp");
+        String cvv = payload.get("cvv");
+
+        // ⭐ Nueva firma: 10 parámetros (Yape/Plin se pasan null porque no aplican)
+        PagoSimulacionService.ResultadoPago resultado =
+                pagoSimulacionService.procesarPago(
+                        "TARJETA",
+                        num, titular, exp, cvv,
+                        null, null,   // numeroYape, codigoYape
+                        null, null,   // numeroPlin, codigoPlin
+                        BigDecimal.valueOf(10.00));
+
+        resp.put("valido", resultado.isExitoso());
+        resp.put("mensaje", resultado.getMensaje());
         return resp;
     }
 
@@ -1056,6 +1145,27 @@ public class AlumnoPortalController {
         modelo.addAttribute("numIncidencias", sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE").size());
         
         return "alumno/faq";
+    }
+
+    // Helper para responder éxito/error de forma uniforme
+    private Map<String, Object> respuestaJson(boolean success, String mensaje, String idReserva) {
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", success);
+        resp.put("mensaje", mensaje);
+        if (idReserva != null) resp.put("idReserva", idReserva);
+        return resp;
+    }
+
+    /**
+     * Si es AJAX → devuelve ResponseEntity<Map> con success=false y mensaje.
+     * Si NO es AJAX → agrega flash attribute y devuelve el redirect como string.
+     */
+    private Object responderError(boolean esAjax, RedirectAttributes ra, String mensaje, String redirectA) {
+        if (esAjax) {
+            return ResponseEntity.ok(respuestaJson(false, mensaje, null));
+        }
+        ra.addFlashAttribute("errorReserva", mensaje);
+        return "redirect:" + redirectA;
     }
 
     // =========================================================================

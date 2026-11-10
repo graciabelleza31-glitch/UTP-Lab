@@ -1,4 +1,5 @@
 package com.integrador.lab.modelo;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,56 +25,30 @@ public class Laboratorio {
     @Column(name = "ubicacion_cubiculo", length = 50)
     private String ubicacionCubiculo;
 
-        // Agrega esto dentro de tu clase Laboratorio
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "imagen_url", length = 500)
+    private String imagenUrl;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_encargado")
     private Encargado encargado;
 
-    public Laboratorio() {
-    }
+    public Laboratorio() {}
 
-    public Laboratorio(String idLab, String nombre, String tipo, String ubicacionCubiculo, Encargado encargado) {
-        this.idLab = idLab;
-        this.nombre = nombre;
-        this.tipo = tipo;
-        this.ubicacionCubiculo = ubicacionCubiculo;
-        this.encargado = encargado;
-    }
+    public String getIdLab() { return idLab; }
+    public void setIdLab(String idLab) { this.idLab = idLab; }
 
-    public String getIdLab() {
-        return idLab;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public void setIdLab(String idLab) {
-        this.idLab = idLab;
-    }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public String getUbicacionCubiculo() { return ubicacionCubiculo; }
+    public void setUbicacionCubiculo(String ubicacionCubiculo) { this.ubicacionCubiculo = ubicacionCubiculo; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
 
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public String getUbicacionCubiculo() {
-        return ubicacionCubiculo;
-    }
-
-    public void setUbicacionCubiculo(String ubicacionCubiculo) {
-        this.ubicacionCubiculo = ubicacionCubiculo;
-    }
-
-    // Y sus respectivos getters y setters:
     public Encargado getEncargado() { return encargado; }
     public void setEncargado(Encargado encargado) { this.encargado = encargado; }
 }
-

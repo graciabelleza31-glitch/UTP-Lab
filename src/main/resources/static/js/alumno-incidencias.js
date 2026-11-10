@@ -1,139 +1,216 @@
-let idSancionActual = '';
-let montoActual = 'S/ 0.00';
+// ============================================================================
+// ALUMNO - INCIDENCIAS · PAGO CON YAPE / PLIN / TARJETA
+// ============================================================================
+let idSancionActual = null;
+let montoActualTexto = 'S/ 0.00';
 let metodoPagoActual = 'YAPE';
+let codigoPlinIncActual = null;
 
+// Inicializar íconos
 document.addEventListener("DOMContentLoaded", function () {
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 });
 
+// ============================================================================
+// ABRIR / CERRAR MODAL DE PAGO
+// ============================================================================
 function abrirModalPago(btn) {
-  idSancionActual = btn.getAttribute('data-id');
-  const item = btn.getAttribute('data-item') || 'Material de Lab';
-  montoActual = btn.getAttribute('data-monto') || 'S/ 0.00';
+    idSancionActual = btn.getAttribute('data-id');
+    montoActualTexto = btn.getAttribute('data-monto') || 'S/ 0.00';
 
-  document.getElementById('modalTituloInc').innerText = `Pago de Incidencia · ${item}`;
-  document.getElementById('modalMontoPagar').innerText = montoActual;
-  document.getElementById('labelComercioQr').innerText = `UTP Lab · ${montoActual}`;
-  document.getElementById('btnConfirmarPago').innerText = `Confirmar pago · ${montoActual}`;
+    const modalTitulo = document.getElementById('modalTituloInc');
+    if (modalTitulo) {
+        const item = btn.getAttribute('data-item') || 'Material de Lab';
+        modalTitulo.innerText = `Pago de Incidencia · ${item}`;
+    }
 
-  // Reset a Yape
-  metodoPagoActual = 'YAPE';
-  document.querySelectorAll('.opcion-metodo').forEach(o => o.classList.remove('seleccionado'));
-  document.querySelectorAll('.opcion-metodo')[0].classList.add('seleccionado');
-  document.getElementById('cajaDetalleMetodo').style.display = 'block';
-  document.getElementById('seccionTarjeta').style.display = 'none';
+    document.getElementById('modalMontoPagar').innerText = montoActualTexto;
+    document.getElementById('btnConfirmarPago').innerText = 'Confirmar pago · ' + montoActualTexto;
 
-  document.getElementById('pasoPagoSeleccion').style.display = 'block';
-  document.getElementById('pasoPagoExitoso').style.display = 'none';
-  document.getElementById('modalPagoIncidencia').style.display = 'flex';
+    // Limpiar alertas y campos
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) alerta.style.display = 'none';
 
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+    ['inputNumeroTarjeta', 'inputTitularTarjeta', 'inputFechaExpTarjeta', 'inputCvvTarjeta',
+     'inputNumeroYapeInc', 'inputCodigoYapeInc',
+     'inputNumeroPlinInc', 'inputCodigoPlinInc'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    document.getElementById('pasoPagoSeleccion').style.display = 'block';
+    document.getElementById('pasoPagoExitoso').style.display = 'none';
+    document.getElementById('modalPagoIncidencia').style.display = 'flex';
+
+    // Seleccionar Yape por defecto
+    const primerMetodo = document.querySelector('.grid-metodos-pago .opcion-metodo');
+    if (primerMetodo) seleccionarMetodoInc(primerMetodo, 'YAPE');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function cerrarModalPago() {
-  document.getElementById('modalPagoIncidencia').style.display = 'none';
+    const m = document.getElementById('modalPagoIncidencia');
+    if (m) m.style.display = 'none';
 }
 
-function seleccionarMetodo(elem, metodo) {
-  document.querySelectorAll('.opcion-metodo').forEach(el => el.classList.remove('seleccionado'));
-  elem.classList.add('seleccionado');
-  metodoPagoActual = metodo;
+// ============================================================================
+// SELECCIÓN DE MÉTODO (YAPE / PLIN / TARJETA)
+// ============================================================================
+function seleccionarMetodoInc(el, metodo) {
+    metodoPagoActual = metodo;
+    document.querySelectorAll('.grid-metodos-pago .opcion-metodo').forEach(m => m.classList.remove('seleccionado'));
+    if (el) el.classList.add('seleccionado');
 
-  const cajaQr = document.getElementById('cajaDetalleMetodo');
-  const seccionTarjeta = document.getElementById('seccionTarjeta');
-  const tituloQr = document.getElementById('tituloQrMetodo');
-  const imagenQr = document.getElementById('imagenQrPago');
+    const secYape = document.getElementById('seccionYapeIncidencia');
+    const secPlin = document.getElementById('seccionPlinIncidencia');
+    const secTarjeta = document.getElementById('seccionTarjeta');
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) alerta.style.display = 'none';
 
-  if (metodo === 'TARJETA') {
-    cajaQr.style.display = 'none';
-    seccionTarjeta.style.display = 'block';
-  } else {
-    cajaQr.style.display = 'block';
-    seccionTarjeta.style.display = 'none';
+    if (secYape) secYape.style.display = (metodo === 'YAPE') ? 'block' : 'none';
+    if (secPlin) secPlin.style.display = (metodo === 'PLIN') ? 'block' : 'none';
+    if (secTarjeta) secTarjeta.style.display = (metodo === 'TARJETA') ? 'block' : 'none';
 
-    if (metodo === 'YAPE') {
-      tituloQr.innerText = 'Pagar con Yape';
-      tituloQr.style.color = '#7c3aed';
-      imagenQr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTP-LAB-YAPE&color=7c3aed';
-    } else {
-      tituloQr.innerText = 'Pagar con Plin';
-      tituloQr.style.color = '#059669';
-      imagenQr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTP-LAB-PLIN&color=059669';
+    if (metodo === 'PLIN') {
+        generarCodigoPlinInc();
     }
-  }
 }
 
-function ejecutarPagoBackend() {
-  const btn = document.getElementById('btnConfirmarPago');
-  btn.innerText = "Procesando pago...";
-  btn.disabled = true;
-
-  const params = new URLSearchParams();
-  params.append('metodoPago', metodoPagoActual);
-
-  if (metodoPagoActual === 'TARJETA') {
-    const num = document.getElementById('inputNumeroTarjeta').value.replace(/\s/g, '');
-    const titular = document.getElementById('inputTitularTarjeta').value.trim();
-    const fecha = document.getElementById('inputFechaExpTarjeta').value.trim();
-    const cvv = document.getElementById('inputCvvTarjeta').value.trim();
-
-    // Validaciones locales (rápidas)
-    if (!num || num.length < 16) {
-      alert('❌ Ingresa un número de tarjeta válido (16 dígitos).');
-      btn.innerText = `Confirmar pago · ${montoActual}`;
-      btn.disabled = false;
-      return;
-    }
-    if (!titular) {
-      alert('❌ Ingresa el nombre del titular.');
-      btn.innerText = `Confirmar pago · ${montoActual}`;
-      btn.disabled = false;
-      return;
-    }
-    if (!fecha || !cvv) {
-      alert('❌ Completa la fecha de expiración y el CVV.');
-      btn.innerText = `Confirmar pago · ${montoActual}`;
-      btn.disabled = false;
-      return;
-    }
-
-    // ⭐ Enviar TODOS los datos al backend
-    params.append('numeroTarjeta', num);
-    params.append('titularTarjeta', titular);
-    params.append('fechaExpTarjeta', fecha);
-    params.append('cvvTarjeta', cvv);
-  }
-
-  fetch(`/alumno/incidencias/pagar/${idSancionActual}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params
-  })
-  .then(res => res.json().then(data => ({ ok: res.ok, data })))
-  .then(({ ok, data }) => {
-    if (!ok) {
-      alert('❌ ' + (data.error || 'Error al procesar el pago'));
-      btn.innerText = `Confirmar pago · ${montoActual}`;
-      btn.disabled = false;
-      return;
-    }
-
-    // Pago exitoso
-    document.getElementById('pasoPagoSeleccion').style.display = 'none';
-    document.getElementById('subtextoExitoMonto').innerText = `${montoActual} procesados correctamente`;
-    document.getElementById('textoTxnCode').innerText = data.transaccion || 'TXN-000';
-    document.getElementById('pasoPagoExitoso').style.display = 'flex';
-
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  })
-  .catch(() => {
-    alert("Error al procesar el pago. Por favor intenta de nuevo.");
-    btn.innerText = `Confirmar pago · ${montoActual}`;
-    btn.disabled = false;
-  });
+// Alias para compatibilidad con el HTML si llama a seleccionarMetodo()
+function seleccionarMetodo(el, metodo) {
+    seleccionarMetodoInc(el, metodo);
 }
 
+// ============================================================================
+// GENERAR QR DE PLIN
+// ============================================================================
+function generarCodigoPlinInc() {
+    // ⚠️ Demo: código fijo para que apruebe con 987654321 en la BD
+    codigoPlinIncActual = 'PL123456';
+
+    const txt = document.getElementById('codigoQrPlinIncidencia');
+    if (txt) txt.innerText = codigoPlinIncActual;
+
+    const cont = document.getElementById('qrPlinIncidencia');
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    if (typeof QRCode === 'undefined') {
+        console.warn('QRCode.js no está cargado. Agrega el <script> en el <head>.');
+        return;
+    }
+
+    new QRCode(cont, {
+        text: codigoPlinIncActual,
+        width: 150,
+        height: 150,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}
+
+// ============================================================================
+// PROCESAR PAGO (AJAX)
+// ============================================================================
+async function ejecutarPagoBackend() {
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) alerta.style.display = 'none';
+
+    if (!idSancionActual) return;
+
+    const btnPagar = document.getElementById('btnConfirmarPago');
+    const formData = new URLSearchParams();
+    formData.append('metodoPago', metodoPagoActual);
+
+    // ---------- VALIDACIONES LOCALES ----------
+    if (metodoPagoActual === 'TARJETA') {
+        const num = document.getElementById('inputNumeroTarjeta').value.replace(/\s/g, '');
+        const titular = document.getElementById('inputTitularTarjeta').value.trim();
+        const exp = document.getElementById('inputFechaExpTarjeta').value.trim();
+        const cvv = document.getElementById('inputCvvTarjeta').value.trim();
+
+        if (!num || num.length < 16) return mostrarError("Ingresa un número de tarjeta válido (16 dígitos).", btnPagar);
+        if (!titular) return mostrarError("Ingresa el nombre del titular.", btnPagar);
+        if (!exp || !cvv) return mostrarError("Completa la fecha de expiración y el CVV.", btnPagar);
+
+        formData.append('numeroTarjeta', num);
+        formData.append('titularTarjeta', titular);
+        formData.append('fechaExpTarjeta', exp);
+        formData.append('cvvTarjeta', cvv);
+    }
+
+    if (metodoPagoActual === 'YAPE') {
+        const numYape = (document.getElementById('inputNumeroYapeInc').value || '').replace(/\D/g, '');
+        const codigoYape = (document.getElementById('inputCodigoYapeInc').value || '').replace(/\D/g, '');
+
+        if (numYape.length !== 9) return mostrarError("El número de Yape debe tener 9 dígitos.", btnPagar);
+        if (codigoYape.length !== 6) return mostrarError("El código de aprobación debe tener 6 dígitos.", btnPagar);
+
+        formData.append('numeroYape', numYape);
+        formData.append('codigoYape', codigoYape);
+    }
+
+    if (metodoPagoActual === 'PLIN') {
+        const numPlin = (document.getElementById('inputNumeroPlinInc').value || '').replace(/\D/g, '');
+        const codigoPlin = (document.getElementById('inputCodigoPlinInc').value || '').trim().toUpperCase();
+
+        if (numPlin.length !== 9) return mostrarError("El número de Plin debe tener 9 dígitos.", btnPagar);
+        if (!codigoPlin || codigoPlin.length < 8) return mostrarError("Copia el código de operación que aparece debajo del QR.", btnPagar);
+
+        formData.append('numeroPlin', numPlin);
+        formData.append('codigoPlin', codigoPlin);
+    }
+
+    // ---------- ENVÍO AJAX ----------
+    btnPagar.disabled = true;
+    btnPagar.innerText = "Procesando pago...";
+
+    try {
+        const resp = await fetch('/alumno/incidencias/pagar/' + encodeURIComponent(idSancionActual), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            mostrarError(data.error || "Ocurrió un error al procesar el pago.", btnPagar);
+            return;
+        }
+
+        // ✅ Pago exitoso
+        document.getElementById('subtextoExitoMonto').innerText = montoActualTexto + ' procesados correctamente';
+        document.getElementById('textoTxnCode').innerText = data.transaccion || 'TXN-000';
+        document.getElementById('pasoPagoSeleccion').style.display = 'none';
+        document.getElementById('pasoPagoExitoso').style.display = 'flex';
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    } catch (err) {
+        console.error(err);
+        mostrarError("Error de conexión con el servidor.", btnPagar);
+    }
+}
+
+function mostrarError(mensaje, btnPagar) {
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) {
+        alerta.innerText = mensaje;
+        alerta.style.display = 'block';
+    }
+    if (btnPagar) {
+        btnPagar.disabled = false;
+        btnPagar.innerText = 'Confirmar pago · ' + montoActualTexto;
+    }
+}
+
+// ============================================================================
+// FINALIZAR Y RECARGAR
+// ============================================================================
 function finalizarPagoYRecargar() {
-  cerrarModalPago();
-  window.location.reload(); // Recargar para reflejar el pago grupal
+    cerrarModalPago();
+    window.location.reload();
 }

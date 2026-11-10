@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <div class="contenedor-app">
@@ -181,58 +182,100 @@
 
         <!-- 3 métodos: Yape, Plin, Tarjeta -->
         <div class="grid-metodos-pago" style="grid-template-columns: repeat(3, 1fr);">
-          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'YAPE')">
+          <div class="opcion-metodo seleccionado" onclick="seleccionarMetodoInc(this, 'YAPE')">
             <span class="icono-metodo">📱</span>
             <span class="label-metodo">Yape</span>
           </div>
-          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'PLIN')">
+          <div class="opcion-metodo" onclick="seleccionarMetodoInc(this, 'PLIN')">
             <span class="icono-metodo">💚</span>
             <span class="label-metodo">Plin</span>
           </div>
-          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'TARJETA')">
+          <div class="opcion-metodo" onclick="seleccionarMetodoInc(this, 'TARJETA')">
             <span class="icono-metodo">💳</span>
             <span class="label-metodo">Tarjeta</span>
           </div>
         </div>
 
-        <!-- Sección QR (Yape / Plin) -->
-        <div id="cajaDetalleMetodo" class="contenedor-qr-pago">
-          <h4 id="tituloQrMetodo" class="titulo-qr">Pagar con Yape</h4>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTP-LAB-PAGO&color=7c3aed"
-               alt="QR" class="imagen-qr" id="imagenQrPago" />
-          <p class="subtexto-qr">Escanea con la app</p>
-          <p id="labelComercioQr" class="comercio-qr">UTP Lab · S/ 0.00</p>
+        <!-- ⭐ YAPE: número + código -->
+        <div id="seccionYapeIncidencia" style="margin: 1rem 0;">
+          <div style="background:#f8fafc; border-radius:12px; padding:1rem;">
+            <div style="display:flex; flex-direction:column; gap:0.6rem;">
+              <div>
+                <label style="font-size:0.78rem; font-weight:600; color:#475569;">Número de Yape</label>
+                <input type="text" id="inputNumeroYapeInc" placeholder="987654321" maxlength="9"
+                      style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              </div>
+              <div>
+                <label style="font-size:0.78rem; font-weight:600; color:#475569;">Código de aprobación (6 dígitos)</label>
+                <input type="text" id="inputCodigoYapeInc" placeholder="123456" maxlength="6"
+                      style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              </div>
+            </div>
+            <p style="font-size:0.7rem; color:#94a3b8; margin-top:0.5rem;">
+              💡 Demo: <code>987654321</code> + <code>123456</code> (aprueba)
+            </p>
+          </div>
         </div>
 
-        <!-- Sección Tarjeta (oculta por defecto) -->
+        <!-- ⭐ PLIN: QR + número + código -->
+        <div id="seccionPlinIncidencia" style="display:none; margin: 1rem 0;">
+          <div style="background:#f8fafc; border-radius:12px; padding:1rem;">
+            <div style="text-align:center; margin-bottom:0.75rem;">
+              <div id="qrPlinIncidencia" style="display:inline-block; padding:10px; background:#fff; border-radius:10px;"></div>
+              <p style="font-size:0.72rem; color:#64748b; margin-top:0.4rem;">Escanea el QR o copia el código</p>
+              <p id="codigoQrPlinIncidencia" style="font-weight:700; color:#0f172a; letter-spacing:1px;">PL------</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.6rem;">
+              <div>
+                <label style="font-size:0.78rem; font-weight:600; color:#475569;">Número de Plin</label>
+                <input type="text" id="inputNumeroPlinInc" placeholder="987654321" maxlength="9"
+                      style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              </div>
+              <div>
+                <label style="font-size:0.78rem; font-weight:600; color:#475569;">Código de operación (del QR)</label>
+                <input type="text" id="inputCodigoPlinInc" placeholder="PL123456" maxlength="8"
+                      style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              </div>
+            </div>
+            <p style="font-size:0.7rem; color:#94a3b8; margin-top:0.5rem;">
+              💡 Demo: <code>987654321</code> + código del QR <code>PL123456</code>
+            </p>
+          </div>
+        </div>
+
+        <!-- ⭐ TARJETA -->
         <div id="seccionTarjeta" style="display: none; margin: 1rem 0;">
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de tarjeta</label>
-              <input type="text" id="inputNumeroTarjeta"
-                     placeholder="4111 1111 1111 1111" maxlength="19"
-                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              <input type="text" id="inputNumeroTarjeta" placeholder="4488 5896 5431 5698" maxlength="19"
+                    style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Titular</label>
-              <input type="text" id="inputTitularTarjeta"
-                     placeholder="JUAN PEREZ"
-                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+              <input type="text" id="inputTitularTarjeta" placeholder="LUIS QUISPE"
+                    style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div style="display:flex; gap:0.75rem;">
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">Fecha exp.</label>
                 <input type="text" id="inputFechaExpTarjeta" placeholder="MM/AA" maxlength="5"
-                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                      style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">CVV</label>
                 <input type="text" id="inputCvvTarjeta" placeholder="123" maxlength="3"
-                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                      style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
             </div>
+            <p style="font-size:0.7rem; color:#94a3b8;">
+              💡 Demo: <code>4551 2078 3596 4128</code> · <code>LUIS QUISPE</code> · <code>08/27</code> · <code>312</code>
+            </p>
           </div>
         </div>
+
+        <!-- Alerta de error -->
+        <div id="alertaErrorIncidencia" style="display: none; margin: 0.8rem 0; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: left; background-color: #fee2e2; color: #dc2626; border: 1px solid #f87171;"></div>
 
         <button id="btnConfirmarPago" type="button" class="btn-accion-modal btn-primario-azul" onclick="ejecutarPagoBackend()">
           Confirmar pago · S/ 0.00
@@ -343,5 +386,6 @@
 
   <!-- JS separado -->
   <script th:src="@{/js/alumno-incidencias.js}"></script>
+
 </body>
 </html>
