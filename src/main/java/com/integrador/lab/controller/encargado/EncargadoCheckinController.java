@@ -86,9 +86,14 @@ public class EncargadoCheckinController {
         for (Reserva r : todas) {
             List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
             List<String> nombresIntegrantes = new ArrayList<>();
+            List<String> codigosIntegrantes = new ArrayList<>();
             for (ReservaIntegrante ri : integrantes) {
                 if (ri.getAlumno() != null) {
                     nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                    // Extraemos el código del alumno
+                    if (ri.getAlumno().getIdEstud() != null) {
+                        codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase());
+                    }
                 }
             }
 
@@ -101,11 +106,12 @@ public class EncargadoCheckinController {
             String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
                     ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
 
-            // 👇 FILTRO EN MEMORIA POR SI EL USUARIO BUSCA UN NOMBRE, LAB O CÓDIGO 👇
+                        // 👇 FILTRO EN MEMORIA POR SI EL USUARIO BUSCA UN NOMBRE, LAB, CÓDIGO DE RESERVA O CÓDIGO DE ALUMNO 👇
             if (!textoBusqueda.isEmpty()) {
                 boolean coincide = r.getIdReserva().toLowerCase().contains(textoBusqueda) ||
                                    labNombre.toLowerCase().contains(textoBusqueda) ||
-                                   nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda));
+                                   nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
+                                   codigosIntegrantes.stream().anyMatch(c -> c.contains(textoBusqueda)); // 👈 NUEVA CONDICIÓN
                 if (!coincide) continue; 
             }
 

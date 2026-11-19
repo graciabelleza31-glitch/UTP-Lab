@@ -107,11 +107,12 @@ public class InspeccionController {
 
             InspeccionCardDto dto = convertirADto(r);
             
-            // 👇 FILTRO EN MEMORIA POR SI EL USUARIO BUSCA UN NOMBRE, LAB O CÓDIGO 👇
+                       // 👇 FILTRO EN MEMORIA POR SI EL USUARIO BUSCA UN NOMBRE, LAB, CÓDIGO DE RESERVA O CÓDIGO DE ALUMNO 👇
             if (!textoBusqueda.isEmpty()) {
                 boolean coincide = dto.getIdReserva().toLowerCase().contains(textoBusqueda) ||
                                    dto.getLaboratorio().toLowerCase().contains(textoBusqueda) ||
-                                   dto.getIntegrantes().stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda));
+                                   dto.getIntegrantes().stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
+                                   dto.getCodigosIntegrantes().stream().anyMatch(c -> c.contains(textoBusqueda)); // 👈 NUEVA CONDICIÓN
                 if (!coincide) continue;
             }
             
@@ -135,12 +136,18 @@ public class InspeccionController {
         return "admin/inspeccion";
     }
 
-    private InspeccionCardDto convertirADto(Reserva r) {
+        private InspeccionCardDto convertirADto(Reserva r) {
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
         List<String> nombresIntegrantes = new ArrayList<>();
+        List<String> codigosIntegrantes = new ArrayList<>(); // 👈 NUEVA LISTA
+        
         for (ReservaIntegrante ri : integrantes) {
             if (ri.getAlumno() != null) {
                 nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                // Asumiendo que tu modelo Alumno tiene getIdEstud()
+                if (ri.getAlumno().getIdEstud() != null) {
+                    codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase());
+                }
             }
         }
 
@@ -172,6 +179,7 @@ public class InspeccionController {
                 horario,
                 r.getEstado(),
                 nombresIntegrantes,
+                codigosIntegrantes, // 👈 PASAMOS LA NUEVA LISTA
                 nombreEncargado,
                 horaAccion
         );
@@ -318,7 +326,7 @@ public class InspeccionController {
     }
 
     // DTOs
-    public static class InspeccionCardDto {
+        public static class InspeccionCardDto {
         private String idReserva;
         private String laboratorio;
         private String tipoLab;
@@ -327,10 +335,11 @@ public class InspeccionController {
         private String horario;
         private String estado;
         private List<String> integrantes;
+        private List<String> codigosIntegrantes; // 👈 NUEVA PROPIEDAD
         private String nombreEncargado;
         private String horaAccion;
 
-        public InspeccionCardDto(String idReserva, String laboratorio, String tipoLab, String cubiculo, String fecha, String horario, String estado, List<String> integrantes, String nombreEncargado, String horaAccion) {
+        public InspeccionCardDto(String idReserva, String laboratorio, String tipoLab, String cubiculo, String fecha, String horario, String estado, List<String> integrantes, List<String> codigosIntegrantes, String nombreEncargado, String horaAccion) {
             this.idReserva = idReserva;
             this.laboratorio = laboratorio;
             this.tipoLab = tipoLab;
@@ -339,6 +348,7 @@ public class InspeccionController {
             this.horario = horario;
             this.estado = estado;
             this.integrantes = integrantes;
+            this.codigosIntegrantes = codigosIntegrantes; // 👈 ASIGNACIÓN
             this.nombreEncargado = nombreEncargado;
             this.horaAccion = horaAccion;
         }
@@ -351,6 +361,7 @@ public class InspeccionController {
         public String getHorario() { return horario; }
         public String getEstado() { return estado; }
         public List<String> getIntegrantes() { return integrantes; }
+        public List<String> getCodigosIntegrantes() { return codigosIntegrantes; } // 👈 GETTER
         public String getNombreEncargado() { return nombreEncargado; }
         public String getHoraAccion() { return horaAccion; }
     }

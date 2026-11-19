@@ -79,15 +79,18 @@ public class IncidenciasAdminController {
                 .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADA".equalsIgnoreCase(s.getEstado()))
                 .collect(Collectors.toList());
 
-        // 👇 FILTRO GLOBAL POR BÚSQUEDA 👇
+                // 👇 FILTRO GLOBAL POR BÚSQUEDA 👇
         if (!textoBusqueda.isEmpty()) {
             activas = activas.stream().filter(s -> {
                 boolean coincideItem = s.getProducto() != null && s.getProducto().getNombre().toLowerCase().contains(textoBusqueda);
                 boolean coincideMotivo = s.getMotivo() != null && s.getMotivo().toLowerCase().contains(textoBusqueda);
                 boolean coincideLab = s.getReserva() != null && s.getReserva().getLaboratorio() != null && s.getReserva().getLaboratorio().getNombre().toLowerCase().contains(textoBusqueda);
                 boolean coincideAlumno = s.getAlumno() != null && (s.getAlumno().getNombre() + " " + s.getAlumno().getApellido()).toLowerCase().contains(textoBusqueda);
+                // 👇 NUEVA CONDICIÓN: Buscar por código de alumno 👇
+                boolean coincideCodigo = s.getAlumno() != null && s.getAlumno().getIdEstud() != null && s.getAlumno().getIdEstud().toLowerCase().contains(textoBusqueda);
                 boolean coincideId = s.getIdSancion().toLowerCase().contains(textoBusqueda);
-                return coincideItem || coincideMotivo || coincideLab || coincideAlumno || coincideId;
+                
+                return coincideItem || coincideMotivo || coincideLab || coincideAlumno || coincideCodigo || coincideId;
             }).collect(Collectors.toList());
         }
 
@@ -147,15 +150,18 @@ public class IncidenciasAdminController {
                 .filter(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || "PAGADA".equalsIgnoreCase(s.getEstado()))
                 .collect(Collectors.toList());
 
-        // 👇 FILTRO POR FECHA (solo si no hay búsqueda) O POR BÚSQUEDA GLOBAL 👇
+                // 👇 FILTRO POR FECHA (solo si no hay búsqueda) O POR BÚSQUEDA GLOBAL 👇
         if (!textoBusqueda.isEmpty()) {
             resueltas = resueltas.stream().filter(s -> {
                 boolean coincideItem = s.getProducto() != null && s.getProducto().getNombre().toLowerCase().contains(textoBusqueda);
                 boolean coincideMotivo = s.getMotivo() != null && s.getMotivo().toLowerCase().contains(textoBusqueda);
                 boolean coincideLab = s.getReserva() != null && s.getReserva().getLaboratorio() != null && s.getReserva().getLaboratorio().getNombre().toLowerCase().contains(textoBusqueda);
                 boolean coincideAlumno = s.getAlumno() != null && (s.getAlumno().getNombre() + " " + s.getAlumno().getApellido()).toLowerCase().contains(textoBusqueda);
+                // 👇 NUEVA CONDICIÓN: Buscar por código de alumno 👇
+                boolean coincideCodigo = s.getAlumno() != null && s.getAlumno().getIdEstud() != null && s.getAlumno().getIdEstud().toLowerCase().contains(textoBusqueda);
                 boolean coincideId = s.getIdSancion().toLowerCase().contains(textoBusqueda);
-                return coincideItem || coincideMotivo || coincideLab || coincideAlumno || coincideId;
+                
+                return coincideItem || coincideMotivo || coincideLab || coincideAlumno || coincideCodigo || coincideId;
             }).collect(Collectors.toList());
         } else {
             resueltas = resueltas.stream()

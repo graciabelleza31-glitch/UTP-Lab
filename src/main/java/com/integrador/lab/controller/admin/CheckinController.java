@@ -85,9 +85,14 @@ public class CheckinController {
         for (Reserva r : todas) {
             List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
             List<String> nombresIntegrantes = new ArrayList<>();
+            List<String> codigosIntegrantes = new ArrayList<>(); 
             for (ReservaIntegrante ri : integrantes) {
                 if (ri.getAlumno() != null) {
                     nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                    // Asumiendo que tu modelo Alumno tiene un getter getIdEstud() o getCodigo()
+                    if (ri.getAlumno().getIdEstud() != null) {
+                        codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase());
+                    }
                 }
             }
 
@@ -110,11 +115,12 @@ public class CheckinController {
                 horaAccion = r.getFechaHoraCheckin().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
             }
 
-            // 👇 FILTRO EN MEMORIA (Por si el usuario busca un nombre, lab o código) 👇
+                        // 👇 FILTRO EN MEMORIA (Por si el usuario busca un nombre, lab, código de reserva o código de alumno) 👇
             if (!textoBusqueda.isEmpty()) {
                 boolean coincide = r.getIdReserva().toLowerCase().contains(textoBusqueda) ||
                                    labNombre.toLowerCase().contains(textoBusqueda) ||
-                                   nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda));
+                                   nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
+                                   codigosIntegrantes.stream().anyMatch(c -> c.contains(textoBusqueda)); // 👈 NUEVA CONDICIÓN
                 if (!coincide) continue; 
             }
 

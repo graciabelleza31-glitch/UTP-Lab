@@ -128,7 +128,7 @@ public class EncargadoIncidenciasController {
             ));
         }
 
-        // =====================================================================
+                // =====================================================================
         // SECCIÓN 2: HISTORIAL (Filtrado por fecha o búsqueda global)
         // =====================================================================
         List<Sancion> resueltas = todas.stream()
@@ -137,8 +137,13 @@ public class EncargadoIncidenciasController {
                 .filter(s -> {
                     if (!textoBusqueda.isEmpty()) {
                         boolean coincideAlumno = s.getAlumno() != null && (s.getAlumno().getNombre() + " " + s.getAlumno().getApellido()).toLowerCase().contains(textoBusqueda);
+                        // 👇 NUEVA CONDICIÓN: Buscar por código de alumno 👇
+                        boolean coincideCodigo = s.getAlumno() != null && s.getAlumno().getIdEstud() != null && s.getAlumno().getIdEstud().toLowerCase().contains(textoBusqueda);
                         boolean coincideId = s.getIdSancion().toLowerCase().contains(textoBusqueda);
-                        return coincideAlumno || coincideId;
+                        // 👇 NUEVA CONDICIÓN: Buscar por motivo (igual que en activas) 👇
+                        boolean coincideMotivo = s.getMotivo() != null && s.getMotivo().toLowerCase().contains(textoBusqueda);
+                        
+                        return coincideAlumno || coincideCodigo || coincideId || coincideMotivo;
                     } else {
                         return s.getFechaSancion() != null && s.getFechaSancion().toLocalDate().equals(fechaFinal);
                     }

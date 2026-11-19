@@ -104,11 +104,12 @@ public class EncargadoInspeccionController {
 
             InspeccionCardDto dto = convertirADto(r);
             
-            // 👇 FILTRO POR NOMBRE, LAB O CÓDIGO 👇
+                        // 👇 FILTRO POR NOMBRE, LAB, CÓDIGO DE RESERVA O CÓDIGO DE ALUMNO 👇
             if (!textoBusqueda.isEmpty()) {
                 boolean coincide = dto.getIdReserva().toLowerCase().contains(textoBusqueda) ||
                                    dto.getLaboratorio().toLowerCase().contains(textoBusqueda) ||
-                                   dto.getIntegrantes().stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda));
+                                   dto.getIntegrantes().stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
+                                   dto.getCodigosIntegrantes().stream().anyMatch(c -> c.contains(textoBusqueda)); // 👈 NUEVA CONDICIÓN
                 if (!coincide) continue;
             }
             
@@ -133,14 +134,21 @@ public class EncargadoInspeccionController {
         return "encargado/inspeccion";
     }
 
-    private InspeccionCardDto convertirADto(Reserva r) {
+        private InspeccionCardDto convertirADto(Reserva r) {
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
         List<String> nombresIntegrantes = new ArrayList<>();
+        List<String> codigosIntegrantes = new ArrayList<>(); // 👈 NUEVA LISTA
+        
         for (ReservaIntegrante ri : integrantes) {
             if (ri.getAlumno() != null) {
                 nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                // Extraemos el código del alumno
+                if (ri.getAlumno().getIdEstud() != null) {
+                    codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase());
+                }
             }
         }
+        
         String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
         String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
                 ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
@@ -152,7 +160,7 @@ public class EncargadoInspeccionController {
         return new InspeccionCardDto(
                 r.getIdReserva(), labNombre, tipoLab, cubiculo,
                 (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                horario, r.getEstado(), nombresIntegrantes
+                horario, r.getEstado(), nombresIntegrantes, codigosIntegrantes // 👈 PASAMOS LA NUEVA LISTA
         );
     }
 
@@ -302,15 +310,18 @@ public class EncargadoInspeccionController {
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
-    // ============ DTOs ============
-    public static class InspeccionCardDto {
+        public static class InspeccionCardDto {
         private String idReserva, laboratorio, tipoLab, cubiculo, fecha, horario, estado;
         private List<String> integrantes;
+        private List<String> codigosIntegrantes; // 👈 NUEVA PROPIEDAD
+
         public InspeccionCardDto(String idReserva, String laboratorio, String tipoLab, String cubiculo,
-                                 String fecha, String horario, String estado, List<String> integrantes) {
+                                 String fecha, String horario, String estado, List<String> integrantes,
+                                 List<String> codigosIntegrantes) { // 👈 NUEVO PARÁMETRO
             this.idReserva = idReserva; this.laboratorio = laboratorio; this.tipoLab = tipoLab;
             this.cubiculo = cubiculo; this.fecha = fecha; this.horario = horario;
             this.estado = estado; this.integrantes = integrantes;
+            this.codigosIntegrantes = codigosIntegrantes; // 👈 ASIGNACIÓN
         }
         public String getIdReserva() { return idReserva; }
         public String getLaboratorio() { return laboratorio; }
@@ -320,6 +331,7 @@ public class EncargadoInspeccionController {
         public String getHorario() { return horario; }
         public String getEstado() { return estado; }
         public List<String> getIntegrantes() { return integrantes; }
+        public List<String> getCodigosIntegrantes() { return codigosIntegrantes; } // 👈 GETTER
     }
 
     public static class ItemInspeccionDto {
