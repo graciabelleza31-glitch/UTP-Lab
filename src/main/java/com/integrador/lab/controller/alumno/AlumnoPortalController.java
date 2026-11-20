@@ -340,9 +340,38 @@ public Object procesarPagoYReserva(
         return responderError(esAjax, redirectAttributes, "Formato de fecha u hora inválido.", "/alumno/laboratorios");
     }
 
-    if (fecha.isBefore(LocalDate.now())) return responderError(esAjax, redirectAttributes, "No puedes reservar en fechas pasadas.", "/alumno/laboratorios");
-    if (!horaFin.isAfter(horaInicio)) return responderError(esAjax, redirectAttributes, "La hora de fin debe ser posterior a la hora de inicio.", "/alumno/laboratorios");
+       // 1. Validar que no sea una fecha pasada
+    if (fecha.isBefore(LocalDate.now())) {
+        return responderError(esAjax, redirectAttributes, "No puedes reservar en fechas pasadas.", "/alumno/laboratorios");
+    }
+    
+    // 2. Validar que la hora de fin sea mayor a la de inicio
+    if (!horaFin.isAfter(horaInicio)) {
+        return responderError(esAjax, redirectAttributes, "La hora de fin debe ser posterior a la hora de inicio.", "/alumno/laboratorios");
+    }
 
+    // 👇 3. NUEVA VALIDACIÓN: HORARIO DE ATENCIÓN Y HORA PASADA 👇
+    LocalTime horaApertura = LocalTime.of(7, 0);  // 07:00 AM
+    LocalTime horaCierre = LocalTime.of(18, 0);   // 06:00 PM
+    
+    if (horaInicio.isBefore(horaApertura) || horaFin.isAfter(horaCierre)) {
+        return responderError(esAjax, redirectAttributes, 
+            "El horario de atención es de 07:00 a 18:00. Por favor, elige un bloque dentro de ese rango.", 
+            "/alumno/laboratorios");
+    }
+
+    // Si la reserva es para HOY, validar que la hora de inicio no haya pasado
+    java.time.ZoneId zonaPeru = java.time.ZoneId.of("America/Lima");
+    LocalDateTime ahoraPeru = LocalDateTime.now(zonaPeru);
+    LocalDateTime inicioReserva = LocalDateTime.of(fecha, horaInicio);
+
+    if (inicioReserva.isBefore(ahoraPeru)) {
+        return responderError(esAjax, redirectAttributes, 
+            "La hora de inicio seleccionada ya pasó. Por favor, elige un horario posterior a la hora actual.", 
+            "/alumno/laboratorios");
+    }
+    // 👆 FIN DE LA NUEVA VALIDACIÓN 👆
+    
     // 1. LÍMITE DE DOS RESERVAS DIARIAS
     List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
     List<String> idsReservasDelDia = new ArrayList<>();
