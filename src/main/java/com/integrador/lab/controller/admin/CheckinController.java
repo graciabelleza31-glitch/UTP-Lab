@@ -51,101 +51,111 @@ public class CheckinController {
 
     // 1. VISTA PRINCIPAL DE CHECK-IN
     @GetMapping
-    @Transactional(readOnly = true)
-    public String verCheckin(
-            @RequestParam(required = false) String fecha,
-            @RequestParam(required = false) String buscar, // 👈 NUEVO PARÁMETRO
-            HttpSession sesion,
-            Model modelo) {
+@Transactional(readOnly = true)
+public String verCheckin(
+        @RequestParam(required = false) String fecha,
+        @RequestParam(required = false) String buscar,
+        HttpSession sesion,
+        Model modelo) {
 
-        java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
-        try {
-            if (fecha != null && !fecha.isEmpty()) {
-                fechaConsulta = java.time.LocalDate.parse(fecha);
-            }
-        } catch (Exception e) {
-            fechaConsulta = java.time.LocalDate.now();
+    // 1. Calcular fecha de consulta
+    java.time.LocalDate fechaConsulta = java.time.LocalDate.now();
+    try {
+        if (fecha != null && !fecha.isEmpty()) {
+            fechaConsulta = java.time.LocalDate.parse(fecha);
         }
+    } catch (Exception e) {
+        fechaConsulta = java.time.LocalDate.now();
+    }
 
-        final java.time.LocalDate fechaFinal = fechaConsulta;
-        final String textoBusqueda = (buscar != null) ? buscar.toLowerCase().trim() : "";
+    final java.time.LocalDate fechaFinal = fechaConsulta;
+    final String textoBusqueda = (buscar != null) ? buscar.toLowerCase().trim() : "";
 
-        List<Reserva> todas = reservaRepositorio.findAll().stream()
-                // 👇 SI HAY BÚSQUEDA, IGNORAMOS EL FILTRO DE FECHA 👇
-                .filter(r -> {
-                    if (!textoBusqueda.isEmpty()) return true; 
-                    return r.getFechaReserva() != null && r.getFechaReserva().equals(fechaFinal);
-                })
-                .filter(r -> !"CANCELADA".equalsIgnoreCase(r.getEstado()))
-                .sorted((a, b) -> b.getIdReserva().compareTo(a.getIdReserva()))
-                .toList();
+    // 2. Traer TODAS las reservas no canceladas
+    List<Reserva> todas = reservaRepositorio.findAll().stream()
+            .filter(r -> !"CANCELADA".equalsIgnoreCase(r.getEstado()))
+            .sorted((a, b) -> b.getIdReserva().compareTo(a.getIdReserva()))
+            .toList();
 
-        List<CheckinReservaDto> listaCheckin = new ArrayList<>();
+    List<CheckinReservaDto> listaCheckin = new ArrayList<>();
 
-        for (Reserva r : todas) {
-            List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
-            List<String> nombresIntegrantes = new ArrayList<>();
-            List<String> codigosIntegrantes = new ArrayList<>(); 
-            for (ReservaIntegrante ri : integrantes) {
-                if (ri.getAlumno() != null) {
-                    nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
-                    // Asumiendo que tu modelo Alumno tiene un getter getIdEstud() o getCodigo()
-                    if (ri.getAlumno().getIdEstud() != null) {
-                        codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase());
-                    }
+    for (Reserva r : todas) {
+        // 3. Obtener integrantes (nombres y códigos)
+        List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
+        List<String> nombresIntegrantes = new ArrayList<>();
+        List<String> codigosIntegrantes = new ArrayList<>();
+
+        for (ReservaIntegrante ri : integrantes) {
+            if (ri.getAlumno() != null) {
+                nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                if (ri.getAlumno().getIdEstud() != null) {
+                    codigosIntegrantes.add(ri.getAlumno().getIdEstud().toLowerCase().trim());
                 }
             }
-
-            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-            String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
-                    ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
-                    ? r.getLaboratorio().getTipo() : "Química";
-
-            String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
-                    ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
-
-            String nombreEncargado = null;
-            String horaAccion = null;
-
-            if (r.getEncargadoCheckin() != null) {
-                nombreEncargado = r.getEncargadoCheckin().getNombre() + " " + r.getEncargadoCheckin().getApellido();
-            }
-            if (r.getFechaHoraCheckin() != null) {
-                horaAccion = r.getFechaHoraCheckin().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-            }
-
-                        // 👇 FILTRO EN MEMORIA (Por si el usuario busca un nombre, lab, código de reserva o código de alumno) 👇
-            if (!textoBusqueda.isEmpty()) {
-                boolean coincide = r.getIdReserva().toLowerCase().contains(textoBusqueda) ||
-                                   labNombre.toLowerCase().contains(textoBusqueda) ||
-                                   nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
-                                   codigosIntegrantes.stream().anyMatch(c -> c.contains(textoBusqueda)); // 👈 NUEVA CONDICIÓN
-                if (!coincide) continue; 
-            }
-
-            listaCheckin.add(new CheckinReservaDto(
-                    r.getIdReserva(),
-                    labNombre,
-                    tipoLab,
-                    cubiculo,
-                    (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                    horario,
-                    r.getEstado(),
-                    nombresIntegrantes,
-                    nombreEncargado,
-                    horaAccion
-            ));
         }
 
-        modelo.addAttribute("reservas", listaCheckin);
-        modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
-        modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
-        modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
-        modelo.addAttribute("buscar", buscar); // 👈 Lo enviamos de vuelta al HTML
+        // 4. FILTRO DE FECHA: solo si NO hay búsqueda
+        if (textoBusqueda.isEmpty()) {
+            if (r.getFechaReserva() == null || !r.getFechaReserva().equals(fechaFinal)) {
+                continue;
+            }
+        }
 
-        return "admin/checkin";
+        // 5. FILTRO DE BÚSQUEDA: solo si HAY búsqueda
+        if (!textoBusqueda.isEmpty()) {
+            String labNombreParaFiltro = (r.getLaboratorio() != null) 
+                ? r.getLaboratorio().getNombre().toLowerCase() 
+                : "";
+            
+            boolean coincide = r.getIdReserva().toLowerCase().contains(textoBusqueda) ||
+                               labNombreParaFiltro.contains(textoBusqueda) ||
+                               nombresIntegrantes.stream().anyMatch(n -> n.toLowerCase().contains(textoBusqueda)) ||
+                               codigosIntegrantes.stream().anyMatch(c -> c.contains(textoBusqueda));
+            if (!coincide) continue;
+        }
+
+        // 6. Construir el DTO (aquí ya declaramos labNombre, cubiculo, etc. de forma normal)
+        String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+        String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+        String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                ? r.getLaboratorio().getTipo() : "Química";
+
+        String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+
+        String nombreEncargado = null;
+        String horaAccion = null;
+
+        if (r.getEncargadoCheckin() != null) {
+            nombreEncargado = r.getEncargadoCheckin().getNombre() + " " + r.getEncargadoCheckin().getApellido();
+        }
+        if (r.getFechaHoraCheckin() != null) {
+            horaAccion = r.getFechaHoraCheckin().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        }
+
+        listaCheckin.add(new CheckinReservaDto(
+                r.getIdReserva(),
+                labNombre,
+                tipoLab,
+                cubiculo,
+                (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
+                horario,
+                r.getEstado(),
+                nombresIntegrantes,
+                nombreEncargado,
+                horaAccion
+        ));
     }
+
+    modelo.addAttribute("reservas", listaCheckin);
+    modelo.addAttribute("fechaConsulta", fechaConsulta.toString());
+    modelo.addAttribute("fechaAnterior", fechaConsulta.minusDays(1).toString());
+    modelo.addAttribute("fechaSiguiente", fechaConsulta.plusDays(1).toString());
+    modelo.addAttribute("buscar", buscar);
+
+    return "admin/checkin";
+}
 
     // 2. ENDPOINT JSON PARA EL MODAL
     @GetMapping("/api/{idReserva}")
