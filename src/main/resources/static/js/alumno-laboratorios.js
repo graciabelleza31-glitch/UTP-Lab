@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
         lucide.createIcons();
     }
 
+    // Obtener fecha de hoy en formato YYYY-MM-DD usando la zona horaria local
     const hoy = new Date();
     const año = hoy.getFullYear();
     const mes = String(hoy.getMonth() + 1).padStart(2, '0');
@@ -77,10 +78,16 @@ function actualizarHorariosModalConsulta() {
     const grid = document.getElementById('gridHorariosConsulta');
     grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Cargando horarios...</span>';
 
+    // Obtener fecha y hora local
     const ahora = new Date();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const hoyStr = ahora.toISOString().split('T')[0];
+    
+    // Fecha local de hoy en formato YYYY-MM-DD
+    const hoyStr = ahora.getFullYear() + '-' + 
+                   String(ahora.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(ahora.getDate()).padStart(2, '0');
+    
     const esHoy = (fecha === hoyStr);
 
     fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
@@ -92,8 +99,10 @@ function actualizarHorariosModalConsulta() {
                 const horaBloque = parseInt(b.h.split(':')[0], 10);
                 let yaPaso = false;
                 if (esHoy) {
+                    // Si la hora del bloque es menor a la actual, ya pasó
                     if (horaBloque < horaActual) yaPaso = true;
-                    else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
+                    // Si es la misma hora pero ya pasaron los minutos de inicio (ej. 14:05 para bloque de 14:00)
+                    else if (horaBloque === horaActual && minutoActual > 0) yaPaso = true;
                 }
                 const estaOcupado = ocupados.includes(b.h);
                 const estaBloqueado = estaOcupado || yaPaso;
@@ -120,9 +129,12 @@ function actualizarHorariosModalConsulta() {
 }
 
 function validarFechaNoPasada(input) {
-    const hoy = new Date().toISOString().split('T')[0];
-    if (input.value < hoy) {
-        input.value = hoy;
+    const hoy = new Date();
+    const hoyStr = hoy.getFullYear() + '-' + 
+                   String(hoy.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(hoy.getDate()).padStart(2, '0');
+    if (input.value < hoyStr) {
+        input.value = hoyStr;
         alert('No puedes seleccionar una fecha anterior a hoy.');
     }
 }
@@ -244,10 +256,16 @@ function cargarHorariosWizard() {
         return;
     }
 
+    // Obtener fecha y hora local
     const ahora = new Date();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const hoyStr = ahora.toISOString().split('T')[0];
+    
+    // Fecha local de hoy en formato YYYY-MM-DD
+    const hoyStr = ahora.getFullYear() + '-' + 
+                   String(ahora.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(ahora.getDate()).padStart(2, '0');
+    
     const esHoy = (fecha === hoyStr);
 
     fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
@@ -259,7 +277,7 @@ function cargarHorariosWizard() {
                 let yaPaso = false;
                 if (esHoy) {
                     if (horaBloque < horaActual) yaPaso = true;
-                    else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
+                    else if (horaBloque === horaActual && minutoActual > 0) yaPaso = true;
                 }
                 const estaOcupado = ocupados.includes(b.h);
                 const estaBloqueado = estaOcupado || yaPaso;
@@ -544,7 +562,6 @@ function cargarBoletaResumen() {
         setTextIfExists('boletaMontoTotalTxt', `S/ ${costoEppsTotal.toFixed(2)}`);
         setValueIfExists('inputMontoTotalFinal', costoEppsTotal.toFixed(2));
         setTextIfExists('pasarelaTotalMonto', `S/ ${costoEppsTotal.toFixed(2)}`);
-        // ⭐ Ya no existe montoQrText: lo cambiamos por montoYapeText
         setTextIfExists('montoYapeText', `S/ ${costoEppsTotal.toFixed(2)}`);
         setTextIfExists('btnAccionBoleta', "Ir a pagar →");
     } else {
@@ -816,7 +833,7 @@ let codigoPlinActual = null;
 function generarQrPlin(codigo) {
     const cont = document.getElementById('qrcodePlin');
     if (!cont) return;
-    cont.innerHTML = ''; // limpiar el QR anterior
+    cont.innerHTML = '';
     if (typeof QRCode === 'undefined') {
         console.warn('QRCode.js no está cargado');
         return;
@@ -869,7 +886,6 @@ function seleccionarMetodo(opc, met) {
         if (subYape) subYape.style.display = 'none';
         if (subPlin) subPlin.style.display = 'block';
 
-        // Generar un código nuevo cada vez que se elige Plin
         codigoPlinActual = generarCodigoPlinAleatorio();
         generarQrPlin(codigoPlinActual);
     }
