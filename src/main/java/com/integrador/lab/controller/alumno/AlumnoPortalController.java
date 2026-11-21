@@ -316,11 +316,11 @@ public class AlumnoPortalController {
 
         // 👇 3. NUEVA VALIDACIÓN: HORARIO DE ATENCIÓN Y HORA PASADA 👇
         LocalTime horaApertura = LocalTime.of(7, 0);
-        LocalTime horaCierre = LocalTime.of(18, 0);
+        LocalTime horaCierre = LocalTime.of(19, 0);
         
         if (horaInicio.isBefore(horaApertura) || horaFin.isAfter(horaCierre)) {
             return responderError(esAjax, redirectAttributes, 
-                "El horario de atención es de 07:00 a 18:00. Por favor, elige un bloque dentro de ese rango.", 
+                "El horario de atención es de 07:00 a 19:00. Por favor, elige un bloque dentro de ese rango.", 
                 "/alumno/laboratorios");
         }
 
