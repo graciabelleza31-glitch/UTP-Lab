@@ -226,7 +226,8 @@ function seleccionarLabWizard(item) {
     labSeleccionadoActual = {
         id: item.getAttribute('data-id'),
         nombre: item.getAttribute('data-nombre'),
-        cubiculo: item.getAttribute('data-cubiculo')
+        cubiculo: item.getAttribute('data-cubiculo'),
+        encargado: item.getAttribute('data-encargado') || 'Por asignar'
     };
     cargarHorariosWizard();
 }
@@ -535,6 +536,8 @@ function cargarBoletaResumen() {
     });
     setTextIfExists('boletaIntegrantesTitulo', `Integrantes (${nombresIntegrantes.length})`);
     setTextIfExists('boletaIntegrantesNombres', nombresIntegrantes.join(', '));
+
+    setTextIfExists('boletaEncargadoTxt', lab.encargado || 'Por asignar'); 
 
     // Insumos
     const insumos = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');

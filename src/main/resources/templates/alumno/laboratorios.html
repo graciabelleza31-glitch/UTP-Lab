@@ -518,6 +518,7 @@
                   th:data-id="${lab.idLab}"
                   th:data-nombre="${lab.nombre}"
                   th:data-cubiculo="${lab.ubicacionCubiculo}"
+                  th:data-encargado="${lab.encargado != null ? lab.encargado.nombre + ' ' + lab.encargado.apellido : 'Por asignar'}"
                   onclick="seleccionarLabWizard(this)"
                 >
                   <div class="miniatura-lab-wizard">
@@ -967,6 +968,11 @@
                       Mariafernanda Bruno Santos
                     </p>
                   </div>
+
+                  div>
+        <span class="txt-lbl-boleta">Encargado</span>
+        <strong id="boletaEncargadoTxt" style="color: #0f172a;">Por asignar</strong>
+    </div>
 
                   <div
                     class="seccion-lista-boleta"
