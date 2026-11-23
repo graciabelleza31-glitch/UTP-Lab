@@ -75,26 +75,11 @@
                 ✕ Agotado
               </span>
 
-              <!-- FOTOS REALES DE LABORATORIO SEGÚN CATEGORÍA -->
-              <img th:if="${p.categoria != null and #strings.containsIgnoreCase(p.categoria, 'Cristaler')}" 
-                   src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=60" 
-                   alt="Cristalería" class="foto-insumo-img" />
-
-              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Solvente') or #strings.containsIgnoreCase(p.categoria, 'Reactivo'))}" 
-                   src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=500&auto=format&fit=crop&q=60" 
-                   alt="Reactivo químico" class="foto-insumo-img" />
-
-              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Herramient') or #strings.containsIgnoreCase(p.categoria, 'Metal'))}" 
-                   src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60" 
-                   alt="Herramientas" class="foto-insumo-img" />
-
-              <img th:if="${p.categoria != null and (#strings.containsIgnoreCase(p.categoria, 'Equip') or #strings.containsIgnoreCase(p.categoria, 'Instrument'))}" 
-                   src="https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=60" 
-                   alt="Instrumentos" class="foto-insumo-img" />
-
-              <img th:if="${p.categoria == null or (!#strings.containsIgnoreCase(p.categoria, 'Cristaler') and !#strings.containsIgnoreCase(p.categoria, 'Solvente') and !#strings.containsIgnoreCase(p.categoria, 'Reactivo') and !#strings.containsIgnoreCase(p.categoria, 'Herramient') and !#strings.containsIgnoreCase(p.categoria, 'Metal') and !#strings.containsIgnoreCase(p.categoria, 'Equip') and !#strings.containsIgnoreCase(p.categoria, 'Instrument'))}" 
-                   src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=500&auto=format&fit=crop&q=60" 
-                   alt="Insumo" class="foto-insumo-img" />
+              <!-- FOTO REAL DEL INSUMO POR CÓDIGO CON RESPALDO LOCAL -->
+              <img th:src="@{'/img/insumos/' + ${#strings.toLowerCase(#strings.trim(p.idProducto))} + '.jpg'}"
+                  th:alt="${p.nombre}"
+                  class="foto-insumo-img"
+                  onerror="this.onerror=null; this.src='/img/insumos/default.jpg';" />
             </div>
 
             <!-- CUERPO DE LA TARJETA -->

@@ -234,6 +234,10 @@ public String verMisIncidencias(
         if (alumnoSesion != null) {
             Alumno alumnoFresco = alumnoRepositorio.findById(alumnoSesion.getIdEstud()).orElse(null);
             if (alumnoFresco != null) {
+                // 👇 Inicializa la carrera antes de que se cierre la transacción
+                if (alumnoFresco.getCarrera() != null) {
+                    alumnoFresco.getCarrera().getNombre();
+                }
                 session.setAttribute("usuarioLogueado", alumnoFresco);
             }
         }

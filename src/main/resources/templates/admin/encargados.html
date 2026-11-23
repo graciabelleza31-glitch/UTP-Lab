@@ -74,53 +74,101 @@
       </section>
     </main>
 
-    <!-- MODAL PARA CREAR/EDITAR -->
-    <div id="modalEncargado" class="fondo-modal-oscuro" style="display: none;">
-      <div class="tarjeta-modal" style="max-width: 500px; width: 90%;">
+    <!-- MODAL PARA CREAR / EDITAR ENCARGADO -->
+    <div id="modalEncargado" class="fondo-modal-oscuro" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 1rem;">
+      <div class="tarjeta-modal" style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; max-height: 92vh;">
         
-        <div class="cabecera-modal-figma">
-          <div>
-            <h3 class="titulo-modal-txt" id="modalTitulo">Nuevo Encargado</h3>
-            <p class="subtitulo-modal-txt">Registra al personal de laboratorio</p>
+        <!-- Cabecera Moderna -->
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 1.35rem 1.75rem; display: flex; justify-content: space-between; align-items: center; color: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 42px; height: 42px; border-radius: 11px; background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+              👨‍🔬
+            </div>
+            <div>
+              <h3 id="modalTitulo" style="margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em;">Nuevo Encargado</h3>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #94a3b8;">Gestiona las credenciales del personal de laboratorio</p>
+            </div>
           </div>
-          <button type="button" class="btn-cerrar-modal-x" onclick="cerrarModalEncargado()">✕</button>
+          <button type="button" onclick="cerrarModalEncargado()" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
+            ✕
+          </button>
         </div>
 
-        <form th:action="@{/admin/encargados/guardar}" method="post">
-          <div class="cuerpo-modal-formulario">
-            
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Código (ID):</label>
-              <input type="text" name="idEncargado" id="inputIdEncargado" class="input-estilizado" placeholder="Ej: E45985628" required />
+        <form th:action="@{/admin/encargados/guardar}" method="post" style="display: flex; flex-direction: column; overflow: hidden;">
+          
+          <div style="padding: 1.5rem 1.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.1rem;">
+
+            <!-- FILA 1: CÓDIGO Y DNI -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div>
+                <label for="inputIdEncargado" style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">
+                  Código (ID) <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" name="idEncargado" id="inputIdEncargado" placeholder="Ej: E45985628" required
+                       style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; font-weight: 600; text-transform: uppercase; color: #0f172a; transition: border-color 0.2s;" />
+              </div>
+
+              <div>
+                <label for="inputDni" style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">
+                  DNI <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" name="dni" id="inputDni" placeholder="Ej: 74581239" maxlength="8" pattern="\d{8}" title="Debe contener 8 dígitos" required
+                       style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; color: #0f172a;" />
+              </div>
             </div>
 
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">DNI:</label>
-              <input type="text" name="dni" id="inputDni" class="input-estilizado" placeholder="Ej: 74581239" required />
+            <!-- FILA 2: NOMBRE Y APELLIDO -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div>
+                <label for="inputNombre" style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">
+                  Nombre <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" name="nombre" id="inputNombre" placeholder="Ej: Carlos" required
+                       style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; color: #0f172a;" />
+              </div>
+
+              <div>
+                <label for="inputApellido" style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">
+                  Apellido <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" name="apellido" id="inputApellido" placeholder="Ej: Mendoza" required
+                       style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; color: #0f172a;" />
+              </div>
             </div>
 
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Nombre:</label>
-              <input type="text" name="nombre" id="inputNombre" class="input-estilizado" placeholder="Ej: Carlos" required />
-            </div>
-
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Apellido:</label>
-              <input type="text" name="apellido" id="inputApellido" class="input-estilizado" placeholder="Ej: Mendoza" required />
-            </div>
-
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Contraseña:</label>
-              <input type="text" name="password" id="inputPassword" class="input-estilizado" placeholder="Dejar vacío para no cambiar (solo en edición)" />
-              <span class="ayuda-sub-campo">Obligatoria si es un nuevo registro.</span>
+            <!-- FILA 3: CONTRASEÑA CON CAJA DESTACADA Y BOTÓN VER/OCULTAR -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 11px; padding: 0.9rem 1rem;">
+              <label for="inputPassword" style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">
+                Contraseña de Acceso
+              </label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="password" name="password" id="inputPassword" placeholder="Dejar vacío para no cambiar (en edición)"
+                       style="width: 100%; padding: 0.62rem 2.5rem 0.62rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 0.88rem; color: #0f172a; background: #ffffff;" />
+                <button type="button" onclick="const inp = document.getElementById('inputPassword'); inp.type = inp.type === 'password' ? 'text' : 'password';"
+                        title="Mostrar / Ocultar contraseña"
+                        style="position: absolute; right: 0.65rem; background: none; border: none; cursor: pointer; font-size: 1rem; color: #64748b; padding: 0;">
+                  👁️
+                </button>
+              </div>
+              <span style="display: block; font-size: 0.74rem; color: #64748b; margin-top: 0.4rem;">
+                🔒 Obligatoria si es un nuevo registro. Si estás editando, déjala en blanco para conservar la actual.
+              </span>
             </div>
 
           </div>
 
-          <div class="pie-modal-formulario">
-            <button type="button" class="btn-cancelar-enlace" onclick="cerrarModalEncargado()">Cancelar</button>
-            <button type="submit" class="btn-guardar-verde-teal">Guardar Encargado</button>
+          <!-- Pie del Modal -->
+          <div style="padding: 1rem 1.75rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem;">
+            <button type="button" onclick="cerrarModalEncargado()"
+                    style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 0.6rem 1.2rem; border-radius: 9px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              Cancelar
+            </button>
+            <button type="submit"
+                    style="background: #0d9488; border: none; color: #ffffff; padding: 0.62rem 1.4rem; border-radius: 9px; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.25);">
+              Guardar Encargado →
+            </button>
           </div>
+
         </form>
 
       </div>
