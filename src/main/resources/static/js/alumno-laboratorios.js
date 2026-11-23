@@ -591,6 +591,81 @@ function setDisplayIfExists(id, valor) {
 }
 
 
+async function solicitarQrPlinDinamico() {
+    const numPlin = (document.getElementById('inputNumeroPlin').value || '').replace(/\D/g, '');
+    if (numPlin.length !== 9) {
+        alert('Ingresa un número de celular Plin de 9 dígitos.');
+        return;
+    }
+
+    try {
+        const resp = await fetch('/alumno/api/pagos/plin/generar-qr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numeroPlin: numPlin })
+        });
+
+        if (!resp.ok) {
+            alert('Error del servidor (' + resp.status + ').');
+            return;
+        }
+
+        const data = await resp.json();
+
+        if (!data.success) {
+            alert(data.mensaje);
+            document.getElementById('contenedorQrPlinDinamico').style.display = 'none';
+            document.getElementById('bloqueInputCodigoPlin').style.display = 'none';
+            return;
+        }
+
+        codigoPlinActual = data.codigoOperacion;
+        document.getElementById('titularPlinDetectado').innerText = `Titular: ${data.titular}`;
+        document.getElementById('contenedorQrPlinDinamico').style.display = 'block';
+        document.getElementById('bloqueInputCodigoPlin').style.display = 'block';
+
+        // Al escanear con el celular mostrará exactamente el código (ej. PL849201)
+        generarQrPlin(`UTP +Lab Plin | Codigo: ${data.codigoOperacion} | Monto: S/ ${costoEppsTotal.toFixed(2)}`);
+    } catch (e) {
+        alert('Error al generar el QR de Plin.');
+    }
+}
+
+async function solicitarCodigoYapeDinamico() {
+    const numYape = (document.getElementById('inputNumeroYape').value || '').replace(/\D/g, '');
+    if (numYape.length !== 9) {
+        alert('Ingresa un número de celular Yape de 9 dígitos.');
+        return;
+    }
+
+    try {
+        const resp = await fetch('/alumno/api/pagos/yape/generar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numeroYape: numYape })
+        });
+
+        if (!resp.ok) {
+            alert('Error del servidor (' + resp.status + ').');
+            return;
+        }
+
+        const data = await resp.json();
+
+        if (!data.success) {
+            alert(data.mensaje);
+            document.getElementById('avisoCodigoYapeGenerado').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('titularYapeDetectado').innerText = data.titular;
+        document.getElementById('codigoYapeSimuladoTxt').innerText = data.codigoAprobacion;
+        document.getElementById('avisoCodigoYapeGenerado').style.display = 'block';
+    } catch (e) {
+        alert('Error al solicitar el código de Yape.');
+    }
+}
+
 // ============================================================================
 // 8. VALIDACIÓN Y ENVÍO (AJAX)
 // ============================================================================
@@ -641,20 +716,27 @@ async function validarYEnviarReserva() {
     }
 }
 
-function procesarBotonFinalBoleta() {
-    if (!document.getElementById('checkAceptoTerminos').checked) {
-        alert('Debes aceptar los términos y condiciones para continuar.');
-        return;
-    }
+    function procesarBotonFinalBoleta() {
+        if (!document.getElementById('checkAceptoTerminos').checked) {
+            alert('Debes aceptar los términos y condiciones para continuar.');
+            return;
+        }
 
-    if (costoEppsTotal > 0) {
-        document.getElementById('modalWizard').style.display = 'none';
-        document.getElementById('modalPagoReserva').style.display = 'flex';
-    } else {
-        document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
-        validarYEnviarReserva();
+        if (costoEppsTotal > 0) {
+            document.getElementById('modalWizard').style.display = 'none';
+            document.getElementById('modalPagoReserva').style.display = 'flex';
+            
+            // 👇 Fuerza que Yape quede realmente activo desde el primer segundo
+            const primerMetodo = document.querySelector('#modalPagoReserva .opcion-metodo-pago');
+            if (primerMetodo) {
+                seleccionarMetodo(primerMetodo, 'YAPE');
+            }
+            setTextIfExists('montoBilleteraText', `S/ ${costoEppsTotal.toFixed(2)}`);
+        } else {
+            document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
+            validarYEnviarReserva();
+        }
     }
-}
 
 function enviarFormularioFinal() {
     const form = document.getElementById('formReservaCompleta');
@@ -725,6 +807,12 @@ function enviarFormularioFinal() {
         formData.append('codigoPlin', codigoPlin);
         ultimoIntentoPago = formData;
         ejecutarPagoAjax(formData);
+        return;
+    }
+
+    // Si por algún motivo llega aquí sin ser YAPE, PLIN o TARJETA:
+    if (costoEppsTotal > 0) {
+        mostrarResultadoPago('error', 'Método no seleccionado', 'Por favor selecciona Yape, Plin o Tarjeta.');
         return;
     }
 
@@ -833,7 +921,7 @@ function cerrarModalPago() {
 // ============================================================================
 let codigoPlinActual = null;
 
-function generarQrPlin(codigo) {
+function generarQrPlin(textoQr) {
     const cont = document.getElementById('qrcodePlin');
     if (!cont) return;
     cont.innerHTML = '';
@@ -842,14 +930,13 @@ function generarQrPlin(codigo) {
         return;
     }
     new QRCode(cont, {
-        text: codigo,
-        width: 180,
-        height: 180,
+        text: textoQr,
+        width: 135,
+        height: 135,
         colorDark: "#0f172a",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel: QRCode.CorrectLevel.M
     });
-    document.getElementById('codigoQrPlin').innerText = codigo;
 }
 
 function generarCodigoPlinAleatorio() {

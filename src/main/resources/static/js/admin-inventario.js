@@ -31,6 +31,36 @@ function filtrarInventario() {
   document.getElementById('badgeTotalItems').innerText = `${visibles} registrados`;
 }
 
+function previsualizarImagenInsumo(input) {
+  const preview = document.getElementById('imgPreviewInsumo');
+  const labelNombre = document.getElementById('nombreArchivoSeleccionado');
+
+  if (input.files && input.files[0]) {
+    const archivo = input.files[0];
+    if (labelNombre) labelNombre.innerText = archivo.name;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      if (preview) preview.src = e.target.result;
+    };
+    reader.readAsDataURL(archivo);
+  } else {
+    if (preview) preview.src = '/img/insumos/default.jpg';
+    if (labelNombre) labelNombre.innerText = 'Sin archivo';
+  }
+}
+
+function cerrarModalNuevoProducto() {
+  document.getElementById('modalNuevoProducto').style.display = 'none';
+  // Resetear vista previa al cerrar
+  const inputImg = document.getElementById('inputImagenInsumo');
+  if (inputImg) inputImg.value = '';
+  const preview = document.getElementById('imgPreviewInsumo');
+  if (preview) preview.src = '/img/insumos/default.jpg';
+  const labelNombre = document.getElementById('nombreArchivoSeleccionado');
+  if (labelNombre) labelNombre.innerText = 'Sin archivo';
+}
+
 function ejecutarAjusteStock(btn) {
   const idProducto = btn.getAttribute('data-id');
   const cantidad = parseInt(btn.getAttribute('data-cant'), 10);

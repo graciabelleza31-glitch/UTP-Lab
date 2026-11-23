@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Optional;
 
 import com.integrador.lab.service.ReporteService;
+
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.integrador.lab.modelo.Laboratorio;
 import com.integrador.lab.modelo.Producto;
@@ -171,5 +174,54 @@ public class InventarioAdminController {
             .headers(headers)
             .contentType(MediaType.APPLICATION_PDF)
             .body(new InputStreamResource(pdf));
+    }
+
+    @PostMapping("/inventario/guardar")
+    public String guardarNuevoInsumo(
+            @RequestParam("idProducto") String idProducto,
+            @RequestParam("nombre") String nombre,
+            @RequestParam("categoria") String categoria,
+            @RequestParam("stockActual") Integer stockActual,
+            @RequestParam(value = "costoReposicion", defaultValue = "0.00") BigDecimal costoReposicion,
+            @RequestParam(value = "tipoLab", required = false) String tipoLab,
+            @RequestParam(value = "archivoImagen", required = false) org.springframework.web.multipart.MultipartFile archivoImagen,
+            RedirectAttributes redirectAttributes) {
+
+        String idLimpio = idProducto.trim().toUpperCase();
+        Producto prod = new Producto();
+        prod.setIdProducto(idLimpio);
+        prod.setNombre(nombre.trim());
+        prod.setCategoria(categoria.trim());
+        prod.setStockActual(stockActual);
+        prod.setCostoReposicion(costoReposicion);
+        // Asigna aquí tu lógica actual de tipoLab / laboratorio si corresponde
+
+        // Guardar la imagen con el formato /img/insumos/{id}.jpg
+        if (archivoImagen != null && !archivoImagen.isEmpty()) {
+            try {
+                String nombreArchivo = idLimpio.toLowerCase() + ".jpg";
+                byte[] bytes = archivoImagen.getBytes();
+
+                // 1. Guardar en src/main/resources/static/img/insumos/ (permanente en el proyecto)
+                java.nio.file.Path rutaSrc = java.nio.file.Paths.get("src/main/resources/static/img/insumos/" + nombreArchivo);
+                java.nio.file.Files.createDirectories(rutaSrc.getParent());
+                java.nio.file.Files.write(rutaSrc, bytes);
+
+                // 2. Guardar también en target/classes/static/img/insumos/ (visible al instante sin reiniciar)
+                java.nio.file.Path rutaTarget = java.nio.file.Paths.get("target/classes/static/img/insumos/" + nombreArchivo);
+                if (java.nio.file.Files.exists(rutaTarget.getParent())) {
+                    java.nio.file.Files.write(rutaTarget, bytes);
+                }
+
+                // Si tu entidad Producto tiene el campo imagenUrl:
+                // prod.setImagenUrl("/img/insumos/" + nombreArchivo);
+            } catch (Exception e) {
+                System.out.println("Error al guardar imagen del insumo: " + e.getMessage());
+            }
+        }
+
+        productoRepositorio.save(prod);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Insumo " + idLimpio + " registrado correctamente.");
+        return "redirect:/admin/inventario";
     }
 }

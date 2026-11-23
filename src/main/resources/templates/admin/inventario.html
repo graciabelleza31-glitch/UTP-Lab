@@ -153,74 +153,124 @@
       </section>
     </main>
 
-    <!-- MODAL: REGISTRAR NUEVO INSUMO -->
-    <div id="modalNuevoProducto" class="fondo-modal-oscuro" style="display: none;">
-      <div class="tarjeta-modal modal-inventario-contenedor">
+   <!-- MODAL: REGISTRAR NUEVO INSUMO -->
+    <div id="modalNuevoProducto" class="fondo-modal-oscuro" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 1rem;">
+      <div class="tarjeta-modal" style="background: #ffffff; width: 100%; max-width: 580px; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; max-height: 92vh;">
         
-        <div class="cabecera-modal-figma">
-          <div>
-            <h3 class="titulo-modal-txt">Registrar Nuevo Insumo</h3>
-            <p class="subtitulo-modal-txt">Añade insumos o EPPs asignándolos al tipo de laboratorio</p>
+        <!-- Cabecera -->
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 1.35rem 1.75rem; display: flex; justify-content: space-between; align-items: center; color: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+              🧪
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em;">Registrar Nuevo Insumo</h3>
+              <p style="margin: 0.15rem 0 0 0; font-size: 0.8rem; color: #94a3b8;">Añade materiales, equipos o EPPs con su fotografía al catálogo</p>
+            </div>
           </div>
-          <button type="button" class="btn-cerrar-modal-x" onclick="cerrarModalNuevoProducto()">✕</button>
+          <button type="button" onclick="cerrarModalNuevoProducto()" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
+            ✕
+          </button>
         </div>
 
-        <form th:action="@{/admin/inventario/guardar}" method="post">
-          <div class="cuerpo-modal-formulario">
-            
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Código del Insumo (ID):</label>
-              <input type="text" name="idProducto" class="input-estilizado" placeholder="Ej: IQ0005 o EPP005" required />
+        <!-- Formulario con enctype="multipart/form-data" obligatorio para subir archivos -->
+        <form th:action="@{/admin/inventario/guardar}" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; overflow: hidden;">
+          
+          <div style="padding: 1.5rem 1.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.1rem;">
+
+            <!-- SECCIÓN SUBIR IMAGEN + PREVIEW -->
+            <div style="display: flex; gap: 1rem; align-items: center; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 0.9rem;">
+              <div id="contenedorPreviewImagen" style="width: 78px; height: 78px; border-radius: 10px; background: #e2e8f0; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1;">
+                <img id="imgPreviewInsumo" src="/img/insumos/default.jpg" alt="Vista previa" style="width: 100%; height: 100%; object-fit: cover;" />
+              </div>
+              
+              <div style="flex: 1;">
+                <label for="inputImagenInsumo" style="display: block; font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.25rem;">
+                  Fotografía del Insumo <span style="color: #64748b; font-weight: 500;">(JPG, PNG o WEBP)</span>
+                </label>
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.74rem; color: #64748b;">
+                  Se guardará automáticamente vinculada al código del producto.
+                </p>
+                <label for="inputImagenInsumo" style="display: inline-flex; align-items: center; gap: 0.4rem; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; font-size: 0.78rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 7px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                  📷 Seleccionar archivo
+                </label>
+                <span id="nombreArchivoSeleccionado" style="font-size: 0.75rem; color: #64748b; margin-left: 0.5rem;">Sin archivo</span>
+                <input type="file" id="inputImagenInsumo" name="archivoImagen" accept="image/*" onchange="previsualizarImagenInsumo(this)" style="display: none;" />
+              </div>
             </div>
 
-            <div class="grupo-campo-inv">
-              <label class="label-campo-inv">Nombre del Insumo / Material:</label>
-              <input type="text" name="nombre" class="input-estilizado" placeholder="Ej: Multímetro digital o Probeta 100mL" required />
-            </div>
+            <!-- FILA 1: CÓDIGO Y CATEGORÍA -->
+            <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 1rem;">
+              <div>
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Código (ID) <span style="color: #ef4444;">*</span></label>
+                <input type="text" name="idProducto" placeholder="Ej: IQ0005" required
+                      style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; text-transform: uppercase; font-weight: 600; color: #0f172a;" />
+              </div>
 
-            <div class="grilla-dos-columnas-inv">
-              <div class="grupo-campo-inv">
-                <label class="label-campo-inv">Categoría:</label>
-                <select name="categoria" class="select-estilizado" required>
+              <div>
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Categoría <span style="color: #ef4444;">*</span></label>
+                <select name="categoria" required
+                        style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; background: #ffffff; color: #0f172a;">
                   <option value="Instrumentos">Instrumentos</option>
                   <option value="Cristalería">Cristalería</option>
                   <option value="Equipos">Equipos</option>
                   <option value="Herramientas">Herramientas</option>
                   <option value="Material Metálico">Material Metálico</option>
-                  <option value="EPP">EPP</option>
+                  <option value="EPP">EPP (Protección Personal)</option>
                 </select>
-              </div>
-
-              <div class="grupo-campo-inv">
-                <label class="label-campo-inv">Stock Inicial:</label>
-                <input type="number" name="stockActual" class="input-estilizado" value="10" min="0" required />
               </div>
             </div>
 
-            <div class="grilla-dos-columnas-inv">
-              <div class="grupo-campo-inv">
-                <label class="label-campo-inv">Costo de Reposición (S/):</label>
-                <input type="number" name="costoReposicion" step="0.50" class="input-estilizado" value="0.00" placeholder="0.00" />
-                <span class="ayuda-sub-campo">Penalización en caso de rotura/pérdida</span>
+            <!-- FILA 2: NOMBRE -->
+            <div>
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Nombre del Insumo / Material <span style="color: #ef4444;">*</span></label>
+              <input type="text" name="nombre" placeholder="Ej: Multímetro digital True RMS o Probeta 100mL" required
+                    style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; color: #0f172a;" />
+            </div>
+
+            <!-- FILA 3: STOCK Y LABORATORIO -->
+            <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 1rem;">
+              <div>
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Stock Inicial <span style="color: #ef4444;">*</span></label>
+                <input type="number" name="stockActual" value="10" min="0" required
+                      style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; color: #0f172a;" />
               </div>
 
-              <div class="grupo-campo-inv">
-                <label class="label-campo-inv">Tipo de Laboratorio:</label>
-                <select name="tipoLab" class="select-estilizado">
+              <div>
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Laboratorio Asignado</label>
+                <select name="tipoLab"
+                        style="width: 100%; padding: 0.62rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.88rem; background: #ffffff; color: #0f172a;">
                   <option value="">Uso General / Todos</option>
                   <option th:each="tipo : ${tiposLaboratorios}" th:value="${tipo}" th:text="${'Lab. ' + tipo}">Lab. Química</option>
                 </select>
               </div>
             </div>
 
+            <!-- FILA 4: COSTO DE REPOSICIÓN -->
+            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+              <div>
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #92400e;">Costo de Reposición (S/)</label>
+                <span style="font-size: 0.73rem; color: #b45309;">Monto de penalización si el alumno rompe o pierde el ítem</span>
+              </div>
+              <input type="number" name="costoReposicion" step="0.50" min="0" value="0.00" placeholder="0.00"
+                    style="width: 120px; padding: 0.55rem 0.75rem; border: 1.5px solid #fcd34d; border-radius: 8px; font-size: 0.9rem; font-weight: 700; text-align: right; color: #78350f; background: #ffffff;" />
+            </div>
+
           </div>
 
-          <div class="pie-modal-formulario">
-            <button type="button" class="btn-cancelar-enlace" onclick="cerrarModalNuevoProducto()">Cancelar</button>
-            <button type="submit" class="btn-guardar-verde-teal">Guardar Insumo →</button>
+          <!-- Pie del Modal -->
+          <div style="padding: 1rem 1.75rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem;">
+            <button type="button" onclick="cerrarModalNuevoProducto()"
+                    style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 0.6rem 1.2rem; border-radius: 9px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              Cancelar
+            </button>
+            <button type="submit"
+                    style="background: #0d9488; border: none; color: #ffffff; padding: 0.62rem 1.4rem; border-radius: 9px; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.25);">
+              Guardar Insumo →
+            </button>
           </div>
+
         </form>
-
       </div>
     </div>
 
@@ -302,6 +352,8 @@
             });
         }
     }
+
+    
   </script>
 </body>
 </html>

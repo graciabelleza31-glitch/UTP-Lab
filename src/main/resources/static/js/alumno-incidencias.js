@@ -1,12 +1,10 @@
 // ============================================================================
-// ALUMNO - INCIDENCIAS · PAGO CON YAPE / PLIN / TARJETA
+// ALUMNO - INCIDENCIAS · PAGO DINÁMICO CON YAPE / PLIN / TARJETA
 // ============================================================================
 let idSancionActual = null;
 let montoActualTexto = 'S/ 0.00';
 let metodoPagoActual = 'YAPE';
-let codigoPlinIncActual = null;
 
-// Inicializar íconos
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 });
@@ -25,11 +23,24 @@ function abrirModalPago(btn) {
     }
 
     document.getElementById('modalMontoPagar').innerText = montoActualTexto;
-    document.getElementById('btnConfirmarPago').innerText = 'Confirmar pago · ' + montoActualTexto;
+    const btnPagar = document.getElementById('btnConfirmarPago');
+    if (btnPagar) {
+        btnPagar.disabled = false;
+        btnPagar.innerText = 'Confirmar pago · ' + montoActualTexto;
+    }
 
-    // Limpiar alertas y campos
+    // Limpiar alertas, campos y avisos dinámicos
     const alerta = document.getElementById('alertaErrorIncidencia');
     if (alerta) alerta.style.display = 'none';
+
+    const avisoYape = document.getElementById('avisoCodigoYapeInc');
+    if (avisoYape) avisoYape.style.display = 'none';
+
+    const contQrPlin = document.getElementById('contenedorQrPlinInc');
+    if (contQrPlin) contQrPlin.style.display = 'none';
+
+    const bloqueCodPlin = document.getElementById('bloqueCodigoPlinInc');
+    if (bloqueCodPlin) bloqueCodPlin.style.display = 'none';
 
     ['inputNumeroTarjeta', 'inputTitularTarjeta', 'inputFechaExpTarjeta', 'inputCvvTarjeta',
      'inputNumeroYapeInc', 'inputCodigoYapeInc',
@@ -43,7 +54,7 @@ function abrirModalPago(btn) {
     document.getElementById('modalPagoIncidencia').style.display = 'flex';
 
     // Seleccionar Yape por defecto
-    const primerMetodo = document.querySelector('.grid-metodos-pago .opcion-metodo');
+    const primerMetodo = document.querySelector('#modalPagoIncidencia .grid-metodos-pago .opcion-metodo');
     if (primerMetodo) seleccionarMetodoInc(primerMetodo, 'YAPE');
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -59,7 +70,8 @@ function cerrarModalPago() {
 // ============================================================================
 function seleccionarMetodoInc(el, metodo) {
     metodoPagoActual = metodo;
-    document.querySelectorAll('.grid-metodos-pago .opcion-metodo').forEach(m => m.classList.remove('seleccionado'));
+    document.querySelectorAll('#modalPagoIncidencia .grid-metodos-pago .opcion-metodo')
+        .forEach(m => m.classList.remove('seleccionado'));
     if (el) el.classList.add('seleccionado');
 
     const secYape = document.getElementById('seccionYapeIncidencia');
@@ -71,44 +83,100 @@ function seleccionarMetodoInc(el, metodo) {
     if (secYape) secYape.style.display = (metodo === 'YAPE') ? 'block' : 'none';
     if (secPlin) secPlin.style.display = (metodo === 'PLIN') ? 'block' : 'none';
     if (secTarjeta) secTarjeta.style.display = (metodo === 'TARJETA') ? 'block' : 'none';
-
-    if (metodo === 'PLIN') {
-        generarCodigoPlinInc();
-    }
-}
-
-// Alias para compatibilidad con el HTML si llama a seleccionarMetodo()
-function seleccionarMetodo(el, metodo) {
-    seleccionarMetodoInc(el, metodo);
 }
 
 // ============================================================================
-// GENERAR QR DE PLIN
+// SOLICITAR CÓDIGO DINÁMICO DE YAPE (BACKEND)
 // ============================================================================
-function generarCodigoPlinInc() {
-    // ⚠️ Demo: código fijo para que apruebe con 987654321 en la BD
-    codigoPlinIncActual = 'PL123456';
+async function solicitarCodigoYapeInc() {
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) alerta.style.display = 'none';
 
-    const txt = document.getElementById('codigoQrPlinIncidencia');
-    if (txt) txt.innerText = codigoPlinIncActual;
-
-    const cont = document.getElementById('qrPlinIncidencia');
-    if (!cont) return;
-    cont.innerHTML = '';
-
-    if (typeof QRCode === 'undefined') {
-        console.warn('QRCode.js no está cargado. Agrega el <script> en el <head>.');
+    const numYape = (document.getElementById('inputNumeroYapeInc').value || '').replace(/\D/g, '');
+    if (numYape.length !== 9) {
+        mostrarError('Ingresa un número de celular Yape de 9 dígitos.');
         return;
     }
 
-    new QRCode(cont, {
-        text: codigoPlinIncActual,
-        width: 150,
-        height: 150,
-        colorDark: "#0f172a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    try {
+        const resp = await fetch('/alumno/api/pagos/yape/generar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numeroYape: numYape })
+        });
+
+        if (!resp.ok) {
+            mostrarError('Error del servidor (' + resp.status + ') al solicitar el código.');
+            return;
+        }
+
+        const data = await resp.json();
+        if (!data.success) {
+            document.getElementById('avisoCodigoYapeInc').style.display = 'none';
+            mostrarError(data.mensaje || 'No se pudo generar el código de Yape.');
+            return;
+        }
+
+        document.getElementById('titularYapeInc').innerText = data.titular;
+        document.getElementById('codigoYapeSimuladoInc').innerText = data.codigoAprobacion;
+        document.getElementById('avisoCodigoYapeInc').style.display = 'block';
+    } catch (e) {
+        mostrarError('Error de conexión al solicitar el código de Yape.');
+    }
+}
+
+// ============================================================================
+// GENERAR QR DINÁMICO DE PLIN (BACKEND)
+// ============================================================================
+async function solicitarQrPlinInc() {
+    const alerta = document.getElementById('alertaErrorIncidencia');
+    if (alerta) alerta.style.display = 'none';
+
+    const numPlin = (document.getElementById('inputNumeroPlinInc').value || '').replace(/\D/g, '');
+    if (numPlin.length !== 9) {
+        mostrarError('Ingresa un número de celular Plin de 9 dígitos.');
+        return;
+    }
+
+    try {
+        const resp = await fetch('/alumno/api/pagos/plin/generar-qr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numeroPlin: numPlin })
+        });
+
+        if (!resp.ok) {
+            mostrarError('Error del servidor (' + resp.status + ') al generar el QR.');
+            return;
+        }
+
+        const data = await resp.json();
+        if (!data.success) {
+            document.getElementById('contenedorQrPlinInc').style.display = 'none';
+            document.getElementById('bloqueCodigoPlinInc').style.display = 'none';
+            mostrarError(data.mensaje || 'No se pudo generar el QR de Plin.');
+            return;
+        }
+
+        document.getElementById('titularPlinInc').innerText = `Titular: ${data.titular}`;
+        document.getElementById('contenedorQrPlinInc').style.display = 'block';
+        document.getElementById('bloqueCodigoPlinInc').style.display = 'block';
+
+        const cont = document.getElementById('qrPlinIncidencia');
+        cont.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(cont, {
+                text: `UTP +Lab Plin | Codigo: ${data.codigoOperacion} | Monto: ${montoActualTexto}`,
+                width: 135,
+                height: 135,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    } catch (e) {
+        mostrarError('Error de conexión al generar el QR de Plin.');
+    }
 }
 
 // ============================================================================
@@ -124,7 +192,6 @@ async function ejecutarPagoBackend() {
     const formData = new URLSearchParams();
     formData.append('metodoPago', metodoPagoActual);
 
-    // ---------- VALIDACIONES LOCALES ----------
     if (metodoPagoActual === 'TARJETA') {
         const num = document.getElementById('inputNumeroTarjeta').value.replace(/\s/g, '');
         const titular = document.getElementById('inputTitularTarjeta').value.trim();
@@ -157,13 +224,12 @@ async function ejecutarPagoBackend() {
         const codigoPlin = (document.getElementById('inputCodigoPlinInc').value || '').trim().toUpperCase();
 
         if (numPlin.length !== 9) return mostrarError("El número de Plin debe tener 9 dígitos.", btnPagar);
-        if (!codigoPlin || codigoPlin.length < 8) return mostrarError("Copia el código de operación que aparece debajo del QR.", btnPagar);
+        if (!codigoPlin || codigoPlin.length < 8) return mostrarError("Ingresa el código de operación que aparece al escanear el QR.", btnPagar);
 
         formData.append('numeroPlin', numPlin);
         formData.append('codigoPlin', codigoPlin);
     }
 
-    // ---------- ENVÍO AJAX ----------
     btnPagar.disabled = true;
     btnPagar.innerText = "Procesando pago...";
 
@@ -181,7 +247,6 @@ async function ejecutarPagoBackend() {
             return;
         }
 
-        // ✅ Pago exitoso
         document.getElementById('subtextoExitoMonto').innerText = montoActualTexto + ' procesados correctamente';
         document.getElementById('textoTxnCode').innerText = data.transaccion || 'TXN-000';
         document.getElementById('pasoPagoSeleccion').style.display = 'none';
@@ -207,9 +272,6 @@ function mostrarError(mensaje, btnPagar) {
     }
 }
 
-// ============================================================================
-// FINALIZAR Y RECARGAR
-// ============================================================================
 function finalizarPagoYRecargar() {
     cerrarModalPago();
     window.location.reload();

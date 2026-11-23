@@ -46,6 +46,7 @@ import com.integrador.lab.service.EmailService;
 import com.integrador.lab.service.PagoSimulacionService;
 import com.integrador.lab.service.ReporteService;
 
+
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -84,6 +85,12 @@ public class AlumnoPortalController {
 
     @Autowired
     private ReporteService boletaPdfService;
+
+    @Autowired
+    private com.integrador.lab.repository.PlinSimulacionRepository plinRepositorio;
+
+    @Autowired
+    private com.integrador.lab.repository.YapeSimulacionRepository yapeRepositorio;
 
     // =========================================================================
     // 1. PANTALLA PRINCIPAL: LABORATORIOS Y GESTIÓN DE RESERVAS
@@ -895,6 +902,103 @@ public class AlumnoPortalController {
             }
         }
 
+        return resp;
+    }
+
+   @PostMapping("/api/pagos/plin/generar-qr")
+    @ResponseBody
+    public Map<String, Object> generarQrPlinDinamico(@RequestBody Map<String, String> payload) {
+        Map<String, Object> resp = new HashMap<>();
+        String num = (payload.get("numeroPlin") == null) ? "" : payload.get("numeroPlin").replaceAll("[^0-9]", "").trim();
+
+        if (!num.matches("\\d{9}")) {
+            resp.put("success", false);
+            resp.put("mensaje", "Ingresa un número de celular Plin válido de 9 dígitos.");
+            return resp;
+        }
+
+        // Genera un código nuevo único cada vez (PL + 6 dígitos aleatorios)
+        String nuevoCodigo = "PL" + (100000 + new java.util.Random().nextInt(900000));
+
+        Optional<com.integrador.lab.modelo.PlinSimulacion> opt = plinRepositorio.findByNumeroCelular(num);
+        com.integrador.lab.modelo.PlinSimulacion plin;
+
+        if (opt.isPresent()) {
+            plin = opt.get();
+            String estado = (plin.getEstado() == null) ? "" : plin.getEstado().trim().toUpperCase();
+
+            // Si en tu BD pusiste un número como BLOQUEADO para hacer pruebas, respetamos ese bloqueo
+            if ("BLOQUEADO".equals(estado)) {
+                resp.put("success", false);
+                resp.put("mensaje", "Tu cuenta de Plin está bloqueada temporalmente.");
+                return resp;
+            }
+
+            // Si existe y está activo (o expirado), le renovamos el código QR y lo dejamos ACTIVO
+            plin.setEstado("ACTIVO");
+            plin.setCodigoOperacion(nuevoCodigo);
+        } else {
+            // Si es un número completamente nuevo, lo registramos automáticamente en PostgreSQL
+            plin = new com.integrador.lab.modelo.PlinSimulacion();
+            plin.setNumeroCelular(num);
+            plin.setNombreTitular("Usuario Plin (" + num + ")");
+            plin.setCodigoOperacion(nuevoCodigo);
+            plin.setEstado("ACTIVO");
+        }
+
+        plinRepositorio.save(plin);
+
+        resp.put("success", true);
+        resp.put("codigoOperacion", nuevoCodigo);
+        resp.put("titular", plin.getNombreTitular());
+        return resp;
+    }
+
+    @PostMapping("/api/pagos/yape/generar-codigo")
+    @ResponseBody
+    public Map<String, Object> generarCodigoYapeDinamico(@RequestBody Map<String, String> payload) {
+        Map<String, Object> resp = new HashMap<>();
+        String num = (payload.get("numeroYape") == null) ? "" : payload.get("numeroYape").replaceAll("[^0-9]", "").trim();
+
+        if (!num.matches("\\d{9}")) {
+            resp.put("success", false);
+            resp.put("mensaje", "Ingresa un número de celular Yape válido de 9 dígitos.");
+            return resp;
+        }
+
+        // Genera un código de aprobación dinámico de 6 dígitos
+        String nuevoCodigo = String.valueOf(100000 + new java.util.Random().nextInt(900000));
+
+        Optional<com.integrador.lab.modelo.YapeSimulacion> opt = yapeRepositorio.findByNumeroCelular(num);
+        com.integrador.lab.modelo.YapeSimulacion yape;
+
+        if (opt.isPresent()) {
+            yape = opt.get();
+            String estado = (yape.getEstado() == null) ? "" : yape.getEstado().trim().toUpperCase();
+
+            // Respeta cuentas bloqueadas en BD para pruebas de rechazo
+            if ("BLOQUEADO".equals(estado)) {
+                resp.put("success", false);
+                resp.put("mensaje", "Tu cuenta de Yape está bloqueada temporalmente.");
+                return resp;
+            }
+
+            yape.setEstado("ACTIVO");
+            yape.setCodigoAprobacion(nuevoCodigo);
+        } else {
+            // Si es un número nuevo, lo registra automáticamente en PostgreSQL
+            yape = new com.integrador.lab.modelo.YapeSimulacion();
+            yape.setNumeroCelular(num);
+            yape.setNombreTitular("Usuario Yape (" + num + ")");
+            yape.setCodigoAprobacion(nuevoCodigo);
+            yape.setEstado("ACTIVO");
+        }
+
+        yapeRepositorio.save(yape);
+
+        resp.put("success", true);
+        resp.put("codigoAprobacion", nuevoCodigo);
+        resp.put("titular", yape.getNombreTitular());
         return resp;
     }
 

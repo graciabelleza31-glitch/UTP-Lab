@@ -461,7 +461,7 @@
               type="hidden"
               name="metodoPago"
               id="inputMetodoPagoSeleccionado"
-              value="DIRECTO"
+              value="YAPE"
             />
 
             <!-- PASO A: LAB Y HORARIOS -->
@@ -1132,13 +1132,13 @@
       </div>
     </div> <!-- FIN DEL CONTENEDOR-APP -->
 
-    <!-- MODAL 3: PAGO -->
+   <!-- MODAL 3: PAGO -->
     <div
       id="modalPagoReserva"
       class="fondo-modal"
-      style="display: none; z-index: 999999; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;"
+      style="display: none; z-index: 999999; position: fixed; inset: 0; padding: 1rem; overflow-y: auto;"
     >
-      <div class="tarjeta-modal modal-pago-ancho">
+      <div class="tarjeta-modal modal-pago-ancho" style="max-height: 90vh; overflow-y: auto; margin: auto;">
         <div class="cabecera-pago-flex">
           <div>
             <h3 class="titulo-pago-txt">Pago de Reserva</h3>
@@ -1153,18 +1153,16 @@
           </button>
         </div>
 
-        <div class="tarjeta-monto-azul">
+        <div class="tarjeta-monto-azul" style="padding: 0.85rem 1.1rem; margin-bottom: 0.75rem;">
           <div class="info-monto-izq">
             <span class="lbl-total-pagar">TOTAL A PAGAR</span>
-            <strong class="monto-total-num" id="pasarelaTotalMonto"
-              >S/ 0.00</strong
-            >
+            <strong class="monto-total-num" id="pasarelaTotalMonto">S/ 0.00</strong>
           </div>
           <div class="icono-tarjeta-chip">💳</div>
         </div>
 
         <!-- Selector de método -->
-        <div class="rejilla-metodos-pago">
+        <div class="rejilla-metodos-pago" style="margin-bottom: 0.75rem;">
           <div
             class="opcion-metodo-pago seleccionado"
             onclick="seleccionarMetodo(this, 'YAPE')"
@@ -1188,85 +1186,107 @@
           </div>
         </div>
 
-        <div id="seccionBilleterasPago" style="display: block; margin: 1rem 0;">
-          <div style="background:#f8fafc; border-radius:12px; padding:1.2rem;">
+        <!-- Contenedor de Billeteras Digitales (Yape y Plin) -->
+        <div id="seccionBilleterasPago" style="display: block; margin: 0.75rem 0;">
+          <div style="background:#f8fafc; border-radius:12px; padding:1rem;">
 
-            <div style="text-align:center; margin-bottom: 1rem;">
-              <p style="font-size:2rem; margin:0;" id="iconoBilletera">📱</p>
-              <p style="font-size:0.85rem; color:#64748b; margin:0.5rem 0;" id="subtituloBilletera">
+            <div style="text-align:center; margin-bottom: 0.75rem;">
+              <p style="font-size:1.6rem; margin:0;" id="iconoBilletera">📱</p>
+              <p style="font-size:0.82rem; color:#64748b; margin:0.25rem 0;" id="subtituloBilletera">
                 Ingresa tu número y el código de aprobación
               </p>
               <p style="font-weight:700; margin:0; color:#2563eb;" id="montoBilleteraText">S/ 0.00</p>
             </div>
 
-            <!-- YAPE: número + código -->
+            <!-- YAPE: número -> solicita código dinámico -> ingresa código -->
             <div id="subSeccionYape">
-              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div style="display:flex; flex-direction:column; gap:0.65rem;">
                 <div>
-                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de celular Yape</label>
-                  <input type="text" id="inputNumeroYape" name="numeroYape" placeholder="987654321" maxlength="9"
-                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">1. Tu número de celular Yape</label>
+                  <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="inputNumeroYape" placeholder="987654321" maxlength="9"
+                          style="flex:1; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                    <button type="button" onclick="solicitarCodigoYapeDinamico()"
+                            style="background:#742284; color:#ffffff; font-weight:700; border:none; padding:0 0.9rem; border-radius:8px; cursor:pointer;">
+                      Solicitar código
+                    </button>
+                  </div>
                 </div>
+
+                <!-- Notificación simulada de Yape con el código generado -->
+                <div id="avisoCodigoYapeGenerado" style="display:none; background:#f3e8ff; border:1px solid #d8b4fe; color:#581c87; padding:0.65rem 0.85rem; border-radius:8px; font-size:0.8rem;">
+                  📲 <strong id="titularYapeDetectado">Usuario Yape</strong>, tu código de aprobación Yape es: 
+                  <strong id="codigoYapeSimuladoTxt" style="font-size:0.95rem; letter-spacing:1px;">000000</strong>
+                </div>
+
                 <div>
-                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Código de aprobación (6 dígitos)</label>
-                  <input type="text" id="inputCodigoYape" name="codigoYape" placeholder="123456" maxlength="6"
-                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">2. Código de aprobación (6 dígitos)</label>
+                  <input type="text" id="inputCodigoYape" placeholder="Ingresa el código de 6 dígitos" maxlength="6"
+                        style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
                 </div>
               </div>
             </div>
-
-            <!-- PLIN: QR + número + código -->
+            
+            <!-- PLIN: Número -> Genera QR dinámico -> Código de operación -->
             <div id="subSeccionPlin" style="display: none;">
-              <div style="text-align:center; margin-bottom: 1rem;">
-                <div id="qrcodePlin" style="display:inline-block; padding:12px; background:#fff; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
-                <p style="font-size:0.75rem; color:#64748b; margin-top:0.5rem;">
-                  Escanea el QR con la app Plin o copia el código
-                </p>
-                <p style="font-weight:700; font-size:1rem; color:#0f172a; letter-spacing:1px; margin-top:0.25rem;"
-                  id="codigoQrPlin">PL------</p>
-              </div>
-
-              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div style="display:flex; flex-direction:column; gap:0.65rem;">
                 <div>
-                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de celular Plin</label>
-                  <input type="text" id="inputNumeroPlin" name="numeroPlin" placeholder="987654321" maxlength="9"
-                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">1. Tu número de celular Plin</label>
+                  <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="inputNumeroPlin" placeholder="987654321" maxlength="9"
+                          style="flex:1; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                    <button type="button" onclick="solicitarQrPlinDinamico()"
+                            style="background:#00d1b2; color:#0f172a; font-weight:700; border:none; padding:0 0.9rem; border-radius:8px; cursor:pointer;">
+                      Generar QR
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">Código de operación (del QR)</label>
-                  <input type="text" id="inputCodigoPlin" name="codigoPlin" placeholder="PL123456" maxlength="8"
-                        style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+
+                <!-- Contenedor del QR compacto y SIN mostrar el código en texto -->
+                <div id="contenedorQrPlinDinamico" style="display:none; text-align:center; background:#fff; padding:0.75rem; border-radius:12px; border:1px solid #e2e8f0;">
+                  <p id="titularPlinDetectado" style="font-size:0.8rem; font-weight:700; color:#0f172a; margin:0 0 0.4rem 0;"></p>
+                  <div id="qrcodePlin" style="display:inline-block; padding:6px; background:#fff;"></div>
+                  <p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0 0;">
+                    Escanea el QR con tu celular para ver el código de operación
+                  </p>
+                </div>
+
+                <div id="bloqueInputCodigoPlin" style="display:none;">
+                  <label style="font-size:0.8rem; font-weight:600; color:#475569;">2. Código de operación Plin</label>
+                  <input type="text" id="inputCodigoPlin" placeholder="Ej. PL123456" maxlength="8"
+                        style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px; text-transform:uppercase;" />
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
         <!-- Formulario de tarjeta -->
-        <div id="seccionTarjetaPago" style="display: none; margin: 1rem 0;">
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <div id="seccionTarjetaPago" style="display: none; margin: 0.75rem 0;">
+          <div style="display:flex; flex-direction:column; gap:0.65rem;">
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Número de tarjeta</label>
-              <input type="text" id="inputNumeroTarjeta" name="numeroTarjeta"
+              <input type="text" id="inputNumeroTarjeta"
                      placeholder="4544645698726985" maxlength="19"
-                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                     style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div>
               <label style="font-size:0.8rem; font-weight:600; color:#475569;">Titular</label>
               <input type="text" id="inputTitularTarjeta"
                      placeholder="JUAN PEREZ"
-                     style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                     style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
             </div>
             <div style="display:flex; gap:0.75rem;">
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">Fecha exp.</label>
                 <input type="text" id="inputFechaExpTarjeta" placeholder="MM/AA" maxlength="5"
-                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                       style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
               <div style="flex:1;">
                 <label style="font-size:0.8rem; font-weight:600; color:#475569;">CVV</label>
                 <input type="text" id="inputCvvTarjeta" placeholder="123" maxlength="3"
-                       style="width:100%; padding:0.6rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
+                       style="width:100%; padding:0.55rem; border:1.5px solid #e2e8f0; border-radius:8px;" />
               </div>
             </div>
           </div>
