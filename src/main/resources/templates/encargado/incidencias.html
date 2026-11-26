@@ -292,6 +292,8 @@
 
   <!-- Scripts globales -->
   <div th:replace="~{fragments/scripts}"></div>
+  <div th:replace="~{fragments/topbar-encargado :: scripts}"></div>  
+  <link rel="stylesheet" th:href="@{/css/responsive.css}">
   
   <!-- JS específico de Incidencias -->
   <script th:src="@{/js/admin-incidencias.js}"></script>

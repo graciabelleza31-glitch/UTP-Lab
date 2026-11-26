@@ -162,7 +162,7 @@
 
         <!-- BARRA DE BÚSQUEDA -->
         <div style="margin-bottom: 1.5rem; position: relative; max-width: 500px;">
-            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 18px;"></i>
+           
             <!-- FORMULARIO DE BÚSQUEDA GLOBAL -->
 <form action="/encargado/checkin" method="GET" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; max-width: 600px;">
     <input type="hidden" name="fecha" th:value="${fechaConsulta}">
@@ -315,7 +315,9 @@
 
   </div>
 
-  <div th:replace="~{fragments/scripts}"></div>   
+  <div th:replace="~{fragments/scripts}"></div> 
+  <div th:replace="~{fragments/topbar-encargado :: scripts}"></div>  
+  <link rel="stylesheet" th:href="@{/css/responsive.css}">
   <script th:src="@{/js/encargado-checkin.js}"></script>
 
   <!-- SCRIPT PARA FILTRAR RESERVAS -->
